@@ -1,0 +1,5 @@
+dofile("System/images/system.lua")
+--dofile("samples/fractal.lua")
+--dofile("samples/helloworld.lua")
+--dofile("samples/pads/pads.lua")
+--dofile("samples/parallax/main.lua")
