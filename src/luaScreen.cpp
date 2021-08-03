@@ -47,13 +47,35 @@ static int lua_splash(lua_State *L) {
 	return 0;
 }
 
+static int lua_setvmode(lua_State *L) {
+	int argc = lua_gettop(L);
+	if (argc != 6) return luaL_error(L, "wrong number of arguments");
+	s16 mode = (s16)luaL_checkinteger(L, 1);
+	int width = luaL_checkinteger(L, 2);
+	int height = luaL_checkinteger(L, 3);
+	int psm = luaL_checkinteger(L, 4);
+	s16 interlace = (s16)luaL_checkinteger(L, 5);
+	s16 field = (s16)luaL_checkinteger(L, 6);
+	setVideoMode(mode, width, height, psm, interlace, field);
+	return 0;
+}
+
+static int lua_getvmode(lua_State *L) {
+	int argc = lua_gettop(L);
+	if (argc != 0) return luaL_error(L, "wrong number of arguments");
+	return 0;
+}
+
+
 //Register our Screen Functions
 static const luaL_Reg Screen_functions[] = {
-  {"clear",            lua_clear},
-  {"flip",              lua_flip},
-  //{"getPixel",        lua_getP},
-  {"waitVblankStart", lua_vblank},
-  {"showSplash",	  lua_splash},
+  {"clear",            	   lua_clear},
+  {"flip",              	lua_flip},
+  //{"getPixel",        	lua_getP},
+  {"waitVblankStart", 	  lua_vblank},
+  {"showSplash",	  	  lua_splash},
+  {"getMode",			lua_getvmode},
+  {"setMode",			lua_setvmode},
   {0, 0}
 };
 
@@ -133,4 +155,47 @@ void luaScreen_init(lua_State *L) {
 	lua_newtable(L);
 	luaL_setfuncs(L, Color_functions, 0);
 	lua_setglobal(L, "Color");
+
+	lua_pushinteger(L, GS_MODE_NTSC);
+	lua_setglobal (L, "NTSC");
+
+	lua_pushinteger(L, GS_MODE_DTV_480P);
+	lua_setglobal (L, "_480p");
+
+	lua_pushinteger(L, GS_MODE_PAL);
+	lua_setglobal (L, "PAL");
+
+	lua_pushinteger(L, GS_MODE_DTV_576P);
+	lua_setglobal (L, "_576p");
+
+	lua_pushinteger(L, GS_MODE_DTV_720P);
+	lua_setglobal (L, "_720p");
+
+	lua_pushinteger(L, GS_MODE_DTV_1080I);
+	lua_setglobal (L, "_1080i");
+
+	lua_pushinteger(L, GS_INTERLACED);
+	lua_setglobal (L, "INTERLACED");
+
+	lua_pushinteger(L, GS_NONINTERLACED);
+	lua_setglobal (L, "NONINTERLACED");
+
+	lua_pushinteger(L, GS_FIELD);
+	lua_setglobal (L, "FIELD");
+
+	lua_pushinteger(L, GS_FRAME);
+	lua_setglobal (L, "FRAME");
+
+	lua_pushinteger(L, GS_PSM_CT32);
+	lua_setglobal (L, "CT32");
+
+	lua_pushinteger(L, GS_PSM_CT24);
+	lua_setglobal (L, "CT24");
+
+	lua_pushinteger(L, GS_PSM_CT16);
+	lua_setglobal (L, "CT16");
+
+	lua_pushinteger(L, GS_PSM_CT16S);
+	lua_setglobal (L, "CT16S");
+
 }

@@ -44,11 +44,13 @@ typedef u32 Color;
 #define G(color) ((u8)(color >> 8 & 0xFF))
 #define R(color) ((u8)(color & 0xFF))
 
+extern void setVideoMode(s16 mode, int width, int height, int psm, s16 interlace, s16 field);
+
 extern GSTEXTURE* luaP_loadpng(const char *Path);
 
 extern GSTEXTURE* luaP_loadbmp(const char *Path);
 
-extern GSTEXTURE* luaP_loadjpeg(const char *Path);
+extern GSTEXTURE* luaP_loadjpeg(const char *Path, bool scale_down);
 
 extern GSTEXTURE* luaP_loadrawimg(const char *Path);
 
@@ -77,6 +79,12 @@ extern void UnloadTexture(GSTEXTURE *txt);
 extern int GetInterlacedFrameMode();
 
 extern void fntDrawQuad(rm_quad_t *q);
+
+extern GSFONT* loadFont(const char* path);
+
+extern void printFontText(GSFONT* font, char* text, float x, float y, float scale, Color color);
+
+extern void unloadFont(GSFONT* font);
 
 /*
  * Initialize all pixels of the screen with a color.

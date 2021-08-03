@@ -3,8 +3,10 @@
 #include <malloc.h>
 #include <math.h>
 #include <packet2.h>
+#include <unistd.h>
+#include <fcntl.h>
 
-#include <libjpg.h>
+#include <jpeglib.h>
 #include <time.h>
 #include <png.h>
 
@@ -695,46 +697,114 @@ GSTEXTURE* luaP_loadbmp(const char *Path)
 
 }
 
-GSTEXTURE* luaP_loadjpeg(const char *Path)
+struct my_error_mgr {
+  struct jpeg_error_mgr pub;    /* "public" fields */
+
+  jmp_buf setjmp_buffer;        /* for return to caller */
+};
+
+typedef struct my_error_mgr *my_error_ptr;
+
+METHODDEF(void)
+my_error_exit(j_common_ptr cinfo)
 {
-	GSTEXTURE* tex = (GSTEXTURE*)malloc(sizeof(GSTEXTURE));
-	tex->Delayed = 1;
-	
-	FILE *file;
-	jpgData *jpg;
+  /* cinfo->err really points to a my_error_mgr struct, so coerce pointer */
+  my_error_ptr myerr = (my_error_ptr)cinfo->err;
 
-	int TextureSize = 0;
+  /* Always display the message. */
+  /* We could postpone this until after returning, if we chose. */
+  (*cinfo->err->output_message) (cinfo);
 
-	file = fopen(Path, "r");
-	if(file == NULL) {
-		printf("jpeg: error opening %s\n", Path);
-		return NULL;
+  /* Return control to the setjmp point */
+  longjmp(myerr->setjmp_buffer, 1);
+}
+
+// Following official documentation max width or height of the texture is 1024
+#define MAX_TEXTURE 1024
+static void  _ps2_load_JPEG_generic(GSTEXTURE *Texture, struct jpeg_decompress_struct *cinfo, struct my_error_mgr *jerr, bool scale_down)
+{
+	int textureSize = 0;
+	if (scale_down) {
+		unsigned int longer = cinfo->image_width > cinfo->image_height ? cinfo->image_width : cinfo->image_height;
+		float downScale = (float)longer / (float)MAX_TEXTURE;
+		cinfo->scale_denom = ceil(downScale);
 	}
 
-	jpg = jpgOpenFILE(file, JPG_NORMAL);
-	if (jpg == NULL) {
-		printf("jpeg: error opening FILE\n");
-		fclose(file);
-		return NULL;
-	}
+	jpeg_start_decompress(cinfo);
 
-	tex->Width =  jpg->width;
-	tex->Height = jpg->height;
-	tex->PSM = GS_PSM_CT24;
-	tex->Filter = GS_FILTER_NEAREST;
-	tex->VramClut = 0;
-	tex->Clut = NULL;
+	int psm = cinfo->out_color_components == 3 ? GS_PSM_CT24 : GS_PSM_CT32;
 
-	TextureSize = gsKit_texture_size_ee(tex->Width, tex->Height, tex->PSM);
+	Texture->Width =  cinfo->output_width;
+	Texture->Height = cinfo->output_height;
+	Texture->PSM = psm;
+	Texture->Filter = GS_FILTER_NEAREST;
+	Texture->VramClut = 0;
+	Texture->Clut = NULL;
+
+	textureSize = cinfo->output_width*cinfo->output_height*cinfo->out_color_components;
 	#ifdef DEBUG
-	printf("Texture Size = %i\n",TextureSize);
+	printf("Texture Size = %i\n",textureSize);
 	#endif
+	Texture->Mem = (u32*)memalign(128, textureSize);
 
-	tex->Mem = (u32*)memalign(128,TextureSize);
-	jpgReadImage(jpg, (u8*)tex->Mem);
-	jpgClose(jpg);
-	fclose(file);
+	unsigned int row_stride = textureSize/Texture->Height;
+	unsigned char *row_pointer = (unsigned char *)Texture->Mem;
+	while (cinfo->output_scanline < cinfo->output_height) {
+		jpeg_read_scanlines(cinfo, (JSAMPARRAY)&row_pointer, 1);
+		row_pointer += row_stride;
+	}
 
+	jpeg_finish_decompress(cinfo);
+}
+
+GSTEXTURE* luaP_loadjpeg(const char *Path, bool scale_down)
+{
+
+	
+    GSTEXTURE* tex = (GSTEXTURE*)malloc(sizeof(GSTEXTURE));
+	tex->Delayed = 1;
+
+	FILE *fp;
+	struct jpeg_decompress_struct cinfo;
+	struct my_error_mgr jerr;
+
+	if (tex == NULL) {
+		printf("jpeg: error Texture is NULL\n");
+		return NULL;
+	}
+
+	fp = fopen(Path, "rb");
+	if (fp == NULL)
+	{
+		printf("jpeg: Failed to load file: %s\n", Path);
+		return NULL;
+	}
+
+	/* We set up the normal JPEG error routines, then override error_exit. */
+	cinfo.err = jpeg_std_error(&jerr.pub);
+	jerr.pub.error_exit = my_error_exit;
+	/* Establish the setjmp return context for my_error_exit to use. */
+	if (setjmp(jerr.setjmp_buffer)) {
+		/* If we get here, the JPEG code has signaled an error.
+		* We need to clean up the JPEG object, close the input file, and return.
+		*/
+		jpeg_destroy_decompress(&cinfo);
+		fclose(fp);
+		if (tex->Mem)
+			free(tex->Mem);
+		printf("jpeg: error during processing file\n");
+		return NULL;
+	}
+	jpeg_create_decompress(&cinfo);
+	jpeg_stdio_src(&cinfo, fp);
+	jpeg_read_header(&cinfo, TRUE);
+
+	_ps2_load_JPEG_generic(tex, &cinfo, &jerr, scale_down);
+	
+	jpeg_destroy_decompress(&cinfo);
+	fclose(fp);
+
+	
 	if(!tex->Delayed)
 	{
 		tex->Vram = gsKit_vram_alloc(gsGlobal, gsKit_texture_size(tex->Width, tex->Height, tex->PSM), GSKIT_ALLOC_USERBUFFER);
@@ -905,6 +975,50 @@ int FPSCounter(clock_t prevtime, clock_t curtime)
 	return fps;
 }
 
+GSFONT* loadFont(const char* path){
+	int file = open(path, O_RDONLY, 0777);
+	uint16_t magic;
+	read(file, &magic, 2);
+	close(file);
+	GSFONT* font = NULL;
+	if (magic == 0x4D42) {
+		font = gsKit_init_font(GSKIT_FTYPE_BMP_DAT, (char*)path);
+		gsKit_font_upload(gsGlobal, font);
+	} else if (magic == 0x4246) {
+		font = gsKit_init_font(GSKIT_FTYPE_FNT, (char*)path);
+		gsKit_font_upload(gsGlobal, font);
+	} else if (magic == 0x5089) { 
+		font = gsKit_init_font(GSKIT_FTYPE_PNG_DAT, (char*)path);
+		gsKit_font_upload(gsGlobal, font);
+	}
+
+	return font;
+}
+
+void printFontText(GSFONT* font, char* text, float x, float y, float scale, Color color)
+{
+	gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
+	gsKit_set_test(gsGlobal, GS_ATEST_ON);
+	gsKit_font_print_scaled(gsGlobal, font, x, y, 1, scale, color, text);
+}
+
+void unloadFont(GSFONT* font)
+{
+	gsKit_TexManager_free(gsGlobal, font->Texture);
+	// clut was pointing to static memory, so do not free
+	font->Texture->Clut = NULL;
+	// mem was pointing to 'TexBase', so do not free
+	font->Texture->Mem = NULL;
+	// free texture
+	free(font->Texture);
+	font->Texture = NULL;
+
+	if (font->RawData != NULL)
+		free(font->RawData);
+
+	free(font);
+}
+
 int getFreeVRAM(){
 	return (4096 - (gsGlobal->CurrentPointer / 1024));
 }
@@ -1010,6 +1124,8 @@ void drawCircle(float x, float y, float radius, u64 color, u8 filled)
 		gsKit_prim_line_strip(gsGlobal, v, 37, 1, color);
 }
 
+
+
 void InvalidateTexture(GSTEXTURE *txt)
 {
     gsKit_TexManager_invalidate(gsGlobal, txt);
@@ -1026,6 +1142,21 @@ int GetInterlacedFrameMode()
         return 1;
 
     return 0;
+}
+
+void setVideoMode(s16 mode, int width, int height, int psm, s16 interlace, s16 field) {
+	gsGlobal->PSM = psm;
+	gsGlobal->Mode = mode;
+	gsGlobal->Interlace = interlace;
+	gsGlobal->Field = field;
+	gsGlobal->Width  = width;
+	if ((interlace == GS_INTERLACED) && (field == GS_FRAME))
+		gsGlobal->Height = height/2;
+	else
+		gsGlobal->Height = height;
+
+	gsKit_vram_clear(gsGlobal);
+	gsKit_init_screen(gsGlobal);
 }
 
 void fntDrawQuad(rm_quad_t *q)

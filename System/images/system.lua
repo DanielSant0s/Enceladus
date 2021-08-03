@@ -1,3 +1,5 @@
+--Screen.setMode(PAL, 720, 576, CT24, INTERLACED, FIELD)
+
 Font.ftInit()
 local grogu = Graphics.loadImage("System/images/grogu.jpg")
 local stars = Graphics.loadImage("System/images/stars.bmp")
@@ -15,6 +17,13 @@ Font.ftSetPixelSize(netron, 25, 25)
 io.write("\nFont Handle: " .. netron .. "\n")
 
 local type, freespace, format = System.getMCInfo(0)
+
+function printf(...)
+    io.write(string.format(...))
+   end
+   
+
+printf("Hello %s from %s on %s\n",os.getenv"USER" or "there",_VERSION,os.date())
 
 while true do
 

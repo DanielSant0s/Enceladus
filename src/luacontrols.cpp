@@ -102,8 +102,8 @@ static int lua_getpressure(lua_State *L){
 
 static int lua_rumble(lua_State *L){
 	int argc = lua_gettop(L);
+	if (argc != 2 && argc != 3) return luaL_error(L, "wrong number of arguments.");
 	static char actAlign[6];
-	//if (argc != 2) return luaL_error(L, "wrong number of arguments.");
 	actAlign[0] = luaL_checkinteger(L, 1);
 	actAlign[1] = luaL_checkinteger(L, 2);
 	padSetActDirect(0, 0, actAlign);

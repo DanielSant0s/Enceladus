@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <libmc.h>
+#include <malloc.h>
 #include <sys/fcntl.h>
 #include <dirent.h>
 #include <sys/stat.h>
@@ -472,25 +473,112 @@ static int lua_getmcinfo(lua_State *L){
 	return 3;
 }
 
+static int lua_openfile(lua_State *L){
+	int argc = lua_gettop(L);
+	if (argc != 2) return luaL_error(L, "wrong number of arguments");
+	const char *file_tbo = luaL_checkstring(L, 1);
+	int type = luaL_checkinteger(L, 2);
+	int fileHandle = open(file_tbo, type, 0777);
+	if (fileHandle < 0) return luaL_error(L, "cannot open requested file.");
+	lua_pushinteger(L,fileHandle);
+	return 1;
+}
+
+
+static int lua_readfile(lua_State *L){
+	int argc = lua_gettop(L);
+	if (argc != 2) return luaL_error(L, "wrong number of arguments");
+	int file = luaL_checkinteger(L, 1);
+	uint32_t size = luaL_checkinteger(L, 2);
+	uint8_t *buffer = (uint8_t*)malloc(size + 1);
+	int len = read(file,buffer, size);
+	buffer[len] = 0;
+	lua_pushlstring(L,(const char*)buffer,len);
+	free(buffer);
+	return 1;
+}
+
+
+static int lua_writefile(lua_State *L){
+	int argc = lua_gettop(L);
+	if (argc != 3) return luaL_error(L, "wrong number of arguments");
+	int fileHandle = luaL_checkinteger(L, 1);
+	const char *text = luaL_checkstring(L, 2);
+	int size = luaL_checknumber(L, 3);
+	write(fileHandle, text, size);
+	return 0;
+}
+
+static int lua_closefile(lua_State *L){
+	int argc = lua_gettop(L);
+	if (argc != 1) return luaL_error(L, "wrong number of arguments");
+	int fileHandle = luaL_checkinteger(L, 1);
+	close(fileHandle);
+	return 0;
+}
+
+static int lua_seekfile(lua_State *L){
+	int argc = lua_gettop(L);
+	if (argc != 3) return luaL_error(L, "wrong number of arguments");
+	int fileHandle = luaL_checkinteger(L, 1);
+	int pos = luaL_checkinteger(L, 2);
+	uint32_t type = luaL_checkinteger(L, 3);
+	lseek(fileHandle, pos, type);	
+	return 0;
+}
+
+
+static int lua_sizefile(lua_State *L){
+	int argc = lua_gettop(L);
+	if (argc != 1) return luaL_error(L, "wrong number of arguments");
+	int fileHandle = luaL_checkinteger(L, 1);
+	uint32_t cur_off = lseek(fileHandle, 0, SEEK_CUR);
+	uint32_t size = lseek(fileHandle, 0, SEEK_END);
+	lseek(fileHandle, cur_off, SEEK_SET);
+	lua_pushinteger(L, size);
+	return 1;
+}
+
+
+static int lua_checkexist(lua_State *L){
+	int argc = lua_gettop(L);
+	if (argc != 1) return luaL_error(L, "wrong number of arguments");
+	const char *file_tbo = luaL_checkstring(L, 1);
+	int fileHandle = open(file_tbo, O_RDONLY, 0777);
+	if (fileHandle < 0) lua_pushboolean(L, false);
+	else{
+		close(fileHandle);
+		lua_pushboolean(L,true);
+	}
+	return 1;
+}
+
 
 
 static const luaL_Reg System_functions[] = {
-  {"currentDirectory",              lua_curdir},
-  {"listDirectory",           	    lua_dir},
-  {"createDirectory",               lua_createDir},
-  {"removeDirectory",               lua_removeDir},
-  {"moveFile",	                    lua_movefile},
-  {"copyFile",	                    lua_copyfile},
-  {"removeFile",                    lua_removeFile},
-  {"rename",                        lua_rename},
-  {"md5sum",                        lua_md5sum},
-  {"sleep",                         lua_sleep},
-  {"getFreeMemory",                 lua_getFreeMemory},
-  {"getFreeVRAM",                 	lua_getFreeVRAM},
-  {"getFPS",                 		lua_getFPS},
-  {"exitToBrowser",                 lua_exit},
-  {"getMCInfo",                     lua_getmcinfo},
-  {0, 0}
+	{"openFile",                   lua_openfile},
+	{"readFile",                   lua_readfile},
+	{"writeFile",                 lua_writefile},
+	{"closeFile",                 lua_closefile},  
+	{"seekFile",                   lua_seekfile},  
+	{"sizeFile",                   lua_sizefile},
+	{"doesFileExist",            lua_checkexist},
+	{"currentDirectory",             lua_curdir},
+	{"listDirectory",           	    lua_dir},
+	{"createDirectory",           lua_createDir},
+	{"removeDirectory",           lua_removeDir},
+	{"moveFile",	               lua_movefile},
+	{"copyFile",	               lua_copyfile},
+	{"removeFile",               lua_removeFile},
+	{"rename",                       lua_rename},
+	{"md5sum",                       lua_md5sum},
+	{"sleep",                         lua_sleep},
+	{"getFreeMemory",         lua_getFreeMemory},
+	{"getFreeVRAM",          	lua_getFreeVRAM},
+	{"getFPS",                 		 lua_getFPS},
+	{"exitToBrowser",                  lua_exit},
+	{"getMCInfo",                 lua_getmcinfo},
+	{0, 0}
 };
 void luaSystem_init(lua_State *L) {
 	setModulePath();

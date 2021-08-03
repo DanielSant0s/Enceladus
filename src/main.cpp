@@ -118,7 +118,6 @@ void resetIOP(void)
 
 void systemInit()
 {
-    int ret;
 
     resetIOP();
     
@@ -263,8 +262,7 @@ int main(int argc, char * argv[])
        gsKit_clear_screens();
        
        if ( errMsg != NULL)
-       {
-        printf("Debug\n");
+       {;
    	   scr_printf("Error: %s\n", errMsg );
        }
        

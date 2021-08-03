@@ -6,12 +6,14 @@
 
 static int lua_init3D(lua_State *L) {
 	int argc = lua_gettop(L);
+    if (argc != 0) return luaL_error(L, "wrong number of arguments.");
     init3D();
 	return 0;
 }
 
 static int lua_rendermodel(lua_State *L) {
 	int argc = lua_gettop(L);
+    if (argc != 0) return luaL_error(L, "wrong number of arguments.");
     render();
 	return 0;
 }
