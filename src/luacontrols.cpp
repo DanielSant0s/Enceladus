@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include "luaplayer.h"
+#include "include/luaplayer.h"
 
 static int lua_getpad(lua_State *L) {
 	int argc = lua_gettop(L);

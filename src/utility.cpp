@@ -1,4 +1,4 @@
-#include "luaplayer.h"
+#include "include/luaplayer.h"
 
 void stackDump (lua_State *L) {
   int i;

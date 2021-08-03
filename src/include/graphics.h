@@ -83,7 +83,7 @@ extern void fntDrawQuad(rm_quad_t *q);
  *
  * @param color - new color for the pixels
  */
-extern void clearScreen();
+extern void clearScreen(Color color);
 
 
 /**

@@ -8,9 +8,9 @@
 #include <time.h>
 #include <png.h>
 
-#include "graphics.h"
+#include "include/graphics.h"
 #include "lualogo.cpp"
-#include "mesh_data.c"
+#include "include/mesh_data.c"
 
 #define RATIO 1.33
 
@@ -864,10 +864,9 @@ void gsKit_clear_screens()
 	}
 }
 
-void clearScreen()
+void clearScreen(Color color)
 {
-	gsKit_queue_reset(gsGlobal->Per_Queue);
-	gsKit_clear(gsGlobal, BLACK_RGBAQ);
+	gsKit_clear(gsGlobal, color);
 	
 }
 

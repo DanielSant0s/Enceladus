@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include <string.h>
 
-#include "luaplayer.h"
+#include "include/luaplayer.h"
 
 static lua_State *L;
 

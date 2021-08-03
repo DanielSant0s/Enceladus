@@ -11,11 +11,11 @@
 #include <smod.h>
 
 #include <sbv_patches.h>
-#include "smem.h"
+#include <smem.h>
 
-#include "graphics.h"
-#include "sound.h"
-#include "luaplayer.h"
+#include "include/graphics.h"
+#include "include/sound.h"
+#include "include/luaplayer.h"
 
 /* the boot.lua */
 #include "boot.cpp"

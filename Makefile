@@ -48,7 +48,7 @@ EE_INCS += -I$(PS2SDK)/ports/include/zlib -I$(PS2DEV)/gsKit/include
 EE_INCS += -I$(PS2SDK)/ports/include/freetype2
 
 EE_CFLAGS   += -fno-strict-aliasing
-EE_CXXFLAGS += -fno-strict-aliasing -fno-exceptions -fno-rtti
+EE_CXXFLAGS += -fno-strict-aliasing -fno-exceptions -fno-rtti -DLUA_USE_PS2
 
 ifeq ($(RESET_IOP),1)
 EE_CXXFLAGS += -DRESET_IOP
@@ -61,7 +61,7 @@ endif
 BIN2S = $(PS2SDK)/bin/bin2s
 
 # -- PS2 specific source code --
-EE_OBJS += src/ps2sdk/md5.o
+EE_OBJS += src/md5.o
 EE_OBJS += src/usbd.o
 EE_OBJS += src/usbhdfsd.o
 
@@ -71,7 +71,6 @@ EE_OBJS += src/utility.o
 EE_OBJS += src/graphics.o
 EE_OBJS += src/atlas.o
 EE_OBJS += src/fntsys.o
-EE_OBJS += src/splash.o
 #EE_OBJS += src/sound.o
 EE_OBJS += src/luaplayer.o
 #EE_OBJS += src/luasound.o
@@ -89,11 +88,11 @@ endif
 # -- Embedded ressources ---
 src/main.o: src/boot.cpp src/lualogo.cpp
 
-src/lualogo.cpp: src/auxiliary/lualogo.raw
+src/lualogo.cpp: etc/lualogo.raw
 	echo "Embedding splash screen..."
 	$(PS2SDK)/bin/bin2c $< $@ rawlualogo
 
-src/boot.cpp: src/auxiliary/boot.lua
+src/boot.cpp: etc/boot.lua
 	echo "Embedding Lua boot script..."
 	$(PS2SDK)/bin/bin2c $< $@ bootString
 
@@ -105,7 +104,7 @@ endif
 
 # -- Embedded Irx(s) ---------
 src/usbhdfsd.s: $(PS2SDK)/iop/irx/usbhdfsd.irx
-	echo "Embedding IOP Modules"
+	echo "Embedding IOP Modules..."
 	$(BIN2S) $< $@ usbhdfsd_irx
 
 src/usbd.s: $(PS2SDK)/iop/irx/usbd.irx
@@ -126,12 +125,12 @@ debug: $(EE_BIN)
 clean:
 	echo "\nCleaning ELFs and objects..."
 	rm -f $(EE_BIN) $(EE_OBJS) $(EE_BIN_PKD)
-	echo "\nCleaning embedded IOP modules..."
+	echo "Cleaning embedded IOP modules..."
 	rm -f src/usbhdfsd.s
 	rm -f src/usbd.s
 	echo "Cleaning embedded boot script..."
 	rm -f src/boot.cpp
-	echo "Cleaning embedded splash screen..."
+	echo "Cleaning embedded splash screen...\n"
 	rm -f src/lualogo.cpp
 
 rebuild: clean all

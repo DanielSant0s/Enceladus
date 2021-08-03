@@ -12,7 +12,7 @@
 #include "include/fntsys.h"
 #include "include/utf8.h"
 #include "include/atlas.h"
-#include "graphics.h"
+#include "include/graphics.h"
 
 #include <sys/types.h>
 #include <ft2build.h>

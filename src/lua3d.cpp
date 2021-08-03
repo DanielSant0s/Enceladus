@@ -1,8 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
-#include "luaplayer.h"
 
-#include "graphics.h"
+#include "include/luaplayer.h"
+#include "include/graphics.h"
 
 static int lua_init3D(lua_State *L) {
 	int argc = lua_gettop(L);

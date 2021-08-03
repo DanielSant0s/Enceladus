@@ -8,7 +8,7 @@ Color2 = Color.new(255, 0, 255, 255)
 Color3 = Color.new(255, 255, 0, 255)
 Color4 = Color.new(0, 255, 0, 255)
 
---Font.fmLoad()
+Font.fmLoad()
 local netron = Font.ftLoad("System/netron.ttf")
 Font.ftSetPixelSize(netron, 25, 25)
 
@@ -19,8 +19,6 @@ local type, freespace, format = System.getMCInfo(0)
 while true do
 
     Screen.clear()
-
-
 
     local pad = Pads.get()
 
@@ -38,9 +36,8 @@ while true do
     Graphics.drawRect(220.0, 280.0, 75, 75, Color.new(128, 128, 128, 32))
     Graphics.drawQuad(500.0, 250.0, 500.0, 350.0, 600.0, 250.0, 600.0, 350.0, Color1, Color2, Color1, Color2)
     Graphics.drawCircle(430.0, 220.0, 80.0, Color.new(255, 0, 0, 255))
-    --Font.fmPrint(60, 60, 0.6, "MC Info\nType: " .. type .. "\nFree Space: " .. freespace .. "\nFormat: " .. format .. "\n")
+    Font.fmPrint(200, 60, 0.6, "MC Info\nType: " .. type .. "\nFree Space: " .. freespace .. "\nFormat: " .. format .. "\n")
     Font.ftPrint(netron, 60, 60, 0, 200, 200, "MC Info\nType: " .. type .. "\nFree Space: " .. freespace .. "\nFormat: " .. format .. "\n")
-    --Font.print(netron, 0, 0, "toba", Color.new(220, 40, 40, 255))
     Screen.waitVblankStart()
     Screen.flip()
 end

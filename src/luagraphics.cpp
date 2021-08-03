@@ -3,9 +3,9 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include "luaplayer.h"
 
-#include "graphics.h"
+#include "include/luaplayer.h"
+#include "include/graphics.h"
 #include "include/fntsys.h"
 
 static int lua_ftinit(lua_State *L){

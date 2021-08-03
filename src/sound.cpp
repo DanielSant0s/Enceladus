@@ -2,7 +2,7 @@
 #include <malloc.h>
 #include "mikmod.h"
 
-#include "sound.h"
+#include "include/sound.h"
 
 #define MAX_MUSIC_CHAN 128      
 #define MAX_SFX_CHAN 32

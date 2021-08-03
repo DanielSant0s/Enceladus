@@ -1,9 +1,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "luaplayer.h"
+#include "include/luaplayer.h"
 
-#include "sound.h"
+#include "include/sound.h"
 
 // Forward declaration
 static Voice* pushVoice(lua_State *L);

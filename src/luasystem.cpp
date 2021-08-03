@@ -3,9 +3,9 @@
 #include <sys/fcntl.h>
 #include <dirent.h>
 #include <sys/stat.h>
-#include "luaplayer.h"
-#include "ps2sdk/md5.h"
-#include "graphics.h"
+#include "include/luaplayer.h"
+#include "include/md5.h"
+#include "include/graphics.h"
 
 #define MAX_DIR_FILES 512
 
