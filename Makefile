@@ -38,8 +38,8 @@ DEBUG = 0
 STANDALONE = 0
 # -------------------------
 
-EE_BIN = bin/enceladus.elf
-EE_BIN_PKD = bin/enceladus.elf
+EE_BIN = enceladus.elf
+EE_BIN_PKD = enceladus_pkd.elf
 
 EE_LIBS = -L$(PS2SDK)/ports/lib -L$(PS2DEV)/gsKit/lib/ -lpatches -lfileXio -lpad -ldebug -llua -ljpeg -lfreetype -ldraw -lmath3d -lpacket2 -lgskit_toolkit -lgskit -ldmakit -lpng -lz -lmc -lmikmod
 
@@ -118,6 +118,9 @@ all: $(EE_BIN)
 
 	echo "Compressing $(EE_BIN_PKD)...\n"
 	ps2-packer $(EE_BIN) $(EE_BIN_PKD) > /dev/null
+	
+	mv $(EE_BIN) bin/
+	mv $(EE_BIN_PKD) bin/
 
 debug: $(EE_BIN)
 	echo "Building $(EE_BIN) with debug symbols..."
