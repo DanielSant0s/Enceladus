@@ -367,14 +367,14 @@ void luaGraphics_init(lua_State *L) {
     lua_newtable(L);
 	luaL_setfuncs(L, Graphics_functions, 0);
 	lua_setglobal(L, "Graphics");
-    lua_newtable(L);
+
+	lua_newtable(L);
+	luaL_setfuncs(L, Font_functions, 0);
+	lua_setglobal(L, "Font");
 
 	lua_pushinteger(L, GS_FILTER_NEAREST);
 	lua_setglobal (L, "NEAREST");
 
 	lua_pushinteger(L, GS_FILTER_LINEAR);
 	lua_setglobal (L, "LINEAR");
-
-	luaL_setfuncs(L, Font_functions, 0);
-	lua_setglobal(L, "Font");
 }

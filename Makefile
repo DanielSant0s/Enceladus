@@ -41,7 +41,7 @@ STANDALONE = 0
 EE_BIN = enceladus.elf
 EE_BIN_PKD = enceladus_pkd.elf
 
-EE_LIBS = -L$(PS2SDK)/ports/lib -L$(PS2DEV)/gsKit/lib/ -lpatches -lfileXio -lpad -ldebug -llua -ljpeg -lfreetype -ldraw -lmath3d -lpacket2 -lgskit_toolkit -lgskit -ldmakit -lpng -lz -lmc -lmikmod
+EE_LIBS = -L$(PS2SDK)/ports/lib -L$(PS2DEV)/gsKit/lib/ -lpatches -lfileXio -lpad -ldebug -llua -ljpeg -lfreetype -ldraw -lmath3d -lpacket2 -lgskit_toolkit -lgskit -ldmakit -lpng -lz -lmc -laudsrv
 
 EE_INCS += -I$(PS2SDK)/ports/include 
 EE_INCS += -I$(PS2SDK)/ports/include/zlib -I$(PS2DEV)/gsKit/include
@@ -64,6 +64,7 @@ BIN2S = $(PS2SDK)/bin/bin2s
 EE_OBJS += src/md5.o
 EE_OBJS += src/usbd.o
 EE_OBJS += src/usbhdfsd.o
+EE_OBJS += src/audsrv.o
 
 # -- LuaPlayer specific source code --
 EE_OBJS += src/main.o
@@ -73,7 +74,7 @@ EE_OBJS += src/atlas.o
 EE_OBJS += src/fntsys.o
 #EE_OBJS += src/sound.o
 EE_OBJS += src/luaplayer.o
-#EE_OBJS += src/luasound.o
+EE_OBJS += src/luasound.o
 EE_OBJS += src/luacontrols.o
 EE_OBJS += src/luatimer.o
 EE_OBJS += src/luaScreen.o
@@ -109,6 +110,10 @@ src/usbhdfsd.s: $(PS2SDK)/iop/irx/usbhdfsd.irx
 
 src/usbd.s: $(PS2SDK)/iop/irx/usbd.irx
 	$(BIN2S) $< $@ usbd_irx
+
+	
+src/audsrv.s: $(PS2SDK)/iop/irx/audsrv.irx
+	$(BIN2S) $< $@ audsrv_irx
 # ----------------------------
 
 all: $(EE_BIN)
@@ -131,6 +136,7 @@ clean:
 	echo "Cleaning embedded IOP modules..."
 	rm -f src/usbhdfsd.s
 	rm -f src/usbd.s
+	rm -f src/audsrv.s
 	echo "Cleaning embedded boot script..."
 	rm -f src/boot.cpp
 	echo "Cleaning embedded splash screen...\n"

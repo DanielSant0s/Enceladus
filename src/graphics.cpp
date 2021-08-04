@@ -1149,14 +1149,16 @@ void setVideoMode(s16 mode, int width, int height, int psm, s16 interlace, s16 f
 	gsGlobal->Mode = mode;
 	gsGlobal->Interlace = interlace;
 	gsGlobal->Field = field;
-	gsGlobal->Width  = width;
+	gsGlobal->Width = width;
 	if ((interlace == GS_INTERLACED) && (field == GS_FRAME))
-		gsGlobal->Height = height/2;
+		gsGlobal->Height = height / a2;
 	else
 		gsGlobal->Height = height;
 
 	gsKit_vram_clear(gsGlobal);
 	gsKit_init_screen(gsGlobal);
+	gsKit_set_display_offset(gsGlobal, 0.0f, 0.0f);
+	gsKit_sync_flip(gsGlobal);
 }
 
 void fntDrawQuad(rm_quad_t *q)

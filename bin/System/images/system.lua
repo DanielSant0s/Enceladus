@@ -1,5 +1,3 @@
---Screen.setMode(PAL, 720, 576, CT24, INTERLACED, FIELD)
-
 Font.ftInit()
 local grogu = Graphics.loadImage("System/images/grogu.jpg")
 local stars = Graphics.loadImage("System/images/stars.bmp")
@@ -33,6 +31,10 @@ while true do
 
     if Pads.check(pad, PAD_START) then
         System.exitToBrowser()
+    end
+
+    if Pads.check(pad, PAD_SELECT) then
+        Screen.setMode(PAL, 640, 512, CT16S, INTERLACED, FIELD)
     end
 
     Graphics.drawImage(grogu, 0, 0)

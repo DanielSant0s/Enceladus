@@ -585,5 +585,36 @@ void luaSystem_init(lua_State *L) {
 	lua_newtable(L);
 	luaL_setfuncs(L, System_functions, 0);
 	lua_setglobal(L, "System");
+
+	lua_pushinteger(L, O_RDONLY);
+	lua_setglobal(L, "FREAD");
+
+	lua_pushinteger(L, O_WRONLY);
+	lua_setglobal (L, "FWRITE");
+
+	lua_pushinteger(L, O_CREAT | O_WRONLY);
+	lua_setglobal(L, "FCREATE");
+
+	lua_pushinteger(L, O_RDWR);
+	lua_setglobal(L, "FRDWR");
+	
+	lua_pushinteger(L, SEEK_SET);
+	lua_setglobal(L, "SET");
+
+	lua_pushinteger(L, SEEK_END);
+	lua_setglobal(L, "END");
+
+	lua_pushinteger(L, SEEK_CUR);
+	lua_setglobal(L, "CUR");
+
+	lua_pushinteger(L, 1);
+	lua_setglobal(L, "READ_ONLY");
+
+	lua_pushinteger(L, 2);
+	lua_setglobal(L, "READ_WRITE");
+
+
+
+	
 }
 

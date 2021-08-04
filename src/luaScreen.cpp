@@ -63,6 +63,7 @@ static int lua_setvmode(lua_State *L) {
 static int lua_getvmode(lua_State *L) {
 	int argc = lua_gettop(L);
 	if (argc != 0) return luaL_error(L, "wrong number of arguments");
+	printf("getMode isn't usable yet")
 	return 0;
 }
 

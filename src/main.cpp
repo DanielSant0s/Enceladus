@@ -9,6 +9,7 @@
 #include <iopheap.h>
 #include <iopcontrol.h>
 #include <smod.h>
+#include <audsrv.h>
 
 #include <sbv_patches.h>
 #include <smem.h>
@@ -25,6 +26,9 @@ extern int size_usbhdfsd_irx;
 
 extern void *usbd_irx;
 extern int size_usbd_irx;
+
+extern void *audsrv_irx;
+extern int size_audsrv_irx;
 
 
 #ifdef STANDALONE
@@ -90,15 +94,6 @@ void initMC(void)
    mcSync(MC_WAIT, NULL, &ret);
 }
 
-void Init_Usb_Modules(void)
-{
-    int ret;
-
-    SifExecModuleBuffer(&usbhdfsd_irx, size_usbhdfsd_irx, 0, NULL, &ret);
-    SifExecModuleBuffer(&usbd_irx, size_usbd_irx, 0, NULL, &ret);
-
-}
-
 void resetIOP(void)
 {
     SifInitRpc(0);
@@ -118,6 +113,7 @@ void resetIOP(void)
 
 void systemInit()
 {
+    int ret;
 
     resetIOP();
     
@@ -131,12 +127,24 @@ void systemInit()
     SifLoadModule("rom0:MCMAN", 0, NULL);
 	SifLoadModule("rom0:MCSERV", 0, NULL);
 	SifLoadModule("rom0:PADMAN", 0, NULL);
+    SifLoadModule("rom0:LIBSD", 0, NULL);
 
     // load pad & mc modules 
     printf("Installing Pad & MC modules...\n");
 
     // load USB modules    
-    Init_Usb_Modules();
+    SifExecModuleBuffer(&usbhdfsd_irx, size_usbhdfsd_irx, 0, NULL, &ret);
+    SifExecModuleBuffer(&usbd_irx, size_usbd_irx, 0, NULL, &ret);
+
+    //load audio
+    SifExecModuleBuffer(&audsrv_irx, size_audsrv_irx, 0, NULL, &ret);
+
+    ret = audsrv_init();
+	if (ret != 0)
+	{
+		printf("sample: failed to initialize audsrv\n");
+		printf("audsrv returned error string: %s\n", audsrv_get_error_string());
+	}
 
     initMC();
 
