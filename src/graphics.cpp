@@ -1151,7 +1151,7 @@ void setVideoMode(s16 mode, int width, int height, int psm, s16 interlace, s16 f
 	gsGlobal->Field = field;
 	gsGlobal->Width = width;
 	if ((interlace == GS_INTERLACED) && (field == GS_FRAME))
-		gsGlobal->Height = height / a2;
+		gsGlobal->Height = height / 2;
 	else
 		gsGlobal->Height = height;
 
