@@ -8,7 +8,7 @@
     Enhanced Lua environment for PlayStation 2™
     <br />
     <a href="https://github.com/DanielSant0s/Enceladus/issues">Report Bugs</a>
-     
+    -
     <a href="https://github.com/DanielSant0s/Enceladus/issues">Request Feature</a>
   </p>
 </p>  
