@@ -38,8 +38,8 @@ while true do
     end
 
     Graphics.drawImage(grogu, 0, 0)
-    Graphics.drawImage(ink, 0, -50)
-    Graphics.drawImage(stars, 100, 150, 255, 600, 600)
+    Graphics.drawImageExtended(ink, 150, 200, 128, 128, 128, 0, 256, 512, Color.new(0, 128, 128, 128))
+    Graphics.drawScaleImage(stars, 100, 150, 400, 400)
     Graphics.drawLine(200, 200, 100, 100, Color.new(255, 255, 255, 255));
     Graphics.drawPixel(180, 140, Color.new(0, 0, 255, 255))
     Graphics.drawTriangle(605.0, 442.0, 522.0, 315.0, 400.0, 350.0, Color.new(220, 40, 40, 255))

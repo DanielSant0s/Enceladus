@@ -1031,7 +1031,7 @@ void init3D()
 	create_view_screen(view_screen, 4.0f/3.0f, -0.20f, 0.20f, -0.20f, 0.20f, 1.00f, 2000.00f);
 }
 
-void drawImage(GSTEXTURE* source, float dx, float dy, int alpha, int width, int height, int lx, int ly)
+void drawImage(GSTEXTURE* source, float x, float y, float width, float height, float startx, float starty, float endx, float endy, Color color)
 {
 
 	if ((source->PSM == GS_PSM_CT32) || (source->Clut && source->ClutPSM == GS_PSM_CT32)) {
@@ -1044,16 +1044,16 @@ void drawImage(GSTEXTURE* source, float dx, float dy, int alpha, int width, int 
 
 	gsKit_TexManager_bind(gsGlobal, source);
 	gsKit_prim_sprite_texture(gsGlobal, source, 
-					dx, // X1
-					dy, // Y1
-					0.0f,  // U1
-					0.0f,  // V1
-					(width+dx), // X2
-					(height+dy), // Y2
-					source->Width, // U2
-					source->Height, // V2
+					x, // X1
+					y, // Y1
+					startx,  // U1
+					starty,  // V1
+					(width+x), // X2
+					(height+y), // Y2
+					endx, // U2
+					endy, // V2
 					1, 
-					GS_SETREG_RGBAQ(0x80,0x80,0x80,alpha,0x00));	
+					color);	
 
 }
 

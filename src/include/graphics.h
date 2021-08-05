@@ -54,7 +54,7 @@ extern GSTEXTURE* luaP_loadjpeg(const char *Path, bool scale_down);
 
 extern GSTEXTURE* luaP_loadrawimg(const char *Path);
 
-extern void drawImage(GSTEXTURE* source, float dx, float dy, int alpha, int width, int height, int lx, int ly);
+extern void drawImage(GSTEXTURE* source, float x, float y, float width, float height, float startx, float starty, float endx, float endy, Color color);
 
 extern void drawPixel(float x, float y, Color color);
 

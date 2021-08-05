@@ -161,30 +161,81 @@ static int lua_loadimg(lua_State *L) {
 
 static int lua_drawimg(lua_State *L) {
 	int argc = lua_gettop(L);
-
-	//if (argc != 3 && argc != 4) return luaL_error(L, "wrong number of arguments");
-
-    //bool alpha = (argc==5 || argc==9)?lua_toboolean(L, -1):true; 
-	//if(argc==5 || argc==9) lua_pop(L, 1);
-
+	if (argc != 3 && argc != 4) return luaL_error(L, "wrong number of arguments");
     GSTEXTURE* source = (GSTEXTURE*)(luaL_checkinteger(L, 1));
-
 	float x = luaL_checknumber(L, 2);
 	float y = luaL_checknumber(L, 3);
+	Color color = 0x80808080;
+	if (argc == 4) color = (Color)luaL_checknumber(L, 4);
+	float width = source->Width;
+	float height = source->Height;
+	float startx = 0.0f;
+	float starty = 0.0f;
+	float endx = source->Width;
+	float endy = source->Height;
 
-    bool trans = (argc == 4);
-    int alpha = trans? ((luaL_checknumber(L, 4)+1)/2) : 0x80;
-    if (alpha > 255) return luaL_error(L, "transparency only supports values ​​between 0 and 255");
+	drawImage(source, x, y, width, height, startx, starty, endx, endy, color);
 
-    bool rect = (argc == 5 || argc == 6);
-	int width = rect? luaL_checkinteger(L, 5) : source->Width;
-	int height = rect? luaL_checkinteger(L, 6) : source->Height;
+	return 0;
+}
 
-    bool atlas = (argc == 7 || argc == 8);
-	int lx = atlas? luaL_checkinteger(L, 7) : source->Width;
-	int ly = atlas? luaL_checkinteger(L, 8) : source->Height;
+static int lua_drawimg_scale(lua_State *L) {
+	int argc = lua_gettop(L);
+	if (argc != 5 && argc != 6) return luaL_error(L, "wrong number of arguments");
+    GSTEXTURE* source = (GSTEXTURE*)(luaL_checkinteger(L, 1));
+	float x = luaL_checknumber(L, 2);
+	float y = luaL_checknumber(L, 3);
+	float width = luaL_checknumber(L, 4);
+	float height = luaL_checknumber(L, 5);
+	Color color = 0x80808080;
+	if (argc == 6) color = (Color)luaL_checknumber(L, 6);
+	float startx = 0.0f;
+	float starty = 0.0f;
+	float endx = source->Width;
+	float endy = source->Height;
 
-	drawImage(source, x, y, alpha, width, height, lx, ly);
+	drawImage(source, x, y, width, height, startx, starty, endx, endy, color);
+
+	return 0;
+}
+
+
+static int lua_drawimg_part(lua_State *L) {
+	int argc = lua_gettop(L);
+	if (argc != 7 && argc != 8) return luaL_error(L, "wrong number of arguments");
+    GSTEXTURE* source = (GSTEXTURE*)(luaL_checkinteger(L, 1));
+	float x = luaL_checknumber(L, 2);
+	float y = luaL_checknumber(L, 3);
+	float startx = (float)luaL_checknumber(L, 4);
+	float starty = (float)luaL_checknumber(L, 5);
+	float endx = (float)luaL_checknumber(L, 6);
+	float endy = (float)luaL_checknumber(L, 7);
+	Color color = 0x80808080;
+	if (argc == 8) color = (Color)luaL_checknumber(L, 8);
+	float width = source->Width;
+	float height = source->Height;
+	
+	drawImage(source, x, y, width, height, startx, starty, endx, endy, color);
+
+	return 0;
+}
+
+static int lua_drawimg_full(lua_State *L) {
+	int argc = lua_gettop(L);
+	if (argc != 9 && argc != 10) return luaL_error(L, "wrong number of arguments");
+    GSTEXTURE* source = (GSTEXTURE*)(luaL_checkinteger(L, 1));
+	float x = luaL_checknumber(L, 2);
+	float y = luaL_checknumber(L, 3);
+	float width = (float)luaL_checknumber(L, 4);
+	float height = (float)luaL_checknumber(L, 5);
+	float startx = (float)luaL_checknumber(L, 6);
+	float starty = (float)luaL_checknumber(L, 7);
+	float endx = (float)luaL_checknumber(L, 8);
+	float endy = (float)luaL_checknumber(L, 9);
+	Color color = 0x80808080;
+	if (argc == 10) color = (Color)luaL_checknumber(L, 10);
+
+	drawImage(source, x, y, width, height, startx, starty, endx, endy, color);
 
 	return 0;
 }
@@ -348,16 +399,14 @@ static const luaL_Reg Graphics_functions[] = {
   //{"setImageFrame",       lua_setframe},
     {"drawImage",           lua_drawimg},
   //{"drawRotateImage",     lua_drawimg_rotate},
-  //{"drawScaleImage",      lua_drawimg_scale},
-  //{"drawPartialImage",    lua_drawimg_part},
-  //{"drawImageExtended",   lua_drawimg_full},
+  	{"drawScaleImage",      lua_drawimg_scale},
+  	{"drawPartialImage",    lua_drawimg_part},
+  	{"drawImageExtended",   lua_drawimg_full},
   //{"createImage",         lua_createimage},
   	{"setImageFilters",     lua_filters},
   	{"getImageWidth",       lua_width},
   	{"getImageHeight",      lua_height},
     {"freeImage",           lua_free},
-  //{"initRescaler",        lua_rescaleron},
-  //{"termRescaler",        lua_rescaleroff},
   {0, 0}
 };
 
