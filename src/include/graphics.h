@@ -10,9 +10,6 @@
 #include <gsInline.h>
 #include <math3d.h>
 
-#include <draw.h>
-#include <draw3d.h>
-
 /// GSKit CLUT base struct. This should've been in gsKit from the start :)
 typedef struct
 {
@@ -56,6 +53,8 @@ extern GSTEXTURE* luaP_loadrawimg(const char *Path);
 
 extern void drawImage(GSTEXTURE* source, float x, float y, float width, float height, float startx, float starty, float endx, float endy, Color color);
 
+extern void drawImageRotate(GSTEXTURE* source, float x, float y, float width, float height, float startx, float starty, float endx, float endy, float rad, Color color);
+
 extern void drawPixel(float x, float y, Color color);
 
 extern void drawLine(float x, float y, float x2, float y2, Color color);
@@ -85,6 +84,8 @@ extern GSFONT* loadFont(const char* path);
 extern void printFontText(GSFONT* font, char* text, float x, float y, float scale, Color color);
 
 extern void unloadFont(GSFONT* font);
+
+extern GSGLOBAL *getGSGLOBAL();
 
 /*
  * Initialize all pixels of the screen with a color.

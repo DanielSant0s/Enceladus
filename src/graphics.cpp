@@ -6,13 +6,17 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+#include <draw3d.h>
+
 #include <jpeglib.h>
 #include <time.h>
 #include <png.h>
 
 #include "include/graphics.h"
-#include "lualogo.cpp"
 #include "include/mesh_data.c"
+
+extern u8 rawlualogo;
+extern int size_rawlualogo;
 
 #define RATIO 1.33
 
@@ -20,9 +24,11 @@
 
 #define DEG2RAD(x) ((x)*0.01745329251)
 
+#define PI 3.14159265359
+
 int hires_mode = 0;
 
-static const u64 BLACK_RGBAQ   = GS_SETREG_RGBAQ(0x00,0x00,0x00,0x80,0x00);
+static const u64 BLACK_RGBAQ   = GS_SETREG_RGBAQ(0x00,0x00,0x00,0xFF,0x00);
 static const u64 TEXTURE_RGBAQ = GS_SETREG_RGBAQ(0x80,0x80,0x80,0x80,0x00);
 
 GSGLOBAL *gsGlobal = NULL;
@@ -59,14 +65,6 @@ int light_type[4] = {
 	MATRIX view_screen;
 	MATRIX local_screen;
 
-	VECTOR *temp_normals = (VECTOR     *)memalign(128, sizeof(VECTOR)     * vertex_count);
-	VECTOR *temp_lights = (VECTOR     *)memalign(128, sizeof(VECTOR)     * vertex_count);
-	color_f_t *temp_colours = (color_f_t  *)memalign(128, sizeof(color_f_t)  * vertex_count);
-	vertex_f_t *temp_vertices = (vertex_f_t *)memalign(128, sizeof(vertex_f_t) * vertex_count);
-
-	xyz_t   *verts = (xyz_t   *)memalign(128, sizeof(xyz_t)   * vertex_count);
-	color_t *colors = (color_t *)memalign(128, sizeof(color_t) * vertex_count);
-
 	VECTOR object_position = { 45.00f, -25.00f, 0.00f, 1.00f };
 	VECTOR object_rotation = { 2.70f, 0.00f, 0.00f, 1.00f };
 	
@@ -76,9 +74,26 @@ int light_type[4] = {
 
 //3D Functions
 
+
+void init3D()
+{
+	gsGlobal->ZBuffering = GS_SETTING_ON;
+	if (gsGlobal->ZBuffering == GS_SETTING_ON)
+		gsKit_set_test(gsGlobal, GS_ZTEST_ON);
+	create_view_screen(view_screen, 4.0f/3.0f, -0.20f, 0.20f, -0.20f, 0.20f, 1.00f, 2000.00f);
+}
+
 int render()
 {
 	int i;
+	
+	VECTOR *temp_normals = (VECTOR     *)memalign(128, sizeof(VECTOR)     * vertex_count);
+	VECTOR *temp_lights = (VECTOR     *)memalign(128, sizeof(VECTOR)     * vertex_count);
+	color_f_t *temp_colours = (color_f_t  *)memalign(128, sizeof(color_f_t)  * vertex_count);
+	vertex_f_t *temp_vertices = (vertex_f_t *)memalign(128, sizeof(vertex_f_t) * vertex_count);
+
+	xyz_t   *verts = (xyz_t   *)memalign(128, sizeof(xyz_t)   * vertex_count);
+	color_t *colors = (color_t *)memalign(128, sizeof(color_t) * vertex_count);
 
 	gsGlobal->PrimAlphaEnable = GS_SETTING_OFF;
 	gsKit_set_test(gsGlobal, GS_ATEST_OFF);
@@ -139,38 +154,35 @@ void displaySplashScreen()
    	int size;
 
    	unsigned char *fb, *splash;
-   	gsSplashTexture.Width = 640;
-	gsSplashTexture.Height = 448;
+   	gsSplashTexture.Width = 180;
+	gsSplashTexture.Height = 206;
 	gsSplashTexture.PSM = GS_PSM_CT24;
 	
 	// useless but keep compiler happy :)
 	size = size_rawlualogo;
 	
-	size = gsKit_texture_size(640, 448, GS_PSM_CT24);
+	size = gsKit_texture_size(180, 206, GS_PSM_CT24);
 	
 	gsSplashTexture.Mem = (u32 *)malloc(size);
 	
 	// copy the texture into memory
 	// not sure if I can directly point to my buffer (alignement?)
 	fb = (unsigned char *)gsSplashTexture.Mem;
-	splash = &rawlualogo[0];
+	splash = &rawlualogo;
 	for (int i=size;i--;) *fb++ = *splash++;
-   
-   // clear the screen
-   gsKit_clear(gsGlobal, GS_SETREG_RGBAQ(0x00,0x00,0x00,0x00,0x00));
  
    gsKit_TexManager_bind(gsGlobal, &gsSplashTexture);
 
    while(alpha <= 0x80)
 	{
-	gsKit_clear(gsGlobal, GS_SETREG_RGBAQ(0x00,0x00,0x00,0x80,0x00));
+	gsKit_clear(gsGlobal, GS_SETREG_RGBAQ(0x00,0x00,0x00,0xFF,0x00));
     gsKit_prim_sprite_striped_texture( gsGlobal,  &gsSplashTexture,
-			((gsGlobal->Width - gsSplashTexture.Width) / 2),
-			((gsGlobal->Height - gsSplashTexture.Height) / 2),
+			320-(gsSplashTexture.Width/2),
+			224-(gsSplashTexture.Height/2),
 			0,
 			0,
-			gsSplashTexture.Width  + ((gsGlobal->Width - gsSplashTexture.Width) / 2),
-			gsSplashTexture.Height + ((gsGlobal->Height - gsSplashTexture.Height) / 2),
+			320+(gsSplashTexture.Width/2),
+			224+(gsSplashTexture.Height/2),
 			gsSplashTexture.Width,
 			gsSplashTexture.Height,
 			1,
@@ -187,14 +199,14 @@ void displaySplashScreen()
 
 	while(alpha >= 0x00)
 	{
-	gsKit_clear(gsGlobal, GS_SETREG_RGBAQ(0x00,0x00,0x00,0x80,0x00));
+	gsKit_clear(gsGlobal, GS_SETREG_RGBAQ(0x00,0x00,0x00,0xFF,0x00));
     gsKit_prim_sprite_striped_texture( gsGlobal,  &gsSplashTexture,
-			((gsGlobal->Width - gsSplashTexture.Width) / 2),
-			((gsGlobal->Height - gsSplashTexture.Height) / 2),
+			320-(gsSplashTexture.Width/2),
+			224-(gsSplashTexture.Height/2),
 			0,
 			0,
-			gsSplashTexture.Width  + ((gsGlobal->Width - gsSplashTexture.Width) / 2),
-			gsSplashTexture.Height + ((gsGlobal->Height - gsSplashTexture.Height) / 2),
+			320+(gsSplashTexture.Width/2),
+			224+(gsSplashTexture.Height/2),
 			gsSplashTexture.Width,
 			gsSplashTexture.Height,
 			1,
@@ -206,6 +218,7 @@ void displaySplashScreen()
 	}
 
 }
+
 
 GSTEXTURE* luaP_loadpng(const char *path)
 {
@@ -849,78 +862,6 @@ GSTEXTURE* luaP_loadjpeg(const char *Path, bool scale_down)
 
 }
 
-GSTEXTURE* luaP_loadrawimg(const char *Path)
-{
-
-	GSTEXTURE* tex = (GSTEXTURE*)malloc(sizeof(GSTEXTURE));
-	tex->Delayed = 1;
-
-	FILE* File = fopen(Path, "rb");
-	if (File == NULL)
-	{
-		printf("Failed to load texture: %s\n", Path);
-		return NULL;
-	}
-	int FileSize = gsKit_texture_size_ee(640, 448, GS_PSM_CT24);
-	tex->Mem = (u32*)memalign(128, FileSize);
-
-	if(tex->PSM != GS_PSM_T8 && tex->PSM != GS_PSM_T4)
-	{
-		tex->VramClut = 0;
-		tex->Clut = NULL;
-	}
-
-	//if(fread(tex->Mem, FileSize, 1, File) <= 0)
-	//{
-	//	printf("Texture might be bad: %s\n", Path);
-	//	printf("Texture size: %d\n", FileSize);
-	//}
-	//fclose(File);
-
-
-	if(!tex->Delayed)
-	{
-		tex->Vram = gsKit_vram_alloc(gsGlobal, gsKit_texture_size(tex->Width, tex->Height, tex->PSM), GSKIT_ALLOC_USERBUFFER);
-		if(tex->Vram == GSKIT_ALLOC_ERROR)
-		{
-			printf("VRAM Allocation Failed. Will not upload texture.\n");
-			return NULL;
-		}
-
-		if(tex->Clut != NULL)
-		{
-			if(tex->PSM == GS_PSM_T4)
-				tex->VramClut = gsKit_vram_alloc(gsGlobal, gsKit_texture_size(8, 2, GS_PSM_CT32), GSKIT_ALLOC_USERBUFFER);
-			else
-				tex->VramClut = gsKit_vram_alloc(gsGlobal, gsKit_texture_size(16, 16, GS_PSM_CT32), GSKIT_ALLOC_USERBUFFER);
-
-			if(tex->VramClut == GSKIT_ALLOC_ERROR)
-			{
-				printf("VRAM CLUT Allocation Failed. Will not upload texture.\n");
-				return NULL;
-			}
-		}
-
-		// Upload texture
-		gsKit_texture_upload(gsGlobal, tex);
-		// Free texture
-		free(tex->Mem);
-		tex->Mem = NULL;
-		// Free texture CLUT
-		if(tex->Clut != NULL)
-		{
-			free(tex->Clut);
-			tex->Clut = NULL;
-		}
-	}
-	else
-	{
-		gsKit_setup_tbw(tex);
-	}
-
-	return tex;
-
-}
 
 void gsKit_clear_screens()
 {
@@ -1023,14 +964,6 @@ int getFreeVRAM(){
 	return (4096 - (gsGlobal->CurrentPointer / 1024));
 }
 
-void init3D()
-{
-	gsGlobal->ZBuffering = GS_SETTING_ON;
-	if (gsGlobal->ZBuffering == GS_SETTING_ON)
-		gsKit_set_test(gsGlobal, GS_ZTEST_ON);
-	create_view_screen(view_screen, 4.0f/3.0f, -0.20f, 0.20f, -0.20f, 0.20f, 1.00f, 2000.00f);
-}
-
 void drawImage(GSTEXTURE* source, float x, float y, float width, float height, float startx, float starty, float endx, float endy, Color color)
 {
 
@@ -1044,16 +977,40 @@ void drawImage(GSTEXTURE* source, float x, float y, float width, float height, f
 
 	gsKit_TexManager_bind(gsGlobal, source);
 	gsKit_prim_sprite_texture(gsGlobal, source, 
-					x, // X1
-					y, // Y1
+					x-width/2, // X1
+					y-height/2, // Y1
 					startx,  // U1
 					starty,  // V1
-					(width+x), // X2
-					(height+y), // Y2
+					(width/2+x), // X2
+					(height/2+y), // Y2
 					endx, // U2
 					endy, // V2
 					1, 
 					color);	
+
+}
+
+
+void drawImageRotate(GSTEXTURE* source, float x, float y, float width, float height, float startx, float starty, float endx, float endy, float rad, Color color){
+
+	float c = cosf(rad);
+	float s = sinf(rad);
+
+	if ((source->PSM == GS_PSM_CT32) || (source->Clut && source->ClutPSM == GS_PSM_CT32)) {
+        gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
+        gsKit_set_test(gsGlobal, GS_ATEST_ON);
+    } else {
+        gsGlobal->PrimAlphaEnable = GS_SETTING_OFF;
+        gsKit_set_test(gsGlobal, GS_ATEST_OFF);
+    }
+
+	gsKit_TexManager_bind(gsGlobal, source);
+	gsKit_prim_quad_texture(gsGlobal, source, 
+							(-width/2)*c - (-height/2)*s+x, (-height/2)*c + (-width/2)*s+y, startx, starty, 
+							(-width/2)*c - height/2*s+x, height/2*c + (-width/2)*s+y, startx, endy, 
+							width/2*c - (-height/2)*s+x, (-height/2)*c + width/2*s+y, endx, starty, 
+							width/2*c - height/2*s+x, height/2*c + width/2*s+y, endx, endy, 
+							1, color);
 
 }
 
@@ -1072,7 +1029,7 @@ void drawLine(float x, float y, float x2, float y2, Color color)
 void drawRect(float x, float y, int width, int height, Color color)
 {
 	gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
-	gsKit_prim_sprite(gsGlobal, x, y, x + width, y + height, 1, color);
+	gsKit_prim_sprite(gsGlobal, x-width/2, y-height/2, (x+width)-width/2, (y+height)-height/2, 1, color);
 }
 
 void drawTriangle(float x, float y, float x2, float y2, float x3, float y3, Color color)
@@ -1123,8 +1080,6 @@ void drawCircle(float x, float y, float radius, u64 color, u8 filled)
 	else
 		gsKit_prim_line_strip(gsGlobal, v, 37, 1, color);
 }
-
-
 
 void InvalidateTexture(GSTEXTURE *txt)
 {
@@ -1186,8 +1141,6 @@ void initGraphics()
 
 	gsGlobal->PSM  = GS_PSM_CT24;
 	gsGlobal->PSMZ = GS_PSMZ_16;
-	//gsGlobal->PSM = GS_PSM_CT24;
-	//gsGlobal->PSMZ = GS_PSMZ_24;
 
 	gsGlobal->DoubleBuffering = GS_SETTING_ON;
 	gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
@@ -1207,9 +1160,6 @@ void initGraphics()
 	gsKit_init_screen(gsGlobal);
 
 	gsKit_mode_switch(gsGlobal, GS_ONESHOT);
-
-	printf("VRAM used: %dKiB\n", gsGlobal->CurrentPointer / 1024);
-	printf("VRAM free: %dKiB\n", 4096 - (gsGlobal->CurrentPointer / 1024));
 
     gsKit_clear(gsGlobal, BLACK_RGBAQ);	
 

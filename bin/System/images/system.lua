@@ -1,20 +1,31 @@
+
+Screen.showSplash()
 Font.ftInit()
+--Render.init()
 local grogu = Graphics.loadImage("System/images/grogu.jpg")
 local stars = Graphics.loadImage("System/images/stars.bmp")
 local ink = Graphics.loadImage("System/images/ink.png")
+local mario = Graphics.loadImage("System/images/mario.png")
 
 Color1 = Color.new(0, 255, 255, 255)
 Color2 = Color.new(255, 0, 255, 255)
 Color3 = Color.new(255, 255, 0, 255)
 Color4 = Color.new(0, 255, 0, 255)
 
+local rad = 0
+local mx = 100.0
+
 Font.fmLoad()
 local netron = Font.ftLoad("System/netron.ttf")
 Font.ftSetPixelSize(netron, 25, 25)
 
-io.write("\nFont Handle: " .. netron .. "\n")
-
 local type, freespace, format = System.getMCInfo(0)
+
+local rx, ry
+romver = System.openFile("rom0:ROMVER", FREAD)
+romver_size = System.sizeFile(romver)
+romver_data = System.readFile(romver, romver_size)
+System.closeFile(romver)
 
 function printf(...)
     io.write(string.format(...))
@@ -25,7 +36,7 @@ printf("Hello %s from %s on %s\n",os.getenv"USER" or "there",_VERSION,os.date())
 
 while true do
 
-    Screen.clear()
+    Screen.clear(Color.new(0, 0, 0, 255))
 
     local pad = Pads.get()
 
@@ -34,12 +45,12 @@ while true do
     end
 
     if Pads.check(pad, PAD_SELECT) then
-        Screen.setMode(PAL, 640, 512, CT16S, INTERLACED, FIELD)
+        Screen.setMode(_480p, 640, 480, CT16S, NONINTERLACED, FRAME)
     end
 
-    Graphics.drawImage(grogu, 0, 0)
-    Graphics.drawImageExtended(ink, 150, 200, 128, 128, 128, 0, 256, 512, Color.new(0, 128, 128, 128))
-    Graphics.drawScaleImage(stars, 100, 150, 400, 400)
+    --Graphics.drawImage(grogu, 320, 224)
+    --Graphics.drawScaleImage(stars, 100, 150, 400, 400)
+    Graphics.drawImageExtended(ink, 500, 450, 128, 0, 256, 512, 128, 128, 0, Color.new(128, 128, 0, 128))
     Graphics.drawLine(200, 200, 100, 100, Color.new(255, 255, 255, 255));
     Graphics.drawPixel(180, 140, Color.new(0, 0, 255, 255))
     Graphics.drawTriangle(605.0, 442.0, 522.0, 315.0, 400.0, 350.0, Color.new(220, 40, 40, 255))
@@ -47,6 +58,12 @@ while true do
     Graphics.drawRect(220.0, 280.0, 75, 75, Color.new(128, 128, 128, 32))
     Graphics.drawQuad(500.0, 250.0, 500.0, 350.0, 600.0, 250.0, 600.0, 350.0, Color1, Color2, Color1, Color2)
     Graphics.drawCircle(430.0, 220.0, 80.0, Color.new(255, 0, 0, 255))
+    Graphics.drawRotateImage(mario, 400, 224, rad)
+    rad = rad + 0.05
+    Graphics.drawImage(mario, mx, 224, Color.new(0, 128, 128, 128))
+    mx = mx + 0.7
+    --Render.renderModel()
+    Font.fmPrint(250, 350, 0.6, "ROMVER: " .. romver_data .. "\n")
     Font.fmPrint(200, 60, 0.6, "MC Info\nType: " .. type .. "\nFree Space: " .. freespace .. "\nFormat: " .. format .. "\n")
     Font.ftPrint(netron, 60, 60, 0, 200, 200, "MC Info\nType: " .. type .. "\nFree Space: " .. freespace .. "\nFormat: " .. format .. "\n")
     Screen.waitVblankStart()

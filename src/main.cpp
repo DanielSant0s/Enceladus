@@ -21,15 +21,20 @@
 /* the boot.lua */
 #include "boot.cpp"
 
-extern void *usbhdfsd_irx;
-extern int size_usbhdfsd_irx;
+extern unsigned char usbd_irx;
+extern unsigned int size_usbd_irx;
 
-extern void *usbd_irx;
-extern int size_usbd_irx;
+extern unsigned char bdm_irx;
+extern unsigned int size_bdm_irx;
 
-extern void *audsrv_irx;
-extern int size_audsrv_irx;
+extern unsigned char bdmfs_vfat_irx;
+extern unsigned int size_bdmfs_vfat_irx;
 
+extern unsigned char usbmass_bd_irx;
+extern unsigned int size_usbmass_bd_irx;
+
+extern unsigned char audsrv_irx;
+extern unsigned int size_audsrv_irx;
 
 #ifdef STANDALONE
 extern u8 scriptLua_start[];
@@ -94,28 +99,18 @@ void initMC(void)
    mcSync(MC_WAIT, NULL, &ret);
 }
 
-void resetIOP(void)
-{
-    SifInitRpc(0);
-    #ifdef RESET_IOP        
-    printf("Resetting IOP...\n");
-    while (!SifIopReset("", 0)) {
-	};
-	while (!SifIopSync()) {
-	};
-    printf("IOP synced\n");
-    SifInitRpc(0);
-    SifLoadFileInit();
-    #endif
-}
-
-
 
 void systemInit()
 {
+
     int ret;
 
-    resetIOP();
+    #ifdef RESET_IOP  
+    SifInitRpc(0);
+    while (!SifIopReset("", 0)){};
+    while (!SifIopSync()){};
+    SifInitRpc(0);
+    #endif
     
     // install sbv patch fix
     printf("Installing SBV Patch...\n");
@@ -133,11 +128,13 @@ void systemInit()
     printf("Installing Pad & MC modules...\n");
 
     // load USB modules    
-    SifExecModuleBuffer(&usbhdfsd_irx, size_usbhdfsd_irx, 0, NULL, &ret);
-    SifExecModuleBuffer(&usbd_irx, size_usbd_irx, 0, NULL, &ret);
+    SifExecModuleBuffer(&usbd_irx, size_usbd_irx, 0, NULL, NULL);
+    SifExecModuleBuffer(&bdm_irx, size_bdm_irx, 0, NULL, NULL);
+    SifExecModuleBuffer(&bdmfs_vfat_irx, size_bdmfs_vfat_irx, 0, NULL, NULL);
+    SifExecModuleBuffer(&usbmass_bd_irx, size_usbmass_bd_irx, 0, NULL, NULL);
 
     //load audio
-    SifExecModuleBuffer(&audsrv_irx, size_audsrv_irx, 0, NULL, &ret);
+    SifExecModuleBuffer(&audsrv_irx, size_audsrv_irx, 0, NULL, NULL);
 
     ret = audsrv_init();
 	if (ret != 0)
@@ -259,8 +256,10 @@ int main(int argc, char * argv[])
             free(bootStringWith0);
        }       
        else
-          // execute the script gived as parameter
-          errMsg = runScript(argv[1], false);       
+        // execute the script gived as parameter
+        errMsg = runScript(argv[1], false);   
+          
+        //errMsg = runScript("mass:/System/system.lua", true);    
     
        // Standalone elf with an embedded script
        #else

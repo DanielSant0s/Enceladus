@@ -179,6 +179,27 @@ static int lua_drawimg(lua_State *L) {
 	return 0;
 }
 
+static int lua_drawimg_rotate(lua_State *L) {
+	int argc = lua_gettop(L);
+	if (argc != 4 && argc != 5) return luaL_error(L, "wrong number of arguments");
+    GSTEXTURE* source = (GSTEXTURE*)(luaL_checkinteger(L, 1));
+	float x = luaL_checknumber(L, 2);
+	float y = luaL_checknumber(L, 3);
+	float radius = luaL_checknumber(L, 4);
+	Color color = 0x80808080;
+	if (argc == 5) color = (Color)luaL_checknumber(L, 5);
+	float width = source->Width;
+	float height = source->Height;
+	float startx = 0.0f;
+	float starty = 0.0f;
+	float endx = source->Width;
+	float endy = source->Height;
+
+	drawImageRotate(source, x, y, width, height, startx, starty, endx, endy, radius, color);
+
+	return 0;
+}
+
 static int lua_drawimg_scale(lua_State *L) {
 	int argc = lua_gettop(L);
 	if (argc != 5 && argc != 6) return luaL_error(L, "wrong number of arguments");
@@ -222,20 +243,21 @@ static int lua_drawimg_part(lua_State *L) {
 
 static int lua_drawimg_full(lua_State *L) {
 	int argc = lua_gettop(L);
-	if (argc != 9 && argc != 10) return luaL_error(L, "wrong number of arguments");
+	if (argc != 10 && argc != 11) return luaL_error(L, "wrong number of arguments");
     GSTEXTURE* source = (GSTEXTURE*)(luaL_checkinteger(L, 1));
 	float x = luaL_checknumber(L, 2);
 	float y = luaL_checknumber(L, 3);
-	float width = (float)luaL_checknumber(L, 4);
-	float height = (float)luaL_checknumber(L, 5);
-	float startx = (float)luaL_checknumber(L, 6);
-	float starty = (float)luaL_checknumber(L, 7);
-	float endx = (float)luaL_checknumber(L, 8);
-	float endy = (float)luaL_checknumber(L, 9);
+	float startx = (float)luaL_checknumber(L, 4);
+	float starty = (float)luaL_checknumber(L, 5);
+	float endx = (float)luaL_checknumber(L, 6);
+	float endy = (float)luaL_checknumber(L, 7);
+	float width = (float)luaL_checknumber(L, 8);
+	float height = (float)luaL_checknumber(L, 9);
+	float angle = (float)luaL_checknumber(L, 10);
 	Color color = 0x80808080;
-	if (argc == 10) color = (Color)luaL_checknumber(L, 10);
+	if (argc == 11) color = (Color)luaL_checknumber(L, 11);
 
-	drawImage(source, x, y, width, height, startx, starty, endx, endy, color);
+	drawImageRotate(source, x, y, width, height, startx, starty, endx, endy, angle, color);
 
 	return 0;
 }
@@ -288,7 +310,7 @@ static int lua_line(lua_State *L) {
 	float y = luaL_checknumber(L, 2);
     float x2 = luaL_checknumber(L, 3);
     float y2 = luaL_checknumber(L, 4);
-    Color color =  luaL_checkinteger(L, 5);
+    Color color = luaL_checkinteger(L, 5);
 
 	drawLine(x, y, x2, y2, color);
 
@@ -398,7 +420,7 @@ static const luaL_Reg Graphics_functions[] = {
   //{"getImageFramesNum",   lua_getnumframes},
   //{"setImageFrame",       lua_setframe},
     {"drawImage",           lua_drawimg},
-  //{"drawRotateImage",     lua_drawimg_rotate},
+  	{"drawRotateImage",     lua_drawimg_rotate},
   	{"drawScaleImage",      lua_drawimg_scale},
   	{"drawPartialImage",    lua_drawimg_part},
   	{"drawImageExtended",   lua_drawimg_full},

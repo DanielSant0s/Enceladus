@@ -31,7 +31,7 @@ export HEADER
 # -- Configuration flags --
 #------------------------------------------------------------------
 # -- Reset the IOP --
-RESET_IOP = 0
+RESET_IOP = 1
 # -- enable DEBUGGING MODE --
 DEBUG = 0
 # -- Build an elf from a unique script --
@@ -63,8 +63,11 @@ BIN2S = $(PS2SDK)/bin/bin2s
 # -- PS2 specific source code --
 EE_OBJS += src/md5.o
 EE_OBJS += src/usbd.o
-EE_OBJS += src/usbhdfsd.o
+EE_OBJS += src/bdm.o
+EE_OBJS += src/bdmfs_vfat.o
+EE_OBJS += src/usbmass_bd.o
 EE_OBJS += src/audsrv.o
+EE_OBJS += src/lualogo.o
 
 # -- LuaPlayer specific source code --
 EE_OBJS += src/main.o
@@ -87,11 +90,11 @@ EE_OBJS += standalone/app/luaScript.o
 endif
 
 # -- Embedded ressources ---
-src/main.o: src/boot.cpp src/lualogo.cpp
+src/main.o: src/boot.cpp
 
-src/lualogo.cpp: etc/lualogo.raw
+src/lualogo.s: etc/lualogo.raw
 	echo "Embedding splash screen..."
-	$(PS2SDK)/bin/bin2c $< $@ rawlualogo
+	$(BIN2S) $< $@ rawlualogo
 
 src/boot.cpp: etc/boot.lua
 	echo "Embedding Lua boot script..."
@@ -104,9 +107,15 @@ endif
 
 
 # -- Embedded Irx(s) ---------
-src/usbhdfsd.s: $(PS2SDK)/iop/irx/usbhdfsd.irx
+src/bdm.s: $(PS2SDK)/iop/irx/bdm.irx
 	echo "Embedding IOP Modules..."
-	$(BIN2S) $< $@ usbhdfsd_irx
+	$(BIN2S) $< $@ bdm_irx
+
+src/bdmfs_vfat.s: $(PS2SDK)/iop/irx/bdmfs_vfat.irx
+	$(BIN2S) $< $@ bdmfs_vfat_irx
+
+src/usbmass_bd.s: $(PS2SDK)/iop/irx/usbmass_bd.irx
+	$(BIN2S) $< $@ usbmass_bd_irx
 
 src/usbd.s: $(PS2SDK)/iop/irx/usbd.irx
 	$(BIN2S) $< $@ usbd_irx
@@ -134,13 +143,15 @@ clean:
 	echo "\nCleaning ELFs and objects..."
 	rm -f $(EE_BIN) $(EE_OBJS) $(EE_BIN_PKD)
 	echo "Cleaning embedded IOP modules..."
-	rm -f src/usbhdfsd.s
+	rm -f src/bdm.s
 	rm -f src/usbd.s
+	rm -f src/bdmfs_vfat.s
+	rm -f src/usbmass_bd.s
 	rm -f src/audsrv.s
 	echo "Cleaning embedded boot script..."
 	rm -f src/boot.cpp
 	echo "Cleaning embedded splash screen...\n"
-	rm -f src/lualogo.cpp
+	rm -f src/lualogo.s
 
 rebuild: clean all
 
