@@ -18,10 +18,6 @@
 extern u8 rawlualogo;
 extern int size_rawlualogo;
 
-#define RATIO 1.33
-
-#define TEX_CNT 0
-
 #define DEG2RAD(x) ((x)*0.01745329251)
 
 #define PI 3.14159265359
@@ -1139,12 +1135,19 @@ void initGraphics()
 
 	gsGlobal = gsKit_init_global();
 
+	gsGlobal->Mode = gsKit_check_rom();
+	if (gsGlobal->Mode == GS_MODE_PAL){
+		gsGlobal->Height = 512;
+	} else {
+		gsGlobal->Height = 448;
+	}
+
 	gsGlobal->PSM  = GS_PSM_CT24;
 	gsGlobal->PSMZ = GS_PSMZ_16;
-
+	gsGlobal->ZBuffering = GS_SETTING_OFF;
 	gsGlobal->DoubleBuffering = GS_SETTING_ON;
 	gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
-	//gsGlobal->Dithering = GS_SETTING_ON;
+	gsGlobal->Dithering = GS_SETTING_ON;
 
 	gsKit_set_primalpha(gsGlobal, GS_SETREG_ALPHA(0, 1, 0, 1, 0), 0);
 
@@ -1156,6 +1159,8 @@ void initGraphics()
 		gsGlobal->Width, gsGlobal->Height);
 
 	gsKit_set_clamp(gsGlobal, GS_CMODE_CLAMP);
+
+	gsKit_vram_clear(gsGlobal);
 
 	gsKit_init_screen(gsGlobal);
 
