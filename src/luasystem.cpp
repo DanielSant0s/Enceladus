@@ -442,6 +442,7 @@ static int lua_exit(lua_State *L)
             "syscall;"
             "nop;"
         );
+	return 0;
 }
 
 

@@ -62,6 +62,16 @@ static int lua_ftSetPixelSize(lua_State *L) {
 	return 0;
 }
 
+
+static int lua_ftSetCharSize(lua_State *L) {
+	if (lua_gettop(L) != 3) return luaL_error(L, "wrong number of arguments"); 
+	int fontid = luaL_checkinteger(L, 1);
+	int width = luaL_checkinteger(L, 2); 
+	int height = luaL_checkinteger(L, 3); 
+	fntSetCharSize(fontid, width, height);
+	return 0;
+}
+
 static int lua_ftprint(lua_State *L) {
 	int argc = lua_gettop(L);
 	if (argc != 7 && argc != 8) return luaL_error(L, "wrong number of arguments");
@@ -127,6 +137,7 @@ static const luaL_Reg Font_functions[] = {
 	{"ftInit",            		  lua_ftinit},
 	{"ftLoad",            		  lua_ftload},
 	{"ftSetPixelSize",    lua_ftSetPixelSize},
+	{"ftSetCharSize", 	   lua_ftSetCharSize},
 	{"ftPrint",         		 lua_ftprint},
 	{"ftUnload",           		lua_ftunload},
 	{"ftEnd",           	       lua_ftend},
@@ -408,27 +419,27 @@ static int lua_free(lua_State *L) {
 
 //Register our Graphics Functions
 static const luaL_Reg Graphics_functions[] = {
-  	{"drawPixel",           lua_pixel},
-  //{"getPixel",            lua_gpixel},
-  	{"drawRect",           	lua_rect},
-  	{"drawLine",            lua_line},
-  	{"drawCircle",          lua_circle},
-	{"drawTriangle",        lua_triangle},
-	{"drawQuad",        	lua_quad},
-    {"loadImage",           lua_loadimg},
-  //{"loadAnimatedImage",   lua_loadanimg},
-  //{"getImageFramesNum",   lua_getnumframes},
-  //{"setImageFrame",       lua_setframe},
-    {"drawImage",           lua_drawimg},
-  	{"drawRotateImage",     lua_drawimg_rotate},
-  	{"drawScaleImage",      lua_drawimg_scale},
-  	{"drawPartialImage",    lua_drawimg_part},
-  	{"drawImageExtended",   lua_drawimg_full},
-  //{"createImage",         lua_createimage},
-  	{"setImageFilters",     lua_filters},
-  	{"getImageWidth",       lua_width},
-  	{"getImageHeight",      lua_height},
-    {"freeImage",           lua_free},
+  	{"drawPixel",           		   lua_pixel},
+  //{"getPixel",            		  lua_gpixel},
+  	{"drawRect",           				lua_rect},
+  	{"drawLine",            			lua_line},
+  	{"drawCircle",         			  lua_circle},
+	{"drawTriangle",        		lua_triangle},
+	{"drawQuad",        				lua_quad},
+    {"loadImage",           		 lua_loadimg},
+  //{"loadAnimatedImage",   	   lua_loadanimg},
+  //{"getImageFramesNum",   	lua_getnumframes},
+  //{"setImageFrame",       		lua_setframe},
+    {"drawImage",           		 lua_drawimg},
+  	{"drawRotateImage",       lua_drawimg_rotate},
+  	{"drawScaleImage",     	   lua_drawimg_scale},
+  	{"drawPartialImage",    	lua_drawimg_part},
+  	{"drawImageExtended",   	lua_drawimg_full},
+  //{"createImage",         	 lua_createimage},
+  	{"setImageFilters",     		 lua_filters},
+  	{"getImageWidth",       		   lua_width},
+  	{"getImageHeight",      		  lua_height},
+    {"freeImage",           			lua_free},
   {0, 0}
 };
 

@@ -120,22 +120,14 @@ int min(int a, int b)
     return a < b ? a : b;
 }
 
-
-
-int getFileSize(int fd)
-{
-    int size = lseek(fd, 0, SEEK_END);
-    lseek(fd, 0, SEEK_SET);
-    return size;
-}
-
 void *readFile(const char* path, int align, int *size)
 {
     void *buffer = NULL;
 
     int fd = open(path, O_RDONLY, 0666);
     if (fd >= 0) {
-        unsigned int realSize = getFileSize(fd);
+        int realSize = lseek(fd, 0, SEEK_END);
+        lseek(fd, 0, SEEK_SET);
 
         if ((*size > 0) && (*size != realSize)) {
             printf("UTIL Invalid filesize, expected: %d, got: %d\n", *size, realSize);
@@ -207,7 +199,7 @@ static int fntPrepareGlyphCachePage(font_t *font, int pageid)
 
         font->glyphCache = np;
 
-        unsigned int page;
+        int page;
         for (page = font->cacheMaxPageID + 1; page <= pageid; ++page)
             font->glyphCache[page] = NULL;
 
@@ -434,7 +426,7 @@ static int fntGlyphAtlasPlace(font_t *font, fnt_glyph_cache_entry_t *glyph)
         }
     }
 
-    printf("FNTSYS No atlas free\n", aid);
+    printf("FNTSYS No atlas free\n");
     return 0;
 }
 
@@ -519,12 +511,16 @@ void fntUpdateAspectRatio()
 
 void fntSetPixelSize(int fontid, int width, int height)
 {
+    fntCacheFlush(&fonts[fontid]);
+    // TODO: this seems correct, but the rest of the OPL UI (i.e. spacers) doesn't seem to be correctly scaled.
+    FT_Set_Pixel_Sizes(fonts[fontid].face, width, height);
+}
 
-        if (fonts[fontid].isValid) {
-            fntCacheFlush(&fonts[fontid]);
-            // TODO: this seems correct, but the rest of the OPL UI (i.e. spacers) doesn't seem to be correctly scaled.
-            FT_Set_Pixel_Sizes(fonts[fontid].face, width, height);
-        }
+void fntSetCharSize(int fontid, int width, int height)
+{
+    fntCacheFlush(&fonts[fontid]);
+    // TODO: this seems correct, but the rest of the OPL UI (i.e. spacers) doesn't seem to be correctly scaled.
+    FT_Set_Char_Size(fonts[fontid].face, width, height, fDPI, fDPI);
 }
 
 static void fntRenderGlyph(fnt_glyph_cache_entry_t *glyph, int pen_x, int pen_y)
@@ -559,7 +555,7 @@ static void fntRenderGlyph(fnt_glyph_cache_entry_t *glyph, int pen_x, int pen_y)
         quad.txt = &glyph->atlas->surface;
 
         fntDrawQuad(&quad);
-        
+
     }
 }
 

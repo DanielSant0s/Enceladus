@@ -1,6 +1,19 @@
 #include <stdlib.h>
 #include "include/luaplayer.h"
 
+static int lua_gettype(lua_State *L) {
+	int argc = lua_gettop(L);
+	if (argc != 0 && argc != 1) return luaL_error(L, "wrong number of arguments");
+	int port = 0;
+	if (argc == 1){
+		port = luaL_checkinteger(L, 1);
+		if (port > 1) return luaL_error(L, "wrong port number.");
+	}
+	int mode = padInfoMode(port, 0, PAD_MODETABLE, 0);
+	lua_pushinteger(L, mode);
+	return 1;
+}
+
 static int lua_getpad(lua_State *L) {
 	int argc = lua_gettop(L);
 	if (argc != 0 && argc != 1) return luaL_error(L, "wrong number of arguments");
@@ -24,8 +37,8 @@ static int lua_getleft(lua_State *L){
 		if (port > 1) return luaL_error(L, "wrong port number.");
 	}
 	padButtonStatus buttons = readPad(port, 0);
-	lua_pushinteger(L, buttons.ljoy_h-128);
-	lua_pushinteger(L, buttons.ljoy_v-128);
+	lua_pushinteger(L, buttons.ljoy_h-127);
+	lua_pushinteger(L, buttons.ljoy_v-127);
 	return 2;
 	}
 
@@ -38,8 +51,8 @@ static int lua_getright(lua_State *L){
 		if (port > 1) return luaL_error(L, "wrong port number.");
 	}
 	padButtonStatus buttons = readPad(port, 0);
-	lua_pushinteger(L, buttons.rjoy_h-128);
-	lua_pushinteger(L, buttons.rjoy_v-128);
+	lua_pushinteger(L, buttons.rjoy_h-127);
+	lua_pushinteger(L, buttons.rjoy_v-127);
 	return 2;
 	}
 
@@ -124,6 +137,7 @@ static const luaL_Reg Pads_functions[] = {
   {"get",              lua_getpad},
   {"getLeftStick",    lua_getleft},
   {"getRightStick",  lua_getright},
+  {"getType",         lua_gettype},
   {"getPressure", lua_getpressure},
   {"rumble",           lua_rumble},
   {"check",             lua_check},
@@ -182,5 +196,14 @@ void luaControls_init(lua_State *L) {
 
 	lua_pushinteger(L, PAD_R3);
 	lua_setglobal (L, "PAD_R3");
+
+	lua_pushinteger(L, PAD_TYPE_DIGITAL);
+	lua_setglobal (L, "PAD_DIGITAL");
+
+	lua_pushinteger(L, PAD_TYPE_ANALOG);
+	lua_setglobal (L, "PAD_ANALOG");
+
+	lua_pushinteger(L, PAD_TYPE_DUALSHOCK);
+	lua_setglobal (L, "PAD_DUALSHOCK");
 
 }

@@ -16,7 +16,7 @@ local rad = 0
 local mx = 100.0
 
 Font.fmLoad()
-local netron = Font.ftLoad("System/netron.ttf")
+local netron = Font.ftLoad("System/images/netron.ttf")
 Font.ftSetPixelSize(netron, 25, 25)
 
 local type, freespace, format = System.getMCInfo(0)

@@ -119,14 +119,14 @@ static int lua_destroy(lua_State *L) {
 
 //Register our Timer Functions
 static const luaL_Reg Timer_functions[] = {
-  {"new",        lua_newT},
-  {"getTime",    lua_time},
-  {"setTime",    lua_set},
-  {"destroy",    lua_destroy},
-  {"pause",      lua_pause},
-  {"resume",     lua_resume},
-  {"reset",      lua_reset},
-  {"isPlaying",  lua_wisPlaying},
+  {"new",        		  lua_newT},
+  {"getTime",    		  lua_time},
+  {"setTime",    		   lua_set},
+  {"destroy",    	   lua_destroy},
+  {"pause",      		 lua_pause},
+  {"resume",     		lua_resume},
+  {"reset",      		 lua_reset},
+  {"isPlaying",  	lua_wisPlaying},
   {0, 0}
 };
 

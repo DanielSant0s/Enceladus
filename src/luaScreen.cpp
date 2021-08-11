@@ -142,10 +142,10 @@ static int lua_getA(lua_State *L) {
 //Register our Color Functions
 static const luaL_Reg Color_functions[] = {
   {"new",   lua_color},
-  {"getR",  lua_getR},
-  {"getG",  lua_getG},
-  {"getB",  lua_getB},
-  {"getA",  lua_getA},
+  {"getR",   lua_getR},
+  {"getG",   lua_getG},
+  {"getB",   lua_getB},
+  {"getA",   lua_getA},
   {0, 0}
 };
 

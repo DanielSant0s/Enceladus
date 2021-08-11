@@ -43,4 +43,6 @@ int fntCalcDimensions(int id, const char *str);
 
 void fntSetPixelSize(int fontid, int width, int height);
 
+void fntSetCharSize(int fontid, int width, int height);
+
 #endif
