@@ -27,16 +27,18 @@ define HEADER
 endef
 export HEADER
 
-#------------------------------------------------------------------
-# -- Configuration flags --
-#------------------------------------------------------------------
-# -- Reset the IOP --
+#------------------------------------------------------------------#
+#----------------------- Configuration flags ----------------------#
+#------------------------------------------------------------------#
+#-------------------------- Reset the IOP -------------------------#
 RESET_IOP = 1
-# -- enable DEBUGGING MODE --
+#---------------------- enable DEBUGGING MODE ---------------------#
 DEBUG = 0
-# -- Build an elf from a unique script --
+#----------------- Build an elf from a unique script --------------#
 STANDALONE = 0
-# -------------------------
+#----------------------- Set IP for PS2Client ---------------------#
+PS2LINK_IP = 192.168.1.10
+#------------------------------------------------------------------#
 
 EE_BIN = enceladus.elf
 EE_BIN_PKD = enceladus_pkd.elf
@@ -60,34 +62,27 @@ endif
 
 BIN2S = $(PS2SDK)/bin/bin2s
 
-# -- PS2 specific source code --
-EE_OBJS += src/md5.o
-EE_OBJS += src/usbd.o
-EE_OBJS += src/bdm.o
-EE_OBJS += src/bdmfs_vfat.o
-EE_OBJS += src/usbmass_bd.o
-EE_OBJS += src/audsrv.o
-EE_OBJS += src/lualogo.o
+#-------------------------- App Content ---------------------------#
+APP_CORE = src/main.o src/utility.o src/graphics.o src/atlas.o \
+		   src/fntsys.o src/md5.o
+#APP_CORE += src/sound.o
+LUA_LIBS = src/luaplayer.o src/luasound.o src/luacontrols.o \
+		   src/luatimer.o src/luaScreen.o src/luagraphics.o \
+		   src/lua3d.o src/luasystem.o
 
-# -- LuaPlayer specific source code --
-EE_OBJS += src/main.o
-EE_OBJS += src/utility.o
-EE_OBJS += src/graphics.o
-EE_OBJS += src/atlas.o
-EE_OBJS += src/fntsys.o
-#EE_OBJS += src/sound.o
-EE_OBJS += src/luaplayer.o
-EE_OBJS += src/luasound.o
-EE_OBJS += src/luacontrols.o
-EE_OBJS += src/luatimer.o
-EE_OBJS += src/luaScreen.o
-EE_OBJS += src/luagraphics.o
-EE_OBJS += src/lua3d.o
-EE_OBJS += src/luasystem.o
+
+IOP_MODULES = src/usbd.o src/audsrv.o src/bdm.o src/bdmfs_vfat.o \
+			  src/usbmass_bd.o
+
+EMBEDDED_RSC = src/lualogo.o
 
 ifeq ($(STANDALONE), 1)
-EE_OBJS += standalone/app/luaScript.o
+EMBEDDED_RSC += standalone/app/luaScript.o
 endif
+
+EE_OBJS = $(IOP_MODULES) $(EMBEDDED_RSC) $(APP_CORE) $(LUA_LIBS)
+
+#------------------------------------------------------------------#
 
 # -- Embedded ressources ---
 src/main.o: src/boot.cpp
@@ -106,24 +101,28 @@ standalone/app/luaScript.o: standalone/app/script.lua
 endif	
 
 
-# -- Embedded Irx(s) ---------
+#-------------------- Embedded IOP Modules ------------------------#
+
+src/usbd.s: $(PS2SDK)/iop/irx/usbd.irx
+	echo "Embedding USB Driver..."
+	$(BIN2S) $< $@ usbd_irx
+
+src/audsrv.s: $(PS2SDK)/iop/irx/audsrv.irx
+	echo "Embedding AUDSRV Driver..."
+	$(BIN2S) $< $@ audsrv_irx
+
 src/bdm.s: $(PS2SDK)/iop/irx/bdm.irx
-	echo "Embedding IOP Modules..."
+	echo "Embedding Block Device Manager(BDM)..."
 	$(BIN2S) $< $@ bdm_irx
 
 src/bdmfs_vfat.s: $(PS2SDK)/iop/irx/bdmfs_vfat.irx
+	echo "Embedding BDM VFAT Driver..."
 	$(BIN2S) $< $@ bdmfs_vfat_irx
 
 src/usbmass_bd.s: $(PS2SDK)/iop/irx/usbmass_bd.irx
+	echo "Embedding BD USB Mass Driver..."
 	$(BIN2S) $< $@ usbmass_bd_irx
-
-src/usbd.s: $(PS2SDK)/iop/irx/usbd.irx
-	$(BIN2S) $< $@ usbd_irx
-
-	
-src/audsrv.s: $(PS2SDK)/iop/irx/audsrv.irx
-	$(BIN2S) $< $@ audsrv_irx
-# ----------------------------
+#------------------------------------------------------------------#
 
 all: $(EE_BIN)
 	@echo "$$HEADER"
@@ -141,13 +140,17 @@ debug: $(EE_BIN)
 
 clean:
 	echo "\nCleaning ELFs and objects..."
-	rm -f $(EE_BIN) $(EE_OBJS) $(EE_BIN_PKD)
-	echo "Cleaning embedded IOP modules..."
+	rm -f $(EE_OBJS) bin/$(EE_BIN_PKD) bin/$(EE_BIN)
+	echo "Cleaning Block Device Manager(BDM)..."
 	rm -f src/bdm.s
+	echo "Cleaning USB Driver..."
 	rm -f src/usbd.s
-	rm -f src/bdmfs_vfat.s
-	rm -f src/usbmass_bd.s
+	echo "Embedding AUDSRV Driver..."
 	rm -f src/audsrv.s
+	echo "Cleaning BDM VFAT Driver..."
+	rm -f src/bdmfs_vfat.s
+	echo "Embedding BD USB Mass Driver..."
+	rm -f src/usbmass_bd.s
 	echo "Cleaning embedded boot script..."
 	rm -f src/boot.cpp
 	echo "Cleaning embedded splash screen...\n"
@@ -156,13 +159,13 @@ clean:
 rebuild: clean all
 
 run:
-	ps2client -h 192.168.1.10 execee host:$(EE_BIN)
+	cd bin; ps2client -h $(PS2LINK_IP) execee host:$(EE_BIN)
 	
 run_usb:
-	ps2client -h 192.168.0.100 execee host:$(EE_BIN) mass:/System/system.lua
+	cd bin; ps2client -h $(PS2LINK_IP) execee host:$(EE_BIN) mass:/System/system.lua
        
 reset:
-	ps2client -h 192.168.1.10 reset   
+	ps2client -h $(PS2LINK_IP) reset   
 
 
 include $(PS2SDK)/samples/Makefile.pref
