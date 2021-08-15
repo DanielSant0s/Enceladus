@@ -18,8 +18,8 @@
 #include "include/sound.h"
 #include "include/luaplayer.h"
 
-/* the boot.lua */
-#include "boot.cpp"
+extern unsigned char bootString[];
+extern unsigned int size_bootString;
 
 extern unsigned char usbd_irx;
 extern unsigned int size_usbd_irx;
@@ -36,46 +36,7 @@ extern unsigned int size_usbmass_bd_irx;
 extern unsigned char audsrv_irx;
 extern unsigned int size_audsrv_irx;
 
-#ifdef STANDALONE
-extern u8 scriptLua_start[];
-extern int scriptLua_size;
-#endif
-
 char boot_path[255];
-
-/*
-static int _bootDevice ;
-
-typedef enum {
-	BOOT_HOST,
-	BOOT_MC,
-	BOOT_HDD,
-	BOOT_USB,
-	BOOT_CD
-} deviceType_t;
-
-void setBootDevice(const char *path)
-{
-
-	if( !strcmp( path, "host:" ) ) {
-		_bootDevice  = BOOT_HOST;
-	}
-	else if( !strcmp( path, "mc:" ) ) {
-		_bootDevice  = BOOT_MC;
-	}
-	else if( !strcmp( path, "mass:" ) ) {
-		_bootDevice  = BOOT_USB;
-	}
-	else if( !strcmp( path, "cdrom0:" ) || !strcmp( path, "cdfs" ) ) {
-		_bootDevice  = BOOT_CD;
-	}
-}
-
-int getBootDevice(void)
-{
-    return _bootDevice ;
-}
-*/
 
 void initMC(void)
 {
@@ -182,8 +143,6 @@ void setLuaBootPath(int argc, char ** argv, int idx)
 
     }
     
-    //strcpy (boot_path,"mass:LUA/");
-    
     // check if path needs patching
     if( !strncmp( boot_path, "mass:/", 6) && (strlen (boot_path)>6))
     {
@@ -201,8 +160,7 @@ int main(int argc, char * argv[])
 
 	// PS2 specific initialization 
 	systemInit();
-
-    #ifndef STANDALONE	
+	
         // if no parameters are specified, use the default boot
 	if (argc < 2)
 	{
@@ -218,16 +176,13 @@ int main(int argc, char * argv[])
               // set path global variable based on the given script path
 	      setLuaBootPath (argc, argv, 1);
 	}
-	#else
-	// set boot path global variable based on the elf path
-	setLuaBootPath (argc, argv, 0);
-    #endif
+
 	
 	printf("boot path : %s\n", boot_path);
 	dbgprintf("boot path : %s\n", boot_path);
 	
 	// Lua init
-	    // init internals library
+	// init internals library
     
     // graphics (gsKit)
     initGraphics();
@@ -243,28 +198,16 @@ int main(int argc, char * argv[])
     while (1)
     {
     
-       #ifndef STANDALONE
        // if no parameters are specified, use the default boot
        if (argc < 2) 
        {    
             // execute Lua script (according to boot sequence)
-            char* bootStringWith0 = (char*) malloc(size_bootString + 1);
-	        memcpy(bootStringWith0, bootString, size_bootString);
-	        bootString[size_bootString] = 0;
-            // execute the boot script
-            errMsg = runScript(bootStringWith0, true);
-            free(bootStringWith0);
+            errMsg = runScript((char*)bootString, true);
        }       
        else
         // execute the script gived as parameter
         errMsg = runScript(argv[1], false);   
-          
-        //errMsg = runScript("mass:/System/system.lua", true);    
     
-       // Standalone elf with an embedded script
-       #else
-       errMsg = runScript((char*)scriptLua_start, true);
-       #endif
 
        gsKit_clear_screens();
        

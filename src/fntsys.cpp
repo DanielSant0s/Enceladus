@@ -483,12 +483,11 @@ static fnt_glyph_cache_entry_t *fntCacheGlyph(font_t *font, uint32_t gid)
 void fntUpdateAspectRatio()
 {
     int i;
-    int w, h, wn, hn;
-    float ws, hs;
+    int h, hn;
+    float hs;
 
-    w = 640;
+
     h = 480;
-    wn = 640;
     hn = 448;
     // Scale height from virtual resolution (640x480) to the native display resolution
     hs = (float)hn / (float)h;
@@ -504,7 +503,7 @@ void fntUpdateAspectRatio()
         if (fonts[i].isValid) {
             fntCacheFlush(&fonts[i]);
             // TODO: this seems correct, but the rest of the OPL UI (i.e. spacers) doesn't seem to be correctly scaled.
-            FT_Set_Char_Size(fonts[i].face, FNTSYS_CHAR_SIZE * 64, FNTSYS_CHAR_SIZE * 64, fDPI * ws, fDPI * hs);
+            FT_Set_Char_Size(fonts[i].face, FNTSYS_CHAR_SIZE * 64, FNTSYS_CHAR_SIZE * 64, fDPI, fDPI * hs);
         }
     }
 }

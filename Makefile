@@ -34,8 +34,6 @@ export HEADER
 RESET_IOP = 1
 #---------------------- enable DEBUGGING MODE ---------------------#
 DEBUG = 0
-#----------------- Build an elf from a unique script --------------#
-STANDALONE = 0
 #----------------------- Set IP for PS2Client ---------------------#
 PS2LINK_IP = 192.168.1.10
 #------------------------------------------------------------------#
@@ -45,12 +43,10 @@ EE_BIN_PKD = enceladus_pkd.elf
 
 EE_LIBS = -L$(PS2SDK)/ports/lib -L$(PS2DEV)/gsKit/lib/ -lpatches -lfileXio -lpad -ldebug -llua -ljpeg -lfreetype -ldraw -lmath3d -lpacket2 -lgskit_toolkit -lgskit -ldmakit -lpng -lz -lmc -laudsrv
 
-EE_INCS += -I$(PS2SDK)/ports/include 
-EE_INCS += -I$(PS2SDK)/ports/include/zlib -I$(PS2DEV)/gsKit/include
-EE_INCS += -I$(PS2SDK)/ports/include/freetype2
+EE_INCS += -I$(PS2DEV)/gsKit/include -I$(PS2SDK)/ports/include -I$(PS2SDK)/ports/include/freetype2 -I$(PS2SDK)/ports/include/zlib
 
-EE_CFLAGS   += -fno-strict-aliasing
-EE_CXXFLAGS += -fno-strict-aliasing -fno-exceptions -fno-rtti -DLUA_USE_PS2
+EE_CFLAGS   += -Wno-sign-compare -fno-strict-aliasing -fno-exceptions
+EE_CXXFLAGS += -Wno-sign-compare -fno-strict-aliasing -fno-exceptions -DLUA_USE_PS2
 
 ifeq ($(RESET_IOP),1)
 EE_CXXFLAGS += -DRESET_IOP
@@ -74,31 +70,25 @@ LUA_LIBS = src/luaplayer.o src/luasound.o src/luacontrols.o \
 IOP_MODULES = src/usbd.o src/audsrv.o src/bdm.o src/bdmfs_vfat.o \
 			  src/usbmass_bd.o
 
-EMBEDDED_RSC = src/lualogo.o
+EMBEDDED_RSC = src/lualogo.o src/boot.o
 
-ifeq ($(STANDALONE), 1)
-EMBEDDED_RSC += standalone/app/luaScript.o
-endif
 
 EE_OBJS = $(IOP_MODULES) $(EMBEDDED_RSC) $(APP_CORE) $(LUA_LIBS)
 
 #------------------------------------------------------------------#
 
-# -- Embedded ressources ---
-src/main.o: src/boot.cpp
+
+#--------------------- Embedded ressources ------------------------#
 
 src/lualogo.s: etc/lualogo.raw
 	echo "Embedding splash screen..."
 	$(BIN2S) $< $@ rawlualogo
 
-src/boot.cpp: etc/boot.lua
-	echo "Embedding Lua boot script..."
-	$(PS2SDK)/bin/bin2c $< $@ bootString
+src/boot.s: etc/boot.lua
+	echo "Embedding boot script..."
+	$(BIN2S) $< $@ bootString
 
-ifeq ($(STANDALONE), 1)
-standalone/app/luaScript.o: standalone/app/script.lua
-	$(PS2SDK)/bin/bin2o $< $@ scriptLua
-endif	
+#------------------------------------------------------------------#
 
 
 #-------------------- Embedded IOP Modules ------------------------#
@@ -152,7 +142,7 @@ clean:
 	echo "Embedding BD USB Mass Driver..."
 	rm -f src/usbmass_bd.s
 	echo "Cleaning embedded boot script..."
-	rm -f src/boot.cpp
+	rm -f src/boot.s
 	echo "Cleaning embedded splash screen...\n"
 	rm -f src/lualogo.s
 
@@ -160,9 +150,6 @@ rebuild: clean all
 
 run:
 	cd bin; ps2client -h $(PS2LINK_IP) execee host:$(EE_BIN)
-	
-run_usb:
-	cd bin; ps2client -h $(PS2LINK_IP) execee host:$(EE_BIN) mass:/System/system.lua
        
 reset:
 	ps2client -h $(PS2LINK_IP) reset   

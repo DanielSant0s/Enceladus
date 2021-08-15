@@ -462,8 +462,8 @@ void recursive_mkdir(char *dir) {
 static int lua_getmcinfo(lua_State *L){
 	int argc = lua_gettop(L);
 	int mcslot, type, freespace, format, result;
+	mcslot = 1;
 	if(argc == 1) mcslot = luaL_checkinteger(L, 1);
-	if(argc == 0) mcslot = 1;
 
 	mcGetInfo(mcslot, 0, &type, &freespace, &format);
 	mcSync(0, NULL, &result);

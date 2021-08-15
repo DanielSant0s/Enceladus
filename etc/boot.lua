@@ -1,4 +1,3 @@
--- LuaPlayer boot script
 if System.doesFileExist("System/index.lua") then
 	dofile("System/index.lua");
   elseif System.doesFileExist("System/script.lua") then
@@ -11,4 +10,4 @@ if System.doesFileExist("System/index.lua") then
 	dofile("script.lua");
   elseif System.doesFileExist("system.lua") then
 	dofile("system.lua");
-  end
+end
