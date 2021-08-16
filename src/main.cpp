@@ -18,8 +18,11 @@
 #include "include/sound.h"
 #include "include/luaplayer.h"
 
-extern unsigned char bootString[];
+extern char bootString[];
 extern unsigned int size_bootString;
+
+extern unsigned char cdfs_irx;
+extern unsigned int size_cdfs_irx;
 
 extern unsigned char usbd_irx;
 extern unsigned int size_usbd_irx;
@@ -94,6 +97,8 @@ void systemInit()
     SifExecModuleBuffer(&bdmfs_vfat_irx, size_bdmfs_vfat_irx, 0, NULL, NULL);
     SifExecModuleBuffer(&usbmass_bd_irx, size_usbmass_bd_irx, 0, NULL, NULL);
 
+    SifExecModuleBuffer(&cdfs_irx, size_cdfs_irx, 0, NULL, NULL);
+
     //load audio
     SifExecModuleBuffer(&audsrv_irx, size_audsrv_irx, 0, NULL, NULL);
 
@@ -107,20 +112,13 @@ void systemInit()
     initMC();
 
     init_scr();
-    sleep(1); 
 
 }
 
 
 void setLuaBootPath(int argc, char ** argv, int idx)
 {
-    // detect host : strip elf from path
-    if (argc == 0)  // argc == 0 usually means naplink..
-    {
-	 strcpy (boot_path,"host:");
-	 
-    }
-    else if (argc>=(idx+1))
+    if (argc>=(idx+1))
     {
 
 	char *p;
@@ -198,26 +196,20 @@ int main(int argc, char * argv[])
     while (1)
     {
     
-       // if no parameters are specified, use the default boot
-       if (argc < 2) 
-       {    
-            // execute Lua script (according to boot sequence)
-            errMsg = runScript((char*)bootString, true);
-       }       
-       else
-        // execute the script gived as parameter
-        errMsg = runScript(argv[1], false);   
-    
+        // if no parameters are specified, use the default boot
+        if (argc < 2) errMsg = runScript(bootString, true);     
+        else errMsg = runScript(argv[1], false);   
 
-       gsKit_clear_screens();
-       
-       if ( errMsg != NULL)
-       {;
-   	   scr_printf("Error: %s\n", errMsg );
-       }
-       
-       scr_printf("\nPress [start] to restart\n");
-       while (1/*!isButtonPressed(PAD_START)*/) graphicWaitVblankStart();
+        gsKit_clear_screens();
+
+        if (errMsg != NULL)
+        {
+   	    scr_printf("Error: %s\n", errMsg);
+        }
+
+        scr_printf("\nPress [start] to restart\n");
+        while (1/*!isButtonPressed(PAD_START)*/) graphicWaitVblankStart();
+
     }
 
 	return 0;

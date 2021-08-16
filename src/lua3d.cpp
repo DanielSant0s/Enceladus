@@ -11,17 +11,9 @@ static int lua_init3D(lua_State *L) {
 	return 0;
 }
 
-static int lua_rendermodel(lua_State *L) {
-	int argc = lua_gettop(L);
-    if (argc != 0) return luaL_error(L, "wrong number of arguments.");
-    render();
-	return 0;
-}
-
 //Register our Graphics Functions
 static const luaL_Reg Render_functions[] = {
   {"init",           lua_init3D},
-  {"renderModel",           lua_rendermodel},
   {0, 0}
 };
 

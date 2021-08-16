@@ -41,6 +41,24 @@ typedef u32 Color;
 #define G(color) ((u8)(color >> 8 & 0xFF))
 #define R(color) ((u8)(color & 0xFF))
 
+extern void initGraphics();
+
+extern void clearScreen(Color color);
+
+extern void flipScreen();
+
+extern void graphicWaitVblankStart();
+
+extern void gsKit_clear_screens();
+
+extern GSGLOBAL *getGSGLOBAL();
+
+extern int GetInterlacedFrameMode();
+
+extern int getFreeVRAM();
+
+extern int FPSCounter(clock_t prevtime, clock_t curtime);
+
 extern void setVideoMode(s16 mode, int width, int height, int psm, s16 interlace, s16 field);
 
 extern GSTEXTURE* luaP_loadpng(const char *Path);
@@ -53,7 +71,7 @@ extern GSTEXTURE* luaP_loadrawimg(const char *Path);
 
 extern void drawImage(GSTEXTURE* source, float x, float y, float width, float height, float startx, float starty, float endx, float endy, Color color);
 
-extern void drawImageRotate(GSTEXTURE* source, float x, float y, float width, float height, float startx, float starty, float endx, float endy, float rad, Color color);
+extern void drawImageRotate(GSTEXTURE* source, float x, float y, float width, float height, float startx, float starty, float endx, float endy, float angle, Color color);
 
 extern void drawPixel(float x, float y, Color color);
 
@@ -75,8 +93,6 @@ extern void InvalidateTexture(GSTEXTURE *txt);
 
 extern void UnloadTexture(GSTEXTURE *txt);
 
-extern int GetInterlacedFrameMode();
-
 extern void fntDrawQuad(rm_quad_t *q);
 
 extern GSFONT* loadFont(const char* path);
@@ -85,49 +101,14 @@ extern void printFontText(GSFONT* font, char* text, float x, float y, float scal
 
 extern void unloadFont(GSFONT* font);
 
-extern GSGLOBAL *getGSGLOBAL();
-
-/*
- * Initialize all pixels of the screen with a color.
- *
- * @param color - new color for the pixels
- */
-extern void clearScreen(Color color);
-
-
-/**
- * Exchange display buffer and drawing buffer.
- */
-extern void flipScreen();
-
-/**
- * Initialize the graphics.
- */
-extern void initGraphics();
-
-/**
- * Disable graphics, used for debug text output.
- */
-extern void disableGraphics();
-
-extern void graphicWaitVblankStart();
+extern void loadFontM();
 
 extern void printFontMText(char* text, float x, float y, float scale, Color color);
-
-extern void loadFontM();
 
 extern void unloadFontM();
 
 extern void init3D();
 
-extern int render();
-
 extern void displaySplashScreen();
-
-void gsKit_clear_screens();
-
-extern int getFreeVRAM();
-
-extern int FPSCounter(clock_t prevtime, clock_t curtime);
 
 #endif

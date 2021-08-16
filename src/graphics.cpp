@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <malloc.h>
 #include <math.h>
-#include <packet2.h>
-#include <unistd.h>
 #include <fcntl.h>
+
+#include <packet2.h>
+#include <packet2_utils.h>
 
 #include <draw3d.h>
 
@@ -13,7 +15,6 @@
 #include <png.h>
 
 #include "include/graphics.h"
-#include "include/mesh_data.c"
 
 extern u8 rawlualogo;
 extern int size_rawlualogo;
@@ -22,7 +23,6 @@ extern int size_rawlualogo;
 
 #define PI 3.14159265359
 
-int hires_mode = 0;
 
 static const u64 BLACK_RGBAQ   = GS_SETREG_RGBAQ(0x00,0x00,0x00,0xFF,0x00);
 static const u64 TEXTURE_RGBAQ = GS_SETREG_RGBAQ(0x80,0x80,0x80,0x80,0x00);
@@ -30,113 +30,26 @@ static const u64 TEXTURE_RGBAQ = GS_SETREG_RGBAQ(0x80,0x80,0x80,0x80,0x00);
 GSGLOBAL *gsGlobal = NULL;
 GSFONTM *gsFontM = NULL;
 
-int light_count = 4;
-int iXOffset=0, iYOffset=0;
-
-VECTOR light_direction[4] = {
-	{  0.00f,  0.00f,  0.00f, 1.00f },
-	{  1.00f,  0.00f, -1.00f, 1.00f },
-	{  0.00f,  1.00f, -1.00f, 1.00f },
-	{ -1.00f, -1.00f, -1.00f, 1.00f }
-};
-
-VECTOR light_colour[4] = {
-	{ 0.40f, 0.40f, 0.40f, 1.00f },
-	{ 0.40f, 0.30f, 0.90f, 1.00f },
-	{ 0.30f, 0.30f, 0.30f, 1.00f },
-	{ 0.50f, 0.50f, 0.50f, 1.00f }
-};
-
-int light_type[4] = {
-	LIGHT_AMBIENT,
-	LIGHT_DIRECTIONAL,
-	LIGHT_DIRECTIONAL,
-	LIGHT_DIRECTIONAL
-};
-
-	// Matrices to setup the 3D environment and camera
-	MATRIX local_world;
-	MATRIX local_light;
-	MATRIX world_view;
-	MATRIX view_screen;
-	MATRIX local_screen;
-
-	VECTOR object_position = { 45.00f, -25.00f, 0.00f, 1.00f };
-	VECTOR object_rotation = { 2.70f, 0.00f, 0.00f, 1.00f };
-	
-	VECTOR camera_position = { 0.00f, 0.00f,  250.00f, 1.00f };
-	VECTOR camera_rotation = { 0.00f, 0.00f,   0.00f, 1.00f };
+MATRIX view_screen;
 
 
-//3D Functions
-
+void enceladus_dma_send_packet2(packet2_t *packet2, int channel, u8 flush_cache)
+{
+	// dmaKit_send_chain does NOT flush all data that is "source chained"
+	if (packet2->mode == P2_MODE_CHAIN){
+		// "dmaKit_send always flushes the data cache"
+		if (flush_cache){
+			FlushCache(0);
+			dmaKit_send_chain(channel, (void *)((u32)packet2->base & 0x0FFFFFFF), packet2->tte ? 1 : 0);
+		}
+	}
+	else dmaKit_send(channel, (void *)((u32)packet2->base & 0x0FFFFFFF), ((u32)packet2->next - (u32)packet2->base) >> 4);
+}
 
 void init3D()
 {
 	gsGlobal->ZBuffering = GS_SETTING_ON;
-	if (gsGlobal->ZBuffering == GS_SETTING_ON)
-		gsKit_set_test(gsGlobal, GS_ZTEST_ON);
 	create_view_screen(view_screen, 4.0f/3.0f, -0.20f, 0.20f, -0.20f, 0.20f, 1.00f, 2000.00f);
-}
-
-int render()
-{
-	int i;
-	
-	VECTOR *temp_normals = (VECTOR     *)memalign(128, sizeof(VECTOR)     * vertex_count);
-	VECTOR *temp_lights = (VECTOR     *)memalign(128, sizeof(VECTOR)     * vertex_count);
-	color_f_t *temp_colours = (color_f_t  *)memalign(128, sizeof(color_f_t)  * vertex_count);
-	vertex_f_t *temp_vertices = (vertex_f_t *)memalign(128, sizeof(vertex_f_t) * vertex_count);
-
-	xyz_t   *verts = (xyz_t   *)memalign(128, sizeof(xyz_t)   * vertex_count);
-	color_t *colors = (color_t *)memalign(128, sizeof(color_t) * vertex_count);
-
-	gsGlobal->PrimAlphaEnable = GS_SETTING_OFF;
-	gsKit_set_test(gsGlobal, GS_ATEST_OFF);
-	gsGlobal->PrimAAEnable = GS_SETTING_ON;
-
-		// Spin the teapot a bit.
-	object_rotation[1] += 0.005f; while (object_rotation[1] > 3.14f) { object_rotation[1] -= 6.28f; }
-	// Create the local_world matrix.
-	create_local_world(local_world, object_position, object_rotation);
-	// Create the local_light matrix.
-	create_local_light(local_light, object_rotation);
-	// Create the world_view matrix.
-	create_world_view(world_view, camera_position, camera_rotation);
-	// Create the local_screen matrix.
-	create_local_screen(local_screen, local_world, world_view, view_screen);
-	// Calculate the normal values.
-	calculate_normals(temp_normals, vertex_count, normals, local_light);
-	// Calculate the lighting values.
-	calculate_lights(temp_lights, vertex_count, temp_normals, light_direction, light_colour, light_type, light_count);
-	// Calculate the colour values after lighting.
-	calculate_colours((VECTOR *)temp_colours, vertex_count, colours, temp_lights);
-	// Calculate the vertex values.
-	calculate_vertices((VECTOR *)temp_vertices, vertex_count, vertices, local_screen);
-	// Convert floating point vertices to fixed point and translate to center of screen.
-	draw_convert_xyz(verts, 2048, 2048, 16, vertex_count, temp_vertices);
-	// Convert floating point colours to fixed point.
-	draw_convert_rgbq(colors, vertex_count, temp_vertices, temp_colours, 0x80);
-
-	for (i = 0; i < points_count; i+=3) {
-		float fX=gsGlobal->Width/2;
-		float fY=gsGlobal->Height/2;
-		gsKit_prim_triangle_gouraud_3d(gsGlobal
-			, (temp_vertices[points[i+0]].x + 1.0f) * fX, (temp_vertices[points[i+0]].y + 1.0f) * fY, verts[points[i+0]].z
-			, (temp_vertices[points[i+1]].x + 1.0f) * fX, (temp_vertices[points[i+1]].y + 1.0f) * fY, verts[points[i+1]].z
-			, (temp_vertices[points[i+2]].x + 1.0f) * fX, (temp_vertices[points[i+2]].y + 1.0f) * fY, verts[points[i+2]].z
-			, colors[points[i+0]].rgbaq, colors[points[i+1]].rgbaq, colors[points[i+2]].rgbaq);
-
-	}
-
-	free(temp_normals);
-	free(temp_lights);
-	free(temp_colours);
-	free(temp_vertices);
-	free(verts);
-	free(colors);
-
-	return 0;
 }
 
 //2D drawing functions
@@ -861,10 +774,10 @@ GSTEXTURE* luaP_loadjpeg(const char *Path, bool scale_down)
 
 void gsKit_clear_screens()
 {
-	if (hires_mode == 1){
-		gsKit_hires_sync(gsGlobal);
-		gsKit_hires_flip(gsGlobal);
-	} else {
+	int i;
+
+	for (i=0; i<2; i++)
+	{
 		gsKit_clear(gsGlobal, BLACK_RGBAQ);
 		gsKit_queue_exec(gsGlobal);
 		gsKit_sync_flip(gsGlobal);
@@ -987,10 +900,10 @@ void drawImage(GSTEXTURE* source, float x, float y, float width, float height, f
 }
 
 
-void drawImageRotate(GSTEXTURE* source, float x, float y, float width, float height, float startx, float starty, float endx, float endy, float rad, Color color){
+void drawImageRotate(GSTEXTURE* source, float x, float y, float width, float height, float startx, float starty, float endx, float endy, float angle, Color color){
 
-	float c = cosf(rad);
-	float s = sinf(rad);
+	float c = cosf(angle);
+	float s = sinf(angle);
 
 	if ((source->PSM == GS_PSM_CT32) || (source->Clut && source->ClutPSM == GS_PSM_CT32)) {
         gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
@@ -1095,6 +1008,8 @@ int GetInterlacedFrameMode()
     return 0;
 }
 
+GSGLOBAL *getGSGLOBAL(){return gsGlobal;}
+
 void setVideoMode(s16 mode, int width, int height, int psm, s16 interlace, s16 field) {
 	gsGlobal->PSM = psm;
 	gsGlobal->Mode = mode;
@@ -1171,7 +1086,7 @@ void initGraphics()
 }
 
 void flipScreen()
-{
+{	
 	gsKit_sync_flip(gsGlobal);
 	gsKit_queue_exec(gsGlobal);
 	gsKit_TexManager_nextFrame(gsGlobal);

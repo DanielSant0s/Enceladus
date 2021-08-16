@@ -31,7 +31,7 @@ export HEADER
 #----------------------- Configuration flags ----------------------#
 #------------------------------------------------------------------#
 #-------------------------- Reset the IOP -------------------------#
-RESET_IOP = 1
+RESET_IOP = 0
 #---------------------- enable DEBUGGING MODE ---------------------#
 DEBUG = 0
 #----------------------- Set IP for PS2Client ---------------------#
@@ -59,7 +59,7 @@ endif
 BIN2S = $(PS2SDK)/bin/bin2s
 
 #-------------------------- App Content ---------------------------#
-APP_CORE = src/main.o src/utility.o src/graphics.o src/atlas.o \
+APP_CORE = src/main.o src/graphics.o src/atlas.o \
 		   src/fntsys.o src/md5.o
 #APP_CORE += src/sound.o
 LUA_LIBS = src/luaplayer.o src/luasound.o src/luacontrols.o \
@@ -68,7 +68,7 @@ LUA_LIBS = src/luaplayer.o src/luasound.o src/luacontrols.o \
 
 
 IOP_MODULES = src/usbd.o src/audsrv.o src/bdm.o src/bdmfs_vfat.o \
-			  src/usbmass_bd.o
+			  src/usbmass_bd.o src/cdfs.o
 
 EMBEDDED_RSC = src/lualogo.o src/boot.o
 
@@ -112,6 +112,10 @@ src/bdmfs_vfat.s: $(PS2SDK)/iop/irx/bdmfs_vfat.irx
 src/usbmass_bd.s: $(PS2SDK)/iop/irx/usbmass_bd.irx
 	echo "Embedding BD USB Mass Driver..."
 	$(BIN2S) $< $@ usbmass_bd_irx
+
+src/cdfs.s: $(PS2SDK)/iop/irx/cdfs.irx
+	echo "Embedding CDFS Driver..."
+	$(BIN2S) $< $@ cdfs_irx
 #------------------------------------------------------------------#
 
 all: $(EE_BIN)
@@ -131,18 +135,28 @@ debug: $(EE_BIN)
 clean:
 	echo "\nCleaning ELFs and objects..."
 	rm -f $(EE_OBJS) bin/$(EE_BIN_PKD) bin/$(EE_BIN)
+	
 	echo "Cleaning Block Device Manager(BDM)..."
 	rm -f src/bdm.s
+	
 	echo "Cleaning USB Driver..."
 	rm -f src/usbd.s
+	
 	echo "Embedding AUDSRV Driver..."
 	rm -f src/audsrv.s
+	
 	echo "Cleaning BDM VFAT Driver..."
 	rm -f src/bdmfs_vfat.s
+	
 	echo "Embedding BD USB Mass Driver..."
 	rm -f src/usbmass_bd.s
+	
+	echo "Cleaning CDFS Driver..."
+	rm -f src/cdfs.s
+	
 	echo "Cleaning embedded boot script..."
 	rm -f src/boot.s
+
 	echo "Cleaning embedded splash screen...\n"
 	rm -f src/lualogo.s
 
