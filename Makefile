@@ -61,17 +61,15 @@ BIN2S = $(PS2SDK)/bin/bin2s
 #-------------------------- App Content ---------------------------#
 APP_CORE = src/main.o src/graphics.o src/atlas.o \
 		   src/fntsys.o src/md5.o
-#APP_CORE += src/sound.o
+
 LUA_LIBS = src/luaplayer.o src/luasound.o src/luacontrols.o \
 		   src/luatimer.o src/luaScreen.o src/luagraphics.o \
 		   src/lua3d.o src/luasystem.o
-
 
 IOP_MODULES = src/usbd.o src/audsrv.o src/bdm.o src/bdmfs_vfat.o \
 			  src/usbmass_bd.o src/cdfs.o
 
 EMBEDDED_RSC = src/lualogo.o src/boot.o
-
 
 EE_OBJS = $(IOP_MODULES) $(EMBEDDED_RSC) $(APP_CORE) $(LUA_LIBS)
 
@@ -133,8 +131,15 @@ debug: $(EE_BIN)
 	echo "Building $(EE_BIN) with debug symbols..."
 
 clean:
-	echo "\nCleaning ELFs and objects..."
-	rm -f $(EE_OBJS) bin/$(EE_BIN_PKD) bin/$(EE_BIN)
+
+	echo "\nCleaning $(EE_BIN)..."
+	rm -f bin/$(EE_BIN)
+
+	echo "\nCleaning $(EE_BIN_PKD)..."
+	rm -f bin/$(EE_BIN_PKD)
+
+	echo "\nCleaning objects..."
+	rm -f $(EE_OBJS)
 	
 	echo "Cleaning Block Device Manager(BDM)..."
 	rm -f src/bdm.s
