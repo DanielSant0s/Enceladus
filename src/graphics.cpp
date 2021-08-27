@@ -58,42 +58,42 @@ void displaySplashScreen()
 {	
 	int t;
    	int alpha = 0;
-   	GSTEXTURE gsSplashTexture;
+   	GSTEXTURE eclSplash;
 
    	int size;
 
    	unsigned char *fb, *splash;
-   	gsSplashTexture.Width = 180;
-	gsSplashTexture.Height = 206;
-	gsSplashTexture.PSM = GS_PSM_CT24;
+   	eclSplash.Width = 180;
+	eclSplash.Height = 206;
+	eclSplash.PSM = GS_PSM_CT24;
 	
 	// useless but keep compiler happy :)
 	size = size_rawlualogo;
 	
 	size = gsKit_texture_size(180, 206, GS_PSM_CT24);
 	
-	gsSplashTexture.Mem = (u32 *)malloc(size);
+	eclSplash.Mem = (u32 *)malloc(size);
 	
 	// copy the texture into memory
 	// not sure if I can directly point to my buffer (alignement?)
-	fb = (unsigned char *)gsSplashTexture.Mem;
+	fb = (unsigned char *)eclSplash.Mem;
 	splash = &rawlualogo;
 	for (int i=size;i--;) *fb++ = *splash++;
  
-   gsKit_TexManager_bind(gsGlobal, &gsSplashTexture);
+   gsKit_TexManager_bind(gsGlobal, &eclSplash);
 
    while(alpha <= 0x80)
 	{
-	gsKit_clear(gsGlobal, GS_SETREG_RGBAQ(0x00,0x00,0x00,0xFF,0x00));
-    gsKit_prim_sprite_striped_texture( gsGlobal,  &gsSplashTexture,
-			320-(gsSplashTexture.Width/2),
-			224-(gsSplashTexture.Height/2),
+	gsKit_clear(gsGlobal, BLACK_RGBAQ);
+    gsKit_prim_sprite_striped_texture(gsGlobal, &eclSplash,
+			320-(eclSplash.Width/2),
+			224-(eclSplash.Height/2),
 			0,
 			0,
-			320+(gsSplashTexture.Width/2),
-			224+(gsSplashTexture.Height/2),
-			gsSplashTexture.Width,
-			gsSplashTexture.Height,
+			320+(eclSplash.Width/2),
+			224+(eclSplash.Height/2),
+			eclSplash.Width,
+			eclSplash.Height,
 			1,
 			GS_SETREG_RGBAQ(0x80,0x80,0x80,alpha,0x00)
 			);
@@ -108,16 +108,16 @@ void displaySplashScreen()
 
 	while(alpha >= 0x00)
 	{
-	gsKit_clear(gsGlobal, GS_SETREG_RGBAQ(0x00,0x00,0x00,0xFF,0x00));
-    gsKit_prim_sprite_striped_texture( gsGlobal,  &gsSplashTexture,
-			320-(gsSplashTexture.Width/2),
-			224-(gsSplashTexture.Height/2),
+	gsKit_clear(gsGlobal, BLACK_RGBAQ);
+    gsKit_prim_sprite_striped_texture(gsGlobal, &eclSplash,
+			320-(eclSplash.Width/2),
+			224-(eclSplash.Height/2),
 			0,
 			0,
-			320+(gsSplashTexture.Width/2),
-			224+(gsSplashTexture.Height/2),
-			gsSplashTexture.Width,
-			gsSplashTexture.Height,
+			320+(eclSplash.Width/2),
+			224+(eclSplash.Height/2),
+			eclSplash.Width,
+			eclSplash.Height,
 			1,
 			GS_SETREG_RGBAQ(0x80,0x80,0x80,alpha,0x00)
 			);
