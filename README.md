@@ -75,14 +75,21 @@ Enceladus uses the latest version of Lua language (currently 5.4.3), which means
 
 **Graphics functions:**
 
+Primitive shapes:
 * Graphics.drawPixel(x, y, color)
 * Graphics.drawRect(x, y, width, height, color)
 * Graphics.drawLine(x, y, x2, y2, color)
 * Graphics.drawCircle(x, y, radius, color, filled) *filled isn't mandatory
 * Graphics.drawTriangle(x, y, x2, y2, x3, y3, color, color2, color3) *color2 and color3 are not mandatory
 * Graphics.drawQuad(x, y, x2, y2, x3, y3, x4, y4 color, color2, color3, color4) *color2, color3 and color4 are not mandatory
+
+Image functions:
 * image = Graphics.loadImage(path) *Supports BMP, JPG and PNG
-* Graphics.drawImage(image, x, y, alpha, width, height)
+* Graphics.drawImage(image, x, y, color)
+* Graphics.drawRotateImage(image, x, y, angle, color)
+* Graphics.drawScaleImage(image, x, y, scale_x, scale_y, color)
+* Graphics.drawPartialImage(image, x, y, start_x, start_y, width, height, color)
+* Graphics.drawImageExtended(image, x, y, start_x, start_y, width, height, scale_x, scale_y, angle, color)
 * Graphics.setImageFilters(image, filter) *Choose between NEAREST and LINEAR filters
 * width = Graphics.getImageWidth(image)
 * height = Graphics.getImageHeight(image)
@@ -98,21 +105,33 @@ Enceladus uses the latest version of Lua language (currently 5.4.3), which means
 
 **Font functions:**
 
+Freetype functions(TTF, OTF):
 * Font.ftInit()
 * font = Font.ftLoad("font.ttf")
+* Font.ftPrint(font, x, y, align, width, height, text, color)
+* Font.ftSetPixelSize()
+* Font.ftUnload(font)
+* Font.ftEnd()
+
+Image functions(FNT, PNG, BMP):
 * font = Font.load("font.fnt/png/bmp")
+* Font.print(font, x, y, scale, text, color)
+* Font.unload(font)
+
+ROM font functions:
 * Font.fmLoad()
 * Font.fmPrint(x, y, scale, text, color) *color isn't mandatory
-* Font.fmUnload
+* Font.fmUnload()
 
 **Pads functions:**
 
-* pad = Pads.get()
-* Pads.getLeftStick()
-* Pads.getRightStick()
-* Pads.getPressure(pad, button)
+* pad = Pads.get(port)
+* Pads.getLeftStick(port)
+* Pads.getRightStick(port)
+* type = Pads.getType(port)
+* press = Pads.getPressure(button, port)
 * Pads.rumble(big, small)
-* Pads.check(button)
+* Pads.check(pad, button)
 
 **System functions:**
 
@@ -129,7 +148,7 @@ Enceladus uses the latest version of Lua language (currently 5.4.3), which means
 * System.removeDirectory(path)
 * System.removeFile(path)
 * System.copyFile(source, dest)
-* System.move(source, dest)
+* System.moveFile(source, dest)
 * System.rename(source, dest)
 * System.md5sum(string)
 * System.sleep(sec)
