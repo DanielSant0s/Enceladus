@@ -45,7 +45,7 @@ EE_LIBS = -L$(PS2SDK)/ports/lib -L$(PS2DEV)/gsKit/lib/ -lpatches -lfileXio -lpad
 
 EE_INCS += -I$(PS2DEV)/gsKit/include -I$(PS2SDK)/ports/include -I$(PS2SDK)/ports/include/freetype2 -I$(PS2SDK)/ports/include/zlib
 
-EE_CFLAGS   += -Wno-sign-compare -fno-strict-aliasing -fno-exceptions
+EE_CFLAGS   += -Wno-sign-compare -fno-strict-aliasing -fno-exceptions -DLUA_USE_PS2
 EE_CXXFLAGS += -Wno-sign-compare -fno-strict-aliasing -fno-exceptions -DLUA_USE_PS2
 
 ifeq ($(RESET_IOP),1)
@@ -60,7 +60,7 @@ BIN2S = $(PS2SDK)/bin/bin2s
 
 #-------------------------- App Content ---------------------------#
 APP_CORE = src/main.o src/graphics.o src/atlas.o \
-		   src/fntsys.o src/md5.o
+		   src/fntsys.o src/md5.o src/include/fast_obj.o
 
 LUA_LIBS = src/luaplayer.o src/luasound.o src/luacontrols.o \
 		   src/luatimer.o src/luaScreen.o src/luagraphics.o \

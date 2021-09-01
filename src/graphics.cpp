@@ -16,22 +16,18 @@
 
 #include "include/graphics.h"
 
+//#include "teapot.c"
+
 extern u8 rawlualogo;
 extern int size_rawlualogo;
 
 #define DEG2RAD(x) ((x)*0.01745329251)
-
-#define PI 3.14159265359
-
 
 static const u64 BLACK_RGBAQ   = GS_SETREG_RGBAQ(0x00,0x00,0x00,0xFF,0x00);
 static const u64 TEXTURE_RGBAQ = GS_SETREG_RGBAQ(0x80,0x80,0x80,0x80,0x00);
 
 GSGLOBAL *gsGlobal = NULL;
 GSFONTM *gsFontM = NULL;
-
-MATRIX view_screen;
-
 
 void enceladus_dma_send_packet2(packet2_t *packet2, int channel, u8 flush_cache)
 {
@@ -46,11 +42,168 @@ void enceladus_dma_send_packet2(packet2_t *packet2, int channel, u8 flush_cache)
 	else dmaKit_send(channel, (void *)((u32)packet2->base & 0x0FFFFFFF), ((u32)packet2->next - (u32)packet2->base) >> 4);
 }
 
+MATRIX view_screen;
+
 void init3D()
 {
-	gsGlobal->ZBuffering = GS_SETTING_ON;
 	create_view_screen(view_screen, 4.0f/3.0f, -0.20f, 0.20f, -0.20f, 0.20f, 1.00f, 2000.00f);
+
 }
+
+VECTOR camera_position = { 0.00f, 0.00f,  50.00f, 1.00f };
+VECTOR camera_rotation = { 0.00f, 0.00f,   0.00f, 1.00f };
+
+int light_count = 4;
+int iXOffset=0, iYOffset=0;
+
+VECTOR light_direction[4] = {
+	{  0.00f,  0.00f,  0.00f, 1.00f },
+	{  1.00f,  0.00f, -1.00f, 1.00f },
+	{  0.00f,  1.00f, -1.00f, 1.00f },
+	{ -1.00f, -1.00f, -1.00f, 1.00f }
+};
+
+VECTOR light_colour[4] = {
+	{ 0.00f, 0.00f, 0.00f, 1.00f },
+	{ 0.60f, 1.00f, 0.60f, 1.00f },
+	{ 0.30f, 0.30f, 0.30f, 1.00f },
+	{ 0.50f, 0.50f, 0.50f, 1.00f }
+};
+
+int light_type[4] = {
+	LIGHT_AMBIENT,
+	LIGHT_DIRECTIONAL,
+	LIGHT_DIRECTIONAL,
+	LIGHT_DIRECTIONAL
+};
+
+ps2ObjMesh* loadOBJ(const char *Path){
+
+	fastObjMesh* m = fast_obj_read(Path);
+	ps2ObjMesh* mesh = (ps2ObjMesh*)memalign(128, sizeof(ps2ObjMesh));
+
+	mesh->position_count = m->position_count;
+	mesh->face_count = m->face_count;
+
+	mesh->positions = (VECTOR*)memalign(128, sizeof(VECTOR) * mesh->position_count);
+	mesh->colours = (VECTOR*)memalign(128, sizeof(VECTOR) * mesh->position_count);
+	mesh->normals = (VECTOR*)memalign(128, sizeof(VECTOR) * mesh->normal_count);
+
+	int cnt = 3;
+
+	for (int i = 0; i < (mesh->position_count-1); i++){
+		mesh->positions[i][0] = m->positions[cnt];
+		mesh->positions[i][1] = m->positions[cnt+1];
+		mesh->positions[i][2] = m->positions[cnt+2];
+		mesh->positions[i][3] = 1.000f;
+		
+		mesh->normals[i][0] = m->normals[cnt];
+		mesh->normals[i][1] = m->normals[cnt+1];
+		mesh->normals[i][2] = m->normals[cnt+2];
+		mesh->normals[i][3] = 1.000f;
+
+		mesh->colours[i][0] = 1.000f;
+		mesh->colours[i][1] = 1.000f;
+		mesh->colours[i][2] = 1.000f;
+		mesh->colours[i][3] = 1.000f;
+		
+		cnt += 3;
+
+	}
+
+	cnt = 0;
+
+	for (int i = 0; i < ((m->face_count*3)-1); i++){
+		mesh->indices[cnt] = m->indices[i].p;
+		mesh->indices[cnt+1] = m->indices[i].t;
+		mesh->indices[cnt+2] = m->indices[i].n;
+		cnt += 3;
+
+	}
+	free(m);
+	return mesh;
+}
+
+int drawOBJ(ps2ObjMesh* m, float pos_x, float pos_y, float pos_z, float rot_x, float rot_y, float rot_z)
+{
+	
+	VECTOR object_position = { pos_x, pos_y, pos_z, 1.00f };
+	VECTOR object_rotation = { rot_x, rot_y, rot_z, 1.00f };
+
+	int i;
+
+	// Matrices to setup the 3D environment and camera
+	MATRIX local_world;
+	MATRIX local_light;
+	MATRIX world_view;
+	MATRIX local_screen;
+
+	// Allocate calculation space.
+	VECTOR *temp_normals  = (VECTOR     *)memalign(128, sizeof(VECTOR)     * m->position_count);
+	VECTOR *temp_lights   = (VECTOR     *)memalign(128, sizeof(VECTOR)     * m->position_count);
+	color_f_t *temp_colours  = (color_f_t  *)memalign(128, sizeof(color_f_t)  * m->position_count);
+	vertex_f_t *temp_vertices = (vertex_f_t *)memalign(128, sizeof(vertex_f_t) * m->position_count);
+	// Allocate register space.
+	xyz_t   *verts  = (xyz_t   *)memalign(128, sizeof(xyz_t)   * m->position_count);
+	color_t *colors = (color_t *)memalign(128, sizeof(color_t) * m->position_count);
+
+	gsGlobal->PrimAlphaEnable = GS_SETTING_OFF;
+	gsKit_set_test(gsGlobal, GS_ATEST_OFF);
+	gsGlobal->PrimAAEnable = GS_SETTING_ON;
+	gsKit_set_test(gsGlobal, GS_ZTEST_ON);
+
+	// Create the local_world matrix.
+	create_local_world(local_world, object_position, object_rotation);
+
+	// Create the local_light matrix.
+	create_local_light(local_light, object_rotation);
+
+	// Create the world_view matrix.
+	create_world_view(world_view, camera_position, camera_rotation);
+
+	// Create the local_screen matrix.
+	create_local_screen(local_screen, local_world, world_view, view_screen);
+
+	// Calculate the normal values.
+	calculate_normals(temp_normals, m->position_count, m->normals, local_light);
+	
+	// Calculate the lighting values.
+	calculate_lights(temp_lights, m->position_count, temp_normals, light_direction, light_colour, light_type, light_count);
+
+	// Calculate the colour values after lighting.
+	calculate_colours((VECTOR *)temp_colours, m->position_count, m->colours, temp_lights);
+
+	// Calculate the vertex values.
+	calculate_vertices((VECTOR *)temp_vertices, m->position_count, m->positions, local_screen);
+
+	// Convert floating point vertices to fixed point and translate to center of screen.
+	draw_convert_xyz(verts, 2048, 2048, 16, m->position_count, temp_vertices);
+
+	// Convert floating point colours to fixed point.
+	draw_convert_rgbq(colors, m->position_count, temp_vertices, temp_colours, 0x80);
+
+	for (i = 0; i < (m->face_count*3); i+=3) {
+		float fX=gsGlobal->Width/2;
+		float fY=gsGlobal->Height/2;
+		gsKit_prim_triangle_gouraud_3d(gsGlobal
+			, (temp_vertices[m->indices[i+0]].x + 1.0f) * fX, (temp_vertices[m->indices[i+0]].y + 1.0f) * fY, verts[m->indices[i+0]].z
+			, (temp_vertices[m->indices[i+1]].x + 1.0f) * fX, (temp_vertices[m->indices[i+1]].y + 1.0f) * fY, verts[m->indices[i+1]].z
+			, (temp_vertices[m->indices[i+2]].x + 1.0f) * fX, (temp_vertices[m->indices[i+2]].y + 1.0f) * fY, verts[m->indices[i+2]].z
+			, colors[m->indices[i+0]].rgbaq, colors[m->indices[i+1]].rgbaq, colors[m->indices[i+2]].rgbaq);
+		
+	}
+	
+	free(temp_normals);
+	free(temp_lights);
+	free(temp_colours);
+	free(temp_vertices);
+	free(verts);
+	free(colors);
+
+	return 0;
+
+}
+
 
 //2D drawing functions
 
@@ -1059,7 +1212,7 @@ void initGraphics()
 
 	gsGlobal->PSM  = GS_PSM_CT24;
 	gsGlobal->PSMZ = GS_PSMZ_16;
-	gsGlobal->ZBuffering = GS_SETTING_OFF;
+	gsGlobal->ZBuffering = GS_SETTING_ON;
 	gsGlobal->DoubleBuffering = GS_SETTING_ON;
 	gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
 	gsGlobal->Dithering = GS_SETTING_ON;
