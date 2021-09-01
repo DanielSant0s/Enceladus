@@ -83,15 +83,17 @@ ps2ObjMesh* loadOBJ(const char *Path){
 	ps2ObjMesh* mesh = (ps2ObjMesh*)memalign(128, sizeof(ps2ObjMesh));
 
 	mesh->position_count = m->position_count;
+	mesh->normal_count = m->normal_count;
 	mesh->face_count = m->face_count;
 
+	mesh->indices = (unsigned int*)memalign(128, sizeof(int) * (mesh->face_count*3));
 	mesh->positions = (VECTOR*)memalign(128, sizeof(VECTOR) * mesh->position_count);
 	mesh->colours = (VECTOR*)memalign(128, sizeof(VECTOR) * mesh->position_count);
 	mesh->normals = (VECTOR*)memalign(128, sizeof(VECTOR) * mesh->normal_count);
 
-	int cnt = 3;
+	int cnt = 0;
 
-	for (int i = 0; i < (mesh->position_count-1); i++){
+	for (int i = 0; i < (mesh->position_count); i++){
 		mesh->positions[i][0] = m->positions[cnt];
 		mesh->positions[i][1] = m->positions[cnt+1];
 		mesh->positions[i][2] = m->positions[cnt+2];
@@ -106,20 +108,15 @@ ps2ObjMesh* loadOBJ(const char *Path){
 		mesh->colours[i][1] = 1.000f;
 		mesh->colours[i][2] = 1.000f;
 		mesh->colours[i][3] = 1.000f;
-		
+
 		cnt += 3;
 
 	}
 
-	cnt = 0;
-
-	for (int i = 0; i < ((m->face_count*3)-1); i++){
-		mesh->indices[cnt] = m->indices[i].p;
-		mesh->indices[cnt+1] = m->indices[i].t;
-		mesh->indices[cnt+2] = m->indices[i].n;
-		cnt += 3;
-
+	for (int i = 0; i < (m->face_count*3); i++){
+		mesh->indices[i] = m->indices[i].p;
 	}
+
 	free(m);
 	return mesh;
 }
@@ -139,8 +136,8 @@ int drawOBJ(ps2ObjMesh* m, float pos_x, float pos_y, float pos_z, float rot_x, f
 	MATRIX local_screen;
 
 	// Allocate calculation space.
-	VECTOR *temp_normals  = (VECTOR     *)memalign(128, sizeof(VECTOR)     * m->position_count);
-	VECTOR *temp_lights   = (VECTOR     *)memalign(128, sizeof(VECTOR)     * m->position_count);
+	VECTOR *temp_normals  = (VECTOR     *)memalign(128, sizeof(VECTOR) * m->normal_count);
+	VECTOR *temp_lights   = (VECTOR     *)memalign(128, sizeof(VECTOR) * m->normal_count);
 	color_f_t *temp_colours  = (color_f_t  *)memalign(128, sizeof(color_f_t)  * m->position_count);
 	vertex_f_t *temp_vertices = (vertex_f_t *)memalign(128, sizeof(vertex_f_t) * m->position_count);
 	// Allocate register space.
@@ -165,10 +162,10 @@ int drawOBJ(ps2ObjMesh* m, float pos_x, float pos_y, float pos_z, float rot_x, f
 	create_local_screen(local_screen, local_world, world_view, view_screen);
 
 	// Calculate the normal values.
-	calculate_normals(temp_normals, m->position_count, m->normals, local_light);
+	calculate_normals(temp_normals, m->normal_count, m->normals, local_light);
 	
 	// Calculate the lighting values.
-	calculate_lights(temp_lights, m->position_count, temp_normals, light_direction, light_colour, light_type, light_count);
+	calculate_lights(temp_lights, m->normal_count, temp_normals, light_direction, light_colour, light_type, light_count);
 
 	// Calculate the colour values after lighting.
 	calculate_colours((VECTOR *)temp_colours, m->position_count, m->colours, temp_lights);
