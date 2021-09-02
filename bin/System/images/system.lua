@@ -75,7 +75,7 @@ while true do
     Font.ftPrint(netron, 60, 60, 0, 200, 200, "MC Info\nType: " .. type .. "\nFree Space: " .. freespace .. "\nFormat: " .. format .. "\n")
     
     --Render.draw(cube, 0.0, 2.0, 20.0, rad, rad, 0.0)
-    Render.draw(bomdecoito, 5.0, 2.0, -1000.0, rad, rad, 0.0)
+    Render.draw(bomdecoito, 5.0, 300.0, -1000.0, rad, rad, 0.0)
     
     --Screen.waitVblankStart()
     Screen.flip()

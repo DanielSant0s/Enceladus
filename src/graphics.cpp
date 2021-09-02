@@ -52,6 +52,38 @@ void enceladus_dma_send_packet2(packet2_t *packet2, int channel, u8 flush_cache)
 	else dmaKit_send(channel, (void *)((u32)packet2->base & 0x0FFFFFFF), ((u32)packet2->next - (u32)packet2->base) >> 4);
 }
 
+void calculate_vertices_no_clip(VECTOR *output,  int count, VECTOR *vertices, MATRIX local_screen) {
+	asm __volatile__ (
+					  "lqc2		$vf1, 0x00(%3)	\n"
+					  "lqc2		$vf2, 0x10(%3)	\n"
+					  "lqc2		$vf3, 0x20(%3)	\n"
+					  "lqc2		$vf4, 0x30(%3)	\n"
+					  "1:					\n"
+					  "lqc2		$vf6, 0x00(%2)	\n"
+					  "vmulaw		$ACC, $vf4, $vf0	\n"
+					  "vmaddax		$ACC, $vf1, $vf6	\n"
+					  "vmadday		$ACC, $vf2, $vf6	\n"
+					  "vmaddz		$vf7, $vf3, $vf6	\n"
+//					  "vclipw.xyz		$vf7, $vf7	\n" // FIXME: Clip detection is still kinda broken.
+					  "cfc2		$10, $18	\n"
+					  "beq			$10, $0, 3f	\n"
+					  "2:					\n"
+   					  "sqc2		$0, 0x00(%0)	\n"
+   					  "j			4f		\n"
+					  "3:					\n"
+					  "vdiv		$Q, $vf0w, $vf7w	\n"
+					  "vwaitq				\n"
+					  "vmulq.xyz		$vf7, $vf7, $Q	\n"
+					  "sqc2		$vf7, 0x00(%0)	\n"
+					  "4:					\n"
+					  "addi		%0, 0x10	\n"
+					  "addi		%2, 0x10	\n"
+					  "addi		%1, -1		\n"
+					  "bne		$0, %1, 1b	\n"
+					  : : "r" (output), "r" (count), "r" (vertices), "r" (local_screen) : "$10", "memory"
+					  );
+}
+
 void init3D()
 {
 	create_view_screen(view_screen, 4.0f/3.0f, -0.20f, 0.20f, -0.20f, 0.20f, 1.00f, 2000.00f);
@@ -215,8 +247,9 @@ int drawOBJ(ps2ObjMesh* m, float pos_x, float pos_y, float pos_z, float rot_x, f
 	calculate_colours((VECTOR *)temp_colours, m->position_count, m->colours, temp_lights);
 
 	// Calculate the vertex values.
-	calculate_vertices((VECTOR *)temp_vertices, m->position_count, m->positions, local_screen);
-
+	//calculate_vertices((VECTOR *)temp_vertices, m->position_count, m->positions, local_screen);
+	calculate_vertices_no_clip((VECTOR *)temp_vertices, m->position_count, m->positions, local_screen);
+	
 	// Convert floating point vertices to fixed point and translate to center of screen.
 	draw_convert_xyz(verts, 2048, 2048, 16, m->position_count, temp_vertices);
 
@@ -229,17 +262,35 @@ int drawOBJ(ps2ObjMesh* m, float pos_x, float pos_y, float pos_z, float rot_x, f
 	for (i = 0; i < (m->face_count*3); i+=3) {
 		float fX=gsGlobal->Width/2;
 		float fY=gsGlobal->Height/2;
+
+		//Backface culling
+		float orientation = (temp_vertices[m->indices[i+1]].x - temp_vertices[m->indices[i]].x) * (temp_vertices[m->indices[i+2]].y - temp_vertices[m->indices[i]].y) - (temp_vertices[m->indices[i+1]].y - temp_vertices[m->indices[i]].y) * (temp_vertices[m->indices[i+2]].x - temp_vertices[m->indices[i]].x);
+		if(orientation < 0.0) {
+			continue;
+		}
+		
+		// Clipping
+		if(temp_vertices[m->indices[i]].z < -1.0 || temp_vertices[m->indices[i]].z > 0 || temp_vertices[m->indices[i]].x > 1.0 || temp_vertices[m->indices[i]].x < -1.0 || temp_vertices[m->indices[i]].y > 1.0 || temp_vertices[m->indices[i]].y < -1.0){
+			continue;
+		}
+		if(temp_vertices[m->indices[i+1]].z < -1.0 || temp_vertices[m->indices[i+1]].z > 0 || temp_vertices[m->indices[i+1]].x > 1.0 || temp_vertices[m->indices[i+1]].x < -1.0 || temp_vertices[m->indices[i+1]].y > 1.0 || temp_vertices[m->indices[i+1]].y < -1.0){
+			continue;
+		}
+		if(temp_vertices[m->indices[i+2]].z < -1.0 || temp_vertices[m->indices[i+2]].z > 0 || temp_vertices[m->indices[i+2]].x > 1.0 || temp_vertices[m->indices[i+2]].x < -1.0 || temp_vertices[m->indices[i+2]].y > 1.0 || temp_vertices[m->indices[i+2]].y < -1.0){
+			continue;
+		}
+
 		gsKit_prim_triangle_gouraud_3d(gsGlobal
-			, (temp_vertices[m->indices[i+0]].x + 1.0f) * fX, (temp_vertices[m->indices[i+0]].y + 1.0f) * fY, verts[m->indices[i+0]].z
+			, (temp_vertices[m->indices[i]].x + 1.0f) * fX, (temp_vertices[m->indices[i]].y + 1.0f) * fY, verts[m->indices[i]].z
 			, (temp_vertices[m->indices[i+1]].x + 1.0f) * fX, (temp_vertices[m->indices[i+1]].y + 1.0f) * fY, verts[m->indices[i+1]].z
 			, (temp_vertices[m->indices[i+2]].x + 1.0f) * fX, (temp_vertices[m->indices[i+2]].y + 1.0f) * fY, verts[m->indices[i+2]].z
-			, colors[m->indices[i+0]].rgbaq, colors[m->indices[i+1]].rgbaq, colors[m->indices[i+2]].rgbaq);
+			, colors[m->indices[i]].rgbaq, colors[m->indices[i+1]].rgbaq, colors[m->indices[i+2]].rgbaq);
 
 		/*gsKit_prim_triangle_goraud_texture_3d(gsGlobal, texture,
-			(temp_vertices[m->indices[i+0]].x + 1.0f) * fX, (temp_vertices[m->indices[i+0]].y + 1.0f) * fY, verts[m->indices[i+0]].z, float u1, float v1,
+			(temp_vertices[m->indices[i]].x + 1.0f) * fX, (temp_vertices[m->indices[i]].y + 1.0f) * fY, verts[m->indices[i]].z, float u1, float v1,
 			(temp_vertices[m->indices[i+1]].x + 1.0f) * fX, (temp_vertices[m->indices[i+1]].y + 1.0f) * fY, verts[m->indices[i+1]].z, float u2, float v2,
 			(temp_vertices[m->indices[i+2]].x + 1.0f) * fX, (temp_vertices[m->indices[i+2]].y + 1.0f) * fY, verts[m->indices[i+2]].z, float u3, float v3,
-			colors[m->indices[i+0]].rgbaq, colors[m->indices[i+1]].rgbaq, colors[m->indices[i+2]].rgbaq));
+			colors[m->indices[i]].rgbaq, colors[m->indices[i+1]].rgbaq, colors[m->indices[i+2]].rgbaq));
 		*/
 	}
 	
