@@ -97,7 +97,7 @@ Image functions:
 
 **Screen functions:**
 
-* Screen.clear()
+* Screen.clear(color) *color isn't mandatory
 * Screen.flip()
 * Screen.waitVblankStart()
 * Screen.showSplash()
@@ -168,6 +168,22 @@ ROM font functions:
 * Timer.resume(timer)
 * Timer.reset(timer)
 * Timer.isPlaying(timer)
+
+**Render functions:**
+
+* Render.init()
+* model = Render.load("mesh.obj")
+* Render.draw(model, x, y, z, rot_x, rot_y, rot_z)
+
+Camera functions:
+
+* Camera.position(x, y, z)
+* Camera.rotation(rot_x, rot_y, rot_z)
+
+Lights functions:
+
+* Lights.create(count)
+* Lights.set(light, x, y, z, r, g, b, type)
 
 ## Contributing
 
