@@ -28,7 +28,18 @@ romver_size = System.sizeFile(romver)
 romver_data = System.readFile(romver, romver_size)
 System.closeFile(romver)
 
-local cube = Render.loadOBJ("System/images/mesh/cube.obj")
+--local cube = Render.load("System/images/mesh/cube.obj")
+local bomdecoito = Render.load("System/images/mesh/crashbandicoot.obj")
+
+Camera.position(0, 0, 50)
+Camera.rotation(0, 0, 0)
+
+Lights.create(4)
+
+Lights.set(0, 0.0, 0.0, 0.0, 0, 0, 0, AMBIENT)
+Lights.set(1, 1.0, 0.0, -1.0, 0.6, 1, 0.6, DIRECTIONAL)
+Lights.set(2, 0.0, 1.0, -1.0, 0.3, 0.3, 0.3, DIRECTIONAL)
+Lights.set(3, -1.0, -1.0, -1.0, 0.5, 0.5, 0.5, DIRECTIONAL)
 
 while true do
 
@@ -63,7 +74,8 @@ while true do
     Font.fmPrint(200, 60, 0.6, "MC Info\nType: " .. type .. "\nFree Space: " .. freespace .. "\nFormat: " .. format .. "\n")
     Font.ftPrint(netron, 60, 60, 0, 200, 200, "MC Info\nType: " .. type .. "\nFree Space: " .. freespace .. "\nFormat: " .. format .. "\n")
     
-    Render.drawOBJ(cube, 0.0, 2.0, 20.0, rad, rad, 0.0)
+    --Render.draw(cube, 0.0, 2.0, 20.0, rad, rad, 0.0)
+    Render.draw(bomdecoito, 5.0, 2.0, -1000.0, rad, rad, 0.0)
     
     --Screen.waitVblankStart()
     Screen.flip()

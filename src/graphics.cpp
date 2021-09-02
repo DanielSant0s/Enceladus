@@ -16,8 +16,6 @@
 
 #include "include/graphics.h"
 
-//#include "teapot.c"
-
 extern u8 rawlualogo;
 extern int size_rawlualogo;
 
@@ -28,6 +26,18 @@ static const u64 TEXTURE_RGBAQ = GS_SETREG_RGBAQ(0x80,0x80,0x80,0x80,0x00);
 
 GSGLOBAL *gsGlobal = NULL;
 GSFONTM *gsFontM = NULL;
+
+MATRIX view_screen;
+
+VECTOR camera_position = { 0.00f, 0.00f, 0.00f, 1.00f };
+VECTOR camera_rotation = { 0.00f, 0.00f, 0.00f, 1.00f };
+
+int light_count;
+int iXOffset=0, iYOffset=0;
+
+VECTOR* light_direction;
+VECTOR* light_colour;
+int* light_type;
 
 void enceladus_dma_send_packet2(packet2_t *packet2, int channel, u8 flush_cache)
 {
@@ -42,40 +52,45 @@ void enceladus_dma_send_packet2(packet2_t *packet2, int channel, u8 flush_cache)
 	else dmaKit_send(channel, (void *)((u32)packet2->base & 0x0FFFFFFF), ((u32)packet2->next - (u32)packet2->base) >> 4);
 }
 
-MATRIX view_screen;
-
 void init3D()
 {
 	create_view_screen(view_screen, 4.0f/3.0f, -0.20f, 0.20f, -0.20f, 0.20f, 1.00f, 2000.00f);
 
 }
 
-VECTOR camera_position = { 0.00f, 0.00f,  50.00f, 1.00f };
-VECTOR camera_rotation = { 0.00f, 0.00f,   0.00f, 1.00f };
+void setCameraPosition(float x, float y, float z){
+	camera_position[0] = x;
+	camera_position[1] = y;
+	camera_position[2] = z;
+}
 
-int light_count = 4;
-int iXOffset=0, iYOffset=0;
+void setCameraRotation(float x, float y, float z){
+	camera_rotation[0] = x;
+	camera_rotation[1] = y;
+	camera_rotation[2] = z;
+}
 
-VECTOR light_direction[4] = {
-	{  0.00f,  0.00f,  0.00f, 1.00f },
-	{  1.00f,  0.00f, -1.00f, 1.00f },
-	{  0.00f,  1.00f, -1.00f, 1.00f },
-	{ -1.00f, -1.00f, -1.00f, 1.00f }
-};
+void setLightQuantity(int quantity){
+	light_count = quantity;
+	light_direction = (VECTOR*)memalign(128, sizeof(VECTOR) * light_count);
+	light_colour = (VECTOR*)memalign(128, sizeof(VECTOR) * light_count);
+	light_type = (int*)memalign(128, sizeof(int) * light_count);
+}
 
-VECTOR light_colour[4] = {
-	{ 0.00f, 0.00f, 0.00f, 1.00f },
-	{ 0.60f, 1.00f, 0.60f, 1.00f },
-	{ 0.30f, 0.30f, 0.30f, 1.00f },
-	{ 0.50f, 0.50f, 0.50f, 1.00f }
-};
+void createLight(int lightid, float dir_x, float dir_y, float dir_z, int type, float r, float g, float b){
+	light_direction[lightid][0] = dir_x;
+	light_direction[lightid][1] = dir_y;
+	light_direction[lightid][2] = dir_z;
+	light_direction[lightid][3] = 1.00f;
 
-int light_type[4] = {
-	LIGHT_AMBIENT,
-	LIGHT_DIRECTIONAL,
-	LIGHT_DIRECTIONAL,
-	LIGHT_DIRECTIONAL
-};
+	light_colour[lightid][0] = r;
+	light_colour[lightid][1] = g;
+	light_colour[lightid][2] = b;
+	light_colour[lightid][3] = 1.00f;
+
+	light_type[lightid] = type;
+
+}
 
 ps2ObjMesh* loadOBJ(const char *Path){
 
@@ -83,6 +98,8 @@ ps2ObjMesh* loadOBJ(const char *Path){
 	ps2ObjMesh* mesh = (ps2ObjMesh*)memalign(128, sizeof(ps2ObjMesh));
 
 	mesh->position_count = m->position_count;
+	mesh->texcoord_count = m->texcoord_count;
+	mesh->material_count = m->material_count;
 	mesh->normal_count = m->normal_count;
 	mesh->face_count = m->face_count;
 
@@ -91,6 +108,12 @@ ps2ObjMesh* loadOBJ(const char *Path){
 	mesh->colours = (VECTOR*)memalign(128, sizeof(VECTOR) * mesh->position_count);
 	mesh->normals = (VECTOR*)memalign(128, sizeof(VECTOR) * mesh->normal_count);
 
+	printf("Material count: %i\n", mesh->material_count);
+
+	for (int i = 0; i < mesh->material_count; i++){
+		printf("Material: %s\n", m->materials[i].map_Ka.path);
+	}
+
 	int cnt = 0;
 
 	for (int i = 0; i < (mesh->position_count); i++){
@@ -98,11 +121,6 @@ ps2ObjMesh* loadOBJ(const char *Path){
 		mesh->positions[i][1] = m->positions[cnt+1];
 		mesh->positions[i][2] = m->positions[cnt+2];
 		mesh->positions[i][3] = 1.000f;
-		
-		mesh->normals[i][0] = m->normals[cnt];
-		mesh->normals[i][1] = m->normals[cnt+1];
-		mesh->normals[i][2] = m->normals[cnt+2];
-		mesh->normals[i][3] = 1.000f;
 
 		mesh->colours[i][0] = 1.000f;
 		mesh->colours[i][1] = 1.000f;
@@ -113,7 +131,31 @@ ps2ObjMesh* loadOBJ(const char *Path){
 
 	}
 
-	for (int i = 0; i < (m->face_count*3); i++){
+	cnt = 0;
+
+	for (int i = 0; i < (mesh->normal_count); i++){
+		mesh->normals[i][0] = m->normals[cnt];
+		mesh->normals[i][1] = m->normals[cnt+1];
+		mesh->normals[i][2] = m->normals[cnt+2];
+		mesh->normals[i][3] = 1.000f;
+
+		cnt += 3;
+
+	}
+
+	cnt = 0;
+
+	for (int i = 0; i < (mesh->texcoord_count); i++){
+		mesh->texcoords[i][0] = m->texcoords[cnt];
+		mesh->texcoords[i][1] = m->texcoords[cnt+1];
+		mesh->texcoords[i][2] = m->texcoords[cnt+2];
+		mesh->texcoords[i][3] = 1.000f;
+
+		cnt += 3;
+
+	}
+
+	for (int i = 0; i < (mesh->face_count*3); i++){
 		mesh->indices[i] = m->indices[i].p;
 	}
 
@@ -140,9 +182,11 @@ int drawOBJ(ps2ObjMesh* m, float pos_x, float pos_y, float pos_z, float rot_x, f
 	VECTOR *temp_lights   = (VECTOR     *)memalign(128, sizeof(VECTOR) * m->normal_count);
 	color_f_t *temp_colours  = (color_f_t  *)memalign(128, sizeof(color_f_t)  * m->position_count);
 	vertex_f_t *temp_vertices = (vertex_f_t *)memalign(128, sizeof(vertex_f_t) * m->position_count);
+	texel_f_t *temp_texcoords = (texel_f_t *)memalign(128, sizeof(texel_f_t) * m->texcoord_count);
 	// Allocate register space.
 	xyz_t   *verts  = (xyz_t   *)memalign(128, sizeof(xyz_t)   * m->position_count);
 	color_t *colors = (color_t *)memalign(128, sizeof(color_t) * m->position_count);
+	texel_t *tex = (texel_t *)memalign(128, sizeof(texel_t) * m->texcoord_count);
 
 	gsGlobal->PrimAlphaEnable = GS_SETTING_OFF;
 	gsKit_set_test(gsGlobal, GS_ATEST_OFF);
@@ -165,7 +209,7 @@ int drawOBJ(ps2ObjMesh* m, float pos_x, float pos_y, float pos_z, float rot_x, f
 	calculate_normals(temp_normals, m->normal_count, m->normals, local_light);
 	
 	// Calculate the lighting values.
-	calculate_lights(temp_lights, m->normal_count, temp_normals, light_direction, light_colour, light_type, light_count);
+	calculate_lights(temp_lights, m->normal_count, temp_normals, light_direction, light_colour, light_type, light_count+1);
 
 	// Calculate the colour values after lighting.
 	calculate_colours((VECTOR *)temp_colours, m->position_count, m->colours, temp_lights);
@@ -178,6 +222,9 @@ int drawOBJ(ps2ObjMesh* m, float pos_x, float pos_y, float pos_z, float rot_x, f
 
 	// Convert floating point colours to fixed point.
 	draw_convert_rgbq(colors, m->position_count, temp_vertices, temp_colours, 0x80);
+	
+	// Calculates the st coordinates from the perspective coordinate q = 1/w
+	draw_convert_st(tex, m->texcoord_count, temp_vertices, temp_texcoords);
 
 	for (i = 0; i < (m->face_count*3); i+=3) {
 		float fX=gsGlobal->Width/2;
@@ -187,7 +234,13 @@ int drawOBJ(ps2ObjMesh* m, float pos_x, float pos_y, float pos_z, float rot_x, f
 			, (temp_vertices[m->indices[i+1]].x + 1.0f) * fX, (temp_vertices[m->indices[i+1]].y + 1.0f) * fY, verts[m->indices[i+1]].z
 			, (temp_vertices[m->indices[i+2]].x + 1.0f) * fX, (temp_vertices[m->indices[i+2]].y + 1.0f) * fY, verts[m->indices[i+2]].z
 			, colors[m->indices[i+0]].rgbaq, colors[m->indices[i+1]].rgbaq, colors[m->indices[i+2]].rgbaq);
-		
+
+		/*gsKit_prim_triangle_goraud_texture_3d(gsGlobal, texture,
+			(temp_vertices[m->indices[i+0]].x + 1.0f) * fX, (temp_vertices[m->indices[i+0]].y + 1.0f) * fY, verts[m->indices[i+0]].z, float u1, float v1,
+			(temp_vertices[m->indices[i+1]].x + 1.0f) * fX, (temp_vertices[m->indices[i+1]].y + 1.0f) * fY, verts[m->indices[i+1]].z, float u2, float v2,
+			(temp_vertices[m->indices[i+2]].x + 1.0f) * fX, (temp_vertices[m->indices[i+2]].y + 1.0f) * fY, verts[m->indices[i+2]].z, float u3, float v3,
+			colors[m->indices[i+0]].rgbaq, colors[m->indices[i+1]].rgbaq, colors[m->indices[i+2]].rgbaq));
+		*/
 	}
 	
 	free(temp_normals);

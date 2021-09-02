@@ -144,6 +144,14 @@ extern void displaySplashScreen();
 
 extern void init3D();
 
+extern void setCameraPosition(float x, float y, float z);
+
+extern void setCameraRotation(float x, float y, float z);
+
+extern void setLightQuantity(int quantity);
+
+extern void createLight(int lightid, float dir_x, float dir_y, float dir_z, int type, float r, float g, float b);
+
 extern ps2ObjMesh* loadOBJ(const char *Path);
 
 extern int drawOBJ(ps2ObjMesh* m, float pos_x, float pos_y, float pos_z, float rot_x, float rot_y, float rot_z);
