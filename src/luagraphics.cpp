@@ -154,17 +154,19 @@ static const luaL_Reg Font_functions[] = {
 
 static int lua_loadimg(lua_State *L) {
 	int argc = lua_gettop(L);
-	if (argc != 1) return luaL_error(L, "wrong number of arguments");
+	if (argc != 1 && argc != 2) return luaL_error(L, "wrong number of arguments");
     lua_gc(L, LUA_GCCOLLECT, 0);
 	const char* text = luaL_checkstring(L, 1);
 	int file = open(text, O_RDONLY, 0777);
+	bool delayed = true;
+	if (argc == 2) delayed = luaL_checkinteger(L, 2);
 	uint16_t magic;
 	read(file, &magic, 2);
 	close(file);
 	GSTEXTURE* image = NULL;
-	if (magic == 0x4D42) image = luaP_loadbmp(text);
-	else if (magic == 0xD8FF) image = luaP_loadjpeg(text, false);
-	else if (magic == 0x5089) image = luaP_loadpng(text);
+	if (magic == 0x4D42) image = luaP_loadbmp(text, delayed);
+	else if (magic == 0xD8FF) image = luaP_loadjpeg(text, false, delayed);
+	else if (magic == 0x5089) image = luaP_loadpng(text, delayed);
 	else return luaL_error(L, "Error loading image (invalid magic).");
 	lua_pushinteger(L, (uint32_t)(image));
 	return 1;

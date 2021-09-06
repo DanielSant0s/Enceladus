@@ -52,260 +52,6 @@ void enceladus_dma_send_packet2(packet2_t *packet2, int channel, u8 flush_cache)
 	else dmaKit_send(channel, (void *)((u32)packet2->base & 0x0FFFFFFF), ((u32)packet2->next - (u32)packet2->base) >> 4);
 }
 
-void calculate_vertices_no_clip(VECTOR *output,  int count, VECTOR *vertices, MATRIX local_screen) {
-	asm __volatile__ (
-					  "lqc2		$vf1, 0x00(%3)	\n"
-					  "lqc2		$vf2, 0x10(%3)	\n"
-					  "lqc2		$vf3, 0x20(%3)	\n"
-					  "lqc2		$vf4, 0x30(%3)	\n"
-					  "1:					\n"
-					  "lqc2		$vf6, 0x00(%2)	\n"
-					  "vmulaw		$ACC, $vf4, $vf0	\n"
-					  "vmaddax		$ACC, $vf1, $vf6	\n"
-					  "vmadday		$ACC, $vf2, $vf6	\n"
-					  "vmaddz		$vf7, $vf3, $vf6	\n"
-//					  "vclipw.xyz		$vf7, $vf7	\n" // FIXME: Clip detection is still kinda broken.
-					  "cfc2		$10, $18	\n"
-					  "beq			$10, $0, 3f	\n"
-					  "2:					\n"
-   					  "sqc2		$0, 0x00(%0)	\n"
-   					  "j			4f		\n"
-					  "3:					\n"
-					  "vdiv		$Q, $vf0w, $vf7w	\n"
-					  "vwaitq				\n"
-					  "vmulq.xyz		$vf7, $vf7, $Q	\n"
-					  "sqc2		$vf7, 0x00(%0)	\n"
-					  "4:					\n"
-					  "addi		%0, 0x10	\n"
-					  "addi		%2, 0x10	\n"
-					  "addi		%1, -1		\n"
-					  "bne		$0, %1, 1b	\n"
-					  : : "r" (output), "r" (count), "r" (vertices), "r" (local_screen) : "$10", "memory"
-					  );
-}
-
-void init3D()
-{
-	create_view_screen(view_screen, 4.0f/3.0f, -0.20f, 0.20f, -0.20f, 0.20f, 1.00f, 2000.00f);
-
-}
-
-void setCameraPosition(float x, float y, float z){
-	camera_position[0] = x;
-	camera_position[1] = y;
-	camera_position[2] = z;
-}
-
-void setCameraRotation(float x, float y, float z){
-	camera_rotation[0] = x;
-	camera_rotation[1] = y;
-	camera_rotation[2] = z;
-}
-
-void setLightQuantity(int quantity){
-	light_count = quantity;
-	light_direction = (VECTOR*)memalign(128, sizeof(VECTOR) * light_count);
-	light_colour = (VECTOR*)memalign(128, sizeof(VECTOR) * light_count);
-	light_type = (int*)memalign(128, sizeof(int) * light_count);
-}
-
-void createLight(int lightid, float dir_x, float dir_y, float dir_z, int type, float r, float g, float b){
-	light_direction[lightid][0] = dir_x;
-	light_direction[lightid][1] = dir_y;
-	light_direction[lightid][2] = dir_z;
-	light_direction[lightid][3] = 1.00f;
-
-	light_colour[lightid][0] = r;
-	light_colour[lightid][1] = g;
-	light_colour[lightid][2] = b;
-	light_colour[lightid][3] = 1.00f;
-
-	light_type[lightid] = type;
-
-}
-
-ps2ObjMesh* loadOBJ(const char *Path){
-
-	fastObjMesh* m = fast_obj_read(Path);
-	ps2ObjMesh* mesh = (ps2ObjMesh*)memalign(128, sizeof(ps2ObjMesh));
-
-	mesh->position_count = m->position_count;
-	mesh->texcoord_count = m->texcoord_count;
-	mesh->material_count = m->material_count;
-	mesh->normal_count = m->normal_count;
-	mesh->face_count = m->face_count;
-
-	mesh->indices = (unsigned int*)memalign(128, sizeof(int) * (mesh->face_count*3));
-	mesh->positions = (VECTOR*)memalign(128, sizeof(VECTOR) * mesh->position_count);
-	mesh->colours = (VECTOR*)memalign(128, sizeof(VECTOR) * mesh->position_count);
-	mesh->normals = (VECTOR*)memalign(128, sizeof(VECTOR) * mesh->normal_count);
-
-	printf("Material count: %i\n", mesh->material_count);
-
-	for (int i = 0; i < mesh->material_count; i++){
-		printf("Material: %s\n", m->materials[i].map_Ka.path);
-	}
-
-	int cnt = 0;
-
-	for (int i = 0; i < (mesh->position_count); i++){
-		mesh->positions[i][0] = m->positions[cnt];
-		mesh->positions[i][1] = m->positions[cnt+1];
-		mesh->positions[i][2] = m->positions[cnt+2];
-		mesh->positions[i][3] = 1.000f;
-
-		mesh->colours[i][0] = 1.000f;
-		mesh->colours[i][1] = 1.000f;
-		mesh->colours[i][2] = 1.000f;
-		mesh->colours[i][3] = 1.000f;
-
-		cnt += 3;
-
-	}
-
-	cnt = 0;
-
-	for (int i = 0; i < (mesh->normal_count); i++){
-		mesh->normals[i][0] = m->normals[cnt];
-		mesh->normals[i][1] = m->normals[cnt+1];
-		mesh->normals[i][2] = m->normals[cnt+2];
-		mesh->normals[i][3] = 1.000f;
-
-		cnt += 3;
-
-	}
-
-	cnt = 0;
-
-	for (int i = 0; i < (mesh->texcoord_count); i++){
-		mesh->texcoords[i][0] = m->texcoords[cnt];
-		mesh->texcoords[i][1] = m->texcoords[cnt+1];
-		mesh->texcoords[i][2] = m->texcoords[cnt+2];
-		mesh->texcoords[i][3] = 1.000f;
-
-		cnt += 3;
-
-	}
-
-	for (int i = 0; i < (mesh->face_count*3); i++){
-		mesh->indices[i] = m->indices[i].p;
-	}
-
-	free(m);
-	return mesh;
-}
-
-int drawOBJ(ps2ObjMesh* m, float pos_x, float pos_y, float pos_z, float rot_x, float rot_y, float rot_z)
-{
-	
-	VECTOR object_position = { pos_x, pos_y, pos_z, 1.00f };
-	VECTOR object_rotation = { rot_x, rot_y, rot_z, 1.00f };
-
-	int i;
-
-	// Matrices to setup the 3D environment and camera
-	MATRIX local_world;
-	MATRIX local_light;
-	MATRIX world_view;
-	MATRIX local_screen;
-
-	// Allocate calculation space.
-	VECTOR *temp_normals  = (VECTOR     *)memalign(128, sizeof(VECTOR) * m->normal_count);
-	VECTOR *temp_lights   = (VECTOR     *)memalign(128, sizeof(VECTOR) * m->normal_count);
-	color_f_t *temp_colours  = (color_f_t  *)memalign(128, sizeof(color_f_t)  * m->position_count);
-	vertex_f_t *temp_vertices = (vertex_f_t *)memalign(128, sizeof(vertex_f_t) * m->position_count);
-	texel_f_t *temp_texcoords = (texel_f_t *)memalign(128, sizeof(texel_f_t) * m->texcoord_count);
-	// Allocate register space.
-	xyz_t   *verts  = (xyz_t   *)memalign(128, sizeof(xyz_t)   * m->position_count);
-	color_t *colors = (color_t *)memalign(128, sizeof(color_t) * m->position_count);
-	texel_t *tex = (texel_t *)memalign(128, sizeof(texel_t) * m->texcoord_count);
-
-	gsGlobal->PrimAlphaEnable = GS_SETTING_OFF;
-	gsKit_set_test(gsGlobal, GS_ATEST_OFF);
-	gsGlobal->PrimAAEnable = GS_SETTING_ON;
-	gsKit_set_test(gsGlobal, GS_ZTEST_ON);
-
-	// Create the local_world matrix.
-	create_local_world(local_world, object_position, object_rotation);
-
-	// Create the local_light matrix.
-	create_local_light(local_light, object_rotation);
-
-	// Create the world_view matrix.
-	create_world_view(world_view, camera_position, camera_rotation);
-
-	// Create the local_screen matrix.
-	create_local_screen(local_screen, local_world, world_view, view_screen);
-
-	// Calculate the normal values.
-	calculate_normals(temp_normals, m->normal_count, m->normals, local_light);
-	
-	// Calculate the lighting values.
-	calculate_lights(temp_lights, m->normal_count, temp_normals, light_direction, light_colour, light_type, light_count+1);
-
-	// Calculate the colour values after lighting.
-	calculate_colours((VECTOR *)temp_colours, m->position_count, m->colours, temp_lights);
-
-	// Calculate the vertex values.
-	//calculate_vertices((VECTOR *)temp_vertices, m->position_count, m->positions, local_screen);
-	calculate_vertices_no_clip((VECTOR *)temp_vertices, m->position_count, m->positions, local_screen);
-	
-	// Convert floating point vertices to fixed point and translate to center of screen.
-	draw_convert_xyz(verts, 2048, 2048, 16, m->position_count, temp_vertices);
-
-	// Convert floating point colours to fixed point.
-	draw_convert_rgbq(colors, m->position_count, temp_vertices, temp_colours, 0x80);
-	
-	// Calculates the st coordinates from the perspective coordinate q = 1/w
-	draw_convert_st(tex, m->texcoord_count, temp_vertices, temp_texcoords);
-
-	for (i = 0; i < (m->face_count*3); i+=3) {
-		float fX=gsGlobal->Width/2;
-		float fY=gsGlobal->Height/2;
-
-		//Backface culling
-		float orientation = (temp_vertices[m->indices[i+1]].x - temp_vertices[m->indices[i]].x) * (temp_vertices[m->indices[i+2]].y - temp_vertices[m->indices[i]].y) - (temp_vertices[m->indices[i+1]].y - temp_vertices[m->indices[i]].y) * (temp_vertices[m->indices[i+2]].x - temp_vertices[m->indices[i]].x);
-		if(orientation < 0.0) {
-			continue;
-		}
-		
-		// Clipping
-		if(temp_vertices[m->indices[i]].z < -1.0 || temp_vertices[m->indices[i]].z > 0 || temp_vertices[m->indices[i]].x > 1.0 || temp_vertices[m->indices[i]].x < -1.0 || temp_vertices[m->indices[i]].y > 1.0 || temp_vertices[m->indices[i]].y < -1.0){
-			continue;
-		}
-		if(temp_vertices[m->indices[i+1]].z < -1.0 || temp_vertices[m->indices[i+1]].z > 0 || temp_vertices[m->indices[i+1]].x > 1.0 || temp_vertices[m->indices[i+1]].x < -1.0 || temp_vertices[m->indices[i+1]].y > 1.0 || temp_vertices[m->indices[i+1]].y < -1.0){
-			continue;
-		}
-		if(temp_vertices[m->indices[i+2]].z < -1.0 || temp_vertices[m->indices[i+2]].z > 0 || temp_vertices[m->indices[i+2]].x > 1.0 || temp_vertices[m->indices[i+2]].x < -1.0 || temp_vertices[m->indices[i+2]].y > 1.0 || temp_vertices[m->indices[i+2]].y < -1.0){
-			continue;
-		}
-
-		gsKit_prim_triangle_gouraud_3d(gsGlobal
-			, (temp_vertices[m->indices[i]].x + 1.0f) * fX, (temp_vertices[m->indices[i]].y + 1.0f) * fY, verts[m->indices[i]].z
-			, (temp_vertices[m->indices[i+1]].x + 1.0f) * fX, (temp_vertices[m->indices[i+1]].y + 1.0f) * fY, verts[m->indices[i+1]].z
-			, (temp_vertices[m->indices[i+2]].x + 1.0f) * fX, (temp_vertices[m->indices[i+2]].y + 1.0f) * fY, verts[m->indices[i+2]].z
-			, colors[m->indices[i]].rgbaq, colors[m->indices[i+1]].rgbaq, colors[m->indices[i+2]].rgbaq);
-
-		/*gsKit_prim_triangle_goraud_texture_3d(gsGlobal, texture,
-			(temp_vertices[m->indices[i]].x + 1.0f) * fX, (temp_vertices[m->indices[i]].y + 1.0f) * fY, verts[m->indices[i]].z, float u1, float v1,
-			(temp_vertices[m->indices[i+1]].x + 1.0f) * fX, (temp_vertices[m->indices[i+1]].y + 1.0f) * fY, verts[m->indices[i+1]].z, float u2, float v2,
-			(temp_vertices[m->indices[i+2]].x + 1.0f) * fX, (temp_vertices[m->indices[i+2]].y + 1.0f) * fY, verts[m->indices[i+2]].z, float u3, float v3,
-			colors[m->indices[i]].rgbaq, colors[m->indices[i+1]].rgbaq, colors[m->indices[i+2]].rgbaq));
-		*/
-	}
-	
-	free(temp_normals);
-	free(temp_lights);
-	free(temp_colours);
-	free(temp_vertices);
-	free(verts);
-	free(colors);
-
-	return 0;
-
-}
-
-
 //2D drawing functions
 
 void displaySplashScreen()
@@ -383,10 +129,10 @@ void displaySplashScreen()
 }
 
 
-GSTEXTURE* luaP_loadpng(const char *path)
+GSTEXTURE* luaP_loadpng(const char *path, bool delayed)
 {
 	GSTEXTURE* tex = (GSTEXTURE*)malloc(sizeof(GSTEXTURE));
-	tex->Delayed = 1;
+	tex->Delayed = delayed;
 
 	FILE* File = fopen(path, "rb");
 	if (File == NULL)
@@ -566,7 +312,7 @@ GSTEXTURE* luaP_loadpng(const char *path)
 }
 
 
-GSTEXTURE* luaP_loadbmp(const char *Path)
+GSTEXTURE* luaP_loadbmp(const char *Path, bool delayed)
 {
 	GSBITMAP Bitmap;
 	int x, y;
@@ -576,7 +322,7 @@ GSTEXTURE* luaP_loadbmp(const char *Path)
 	u8  *p;
 
     GSTEXTURE* tex = (GSTEXTURE*)malloc(sizeof(GSTEXTURE));
-	tex->Delayed = 1;
+	tex->Delayed = delayed;
 
 	FILE* File = fopen(Path, "rb");
 	if (File == NULL)
@@ -933,12 +679,12 @@ static void  _ps2_load_JPEG_generic(GSTEXTURE *Texture, struct jpeg_decompress_s
 	jpeg_finish_decompress(cinfo);
 }
 
-GSTEXTURE* luaP_loadjpeg(const char *Path, bool scale_down)
+GSTEXTURE* luaP_loadjpeg(const char *Path, bool scale_down, bool delayed)
 {
 
 	
     GSTEXTURE* tex = (GSTEXTURE*)malloc(sizeof(GSTEXTURE));
-	tex->Delayed = 1;
+	tex->Delayed = delayed;
 
 	FILE *fp;
 	struct jpeg_decompress_struct cinfo;
@@ -1299,6 +1045,362 @@ void fntDrawQuad(rm_quad_t *q)
                               q->br.u, q->br.v, 1, q->color);
 }
 
+
+void calculate_vertices_no_clip(VECTOR *output,  int count, VECTOR *vertices, MATRIX local_screen) {
+	asm __volatile__ (
+					  "lqc2		$vf1, 0x00(%3)	\n"
+					  "lqc2		$vf2, 0x10(%3)	\n"
+					  "lqc2		$vf3, 0x20(%3)	\n"
+					  "lqc2		$vf4, 0x30(%3)	\n"
+					  "1:					\n"
+					  "lqc2		$vf6, 0x00(%2)	\n"
+					  "vmulaw		$ACC, $vf4, $vf0	\n"
+					  "vmaddax		$ACC, $vf1, $vf6	\n"
+					  "vmadday		$ACC, $vf2, $vf6	\n"
+					  "vmaddz		$vf7, $vf3, $vf6	\n"
+//					  "vclipw.xyz	$vf7, $vf7	\n" // FIXME: Clip detection is still kinda broken.
+					  "cfc2		$10, $18	\n"
+					  "beq			$10, $0, 3f	\n"
+					  "2:					\n"
+   					  "sqc2		$0, 0x00(%0)	\n"
+   					  "j			4f		\n"
+					  "3:					\n"
+					  "vdiv		$Q, $vf0w, $vf7w	\n"
+					  "vwaitq				\n"
+					  "vmulq.xyz		$vf7, $vf7, $Q	\n"
+					  "sqc2		$vf7, 0x00(%0)	\n"
+					  "4:					\n"
+					  "addi		%0, 0x10	\n"
+					  "addi		%2, 0x10	\n"
+					  "addi		%1, -1		\n"
+					  "bne		$0, %1, 1b	\n"
+					  : : "r" (output), "r" (count), "r" (vertices), "r" (local_screen) : "$10", "memory"
+					  );
+}
+
+void init3D()
+{
+	create_view_screen(view_screen, 4.0f/3.0f, -0.20f, 0.20f, -0.20f, 0.20f, 1.00f, 2000.00f);
+
+}
+
+
+typedef union TexCoord { 
+    struct {
+        float s, t;
+    };
+    u64 word;
+} __attribute__((packed, aligned(8))) TexCoord;
+
+#define GIF_TAG_TRIANGLE_GORAUD_TEXTURED_ST_REGS(ctx) \
+    ((u64)(GS_TEX0_1 + ctx) << 0 ) | \
+    ((u64)(GS_PRIM)         << 4 ) | \
+    ((u64)(GS_RGBAQ)        << 8 ) | \
+    ((u64)(GS_ST)           << 12) | \
+    ((u64)(GS_XYZ2)         << 16) | \
+    ((u64)(GS_RGBAQ)        << 20) | \
+    ((u64)(GS_ST)           << 24) | \
+    ((u64)(GS_XYZ2)         << 28) | \
+    ((u64)(GS_RGBAQ)        << 32) | \
+    ((u64)(GS_ST)           << 36) | \
+    ((u64)(GS_XYZ2)         << 40) | \
+    ((u64)(GIF_NOP)         << 44)
+
+
+static inline u32 lzw(u32 val) {
+    u32 res;
+    __asm__ __volatile__ ("   plzcw   %0, %1    " : "=r" (res) : "r" (val));
+    return(res);
+}
+
+static inline void gsKit_set_tw_th(const GSTEXTURE *Texture, int *tw, int *th) {
+    *tw = 31 - (lzw(Texture->Width) + 1);
+    if(Texture->Width > (1<<*tw))
+        (*tw)++;
+
+    *th = 31 - (lzw(Texture->Height) + 1);
+    if(Texture->Height > (1<<*th))
+        (*th)++;
+}
+
+static void gsKit_prim_triangle_goraud_texture_3d_st(
+    GSGLOBAL *gsGlobal, GSTEXTURE *Texture,
+    float x1, float y1, int iz1, float u1, float v1,
+    float x2, float y2, int iz2, float u2, float v2,
+    float x3, float y3, int iz3, float u3, float v3,
+    u64 color1, u64 color2, u64 color3
+) {
+    gsKit_set_texfilter(gsGlobal, Texture->Filter);
+    u64* p_store;
+    u64* p_data;
+    const int qsize = 6;
+    const int bsize = 96;
+
+    int tw, th;
+    gsKit_set_tw_th(Texture, &tw, &th);
+
+    int ix1 = gsKit_float_to_int_x(gsGlobal, x1);
+    int ix2 = gsKit_float_to_int_x(gsGlobal, x2);
+    int ix3 = gsKit_float_to_int_x(gsGlobal, x3);
+    int iy1 = gsKit_float_to_int_y(gsGlobal, y1);
+    int iy2 = gsKit_float_to_int_y(gsGlobal, y2);
+    int iy3 = gsKit_float_to_int_y(gsGlobal, y3);
+ 
+    TexCoord st1 = (TexCoord) { { u1, v1 } };
+    TexCoord st2 = (TexCoord) { { u2, v2 } };
+    TexCoord st3 = (TexCoord) { { u3, v3 } };
+
+    p_store = p_data = (u64*)gsKit_heap_alloc(gsGlobal, qsize, bsize, GSKIT_GIF_PRIM_TRIANGLE_TEXTURED);
+
+    *p_data++ = GIF_TAG_TRIANGLE_GORAUD_TEXTURED(0);
+    *p_data++ = GIF_TAG_TRIANGLE_GORAUD_TEXTURED_ST_REGS(gsGlobal->PrimContext);
+
+    const int replace = 0; // cur_shader->tex_mode == TEXMODE_REPLACE;
+    const int alpha = gsGlobal->PrimAlphaEnable;
+
+    if (Texture->VramClut == 0) {
+        *p_data++ = GS_SETREG_TEX0(Texture->Vram/256, Texture->TBW, Texture->PSM,
+            tw, th, alpha, replace,
+            0, 0, 0, 0, GS_CLUT_STOREMODE_NOLOAD);
+    } else {
+        *p_data++ = GS_SETREG_TEX0(Texture->Vram/256, Texture->TBW, Texture->PSM,
+            tw, th, alpha, replace,
+            Texture->VramClut/256, Texture->ClutPSM, 0, 0, GS_CLUT_STOREMODE_LOAD);
+    }
+
+    *p_data++ = GS_SETREG_PRIM( GS_PRIM_PRIM_TRIANGLE, 1, 1, gsGlobal->PrimFogEnable,
+                gsGlobal->PrimAlphaEnable, gsGlobal->PrimAAEnable,
+                0, gsGlobal->PrimContext, 0);
+
+
+    *p_data++ = color1;
+    *p_data++ = st1.word;
+    *p_data++ = GS_SETREG_XYZ2( ix1, iy1, iz1 );
+
+    *p_data++ = color2;
+    *p_data++ = st2.word;
+    *p_data++ = GS_SETREG_XYZ2( ix2, iy2, iz2 );
+
+    *p_data++ = color3;
+    *p_data++ = st3.word;
+    *p_data++ = GS_SETREG_XYZ2( ix3, iy3, iz3 );
+}
+
+void setCameraPosition(float x, float y, float z){
+	camera_position[0] = x;
+	camera_position[1] = y;
+	camera_position[2] = z;
+	camera_position[3] = 1.00f;
+}
+
+void setCameraRotation(float x, float y, float z){
+	camera_rotation[0] = x;
+	camera_rotation[1] = y;
+	camera_rotation[2] = z;
+	camera_rotation[3] = 1.00f;
+}
+
+void setLightQuantity(int quantity){
+	light_count = quantity;
+	light_direction = (VECTOR*)memalign(128, sizeof(VECTOR) * light_count);
+	light_colour = (VECTOR*)memalign(128, sizeof(VECTOR) * light_count);
+	light_type = (int*)memalign(128, sizeof(int) * light_count);
+}
+
+void createLight(int lightid, float dir_x, float dir_y, float dir_z, int type, float r, float g, float b){
+	light_direction[lightid-1][0] = dir_x;
+	light_direction[lightid-1][1] = dir_y;
+	light_direction[lightid-1][2] = dir_z;
+	light_direction[lightid-1][3] = 1.00f;
+
+	light_colour[lightid-1][0] = r;
+	light_colour[lightid-1][1] = g;
+	light_colour[lightid-1][2] = b;
+	light_colour[lightid-1][3] = 1.00f;
+
+	light_type[lightid-1] = type;
+
+}
+
+ps2ObjMesh* loadOBJ(const char *Path, const char *texpath){
+
+	fastObjMesh* m = fast_obj_read(Path);
+	ps2ObjMesh* mesh = (ps2ObjMesh*)memalign(128, sizeof(ps2ObjMesh));
+
+	mesh->position_count = m->position_count;
+	mesh->texcoord_count = m->texcoord_count;
+	mesh->material_count = m->material_count;
+	mesh->normal_count = m->normal_count;
+	mesh->face_count = m->face_count;
+
+	mesh->indices = (unsigned int*)memalign(128, sizeof(unsigned int) * (mesh->face_count*3));
+	mesh->t_indices = (unsigned int*)memalign(128, sizeof(unsigned int) * (mesh->face_count*3));
+	mesh->n_indices = (unsigned int*)memalign(128, sizeof(unsigned int) * (mesh->face_count*3));
+
+	mesh->positions = (VECTOR*)memalign(128, sizeof(VECTOR) * mesh->position_count);
+	mesh->colours = (VECTOR*)memalign(128, sizeof(VECTOR) * mesh->position_count);
+	mesh->normals = (VECTOR*)memalign(128, sizeof(VECTOR) * mesh->normal_count);
+	mesh->texcoords = (VECTOR*)memalign(128, sizeof(VECTOR) * mesh->texcoord_count);
+
+	int cnt = 0;
+
+	for (int i = 0; i < mesh->position_count; i++){
+		mesh->positions[i][0] = m->positions[cnt];
+		mesh->positions[i][1] = m->positions[cnt+1];
+		mesh->positions[i][2] = m->positions[cnt+2];
+		mesh->positions[i][3] = 1.000f;
+
+		mesh->colours[i][0] = 1.000f;
+		mesh->colours[i][1] = 1.000f;
+		mesh->colours[i][2] = 1.000f;
+		mesh->colours[i][3] = 1.000f;
+
+		cnt += 3;
+	}
+
+	cnt = 0;
+
+	for (int i = 0; i < mesh->normal_count; i++){
+		mesh->normals[i][0] = m->normals[cnt];
+		mesh->normals[i][1] = m->normals[cnt+1];
+		mesh->normals[i][2] = m->normals[cnt+2];
+		mesh->normals[i][3] = 1.000f;
+
+		cnt += 3;
+	}
+
+	cnt = 0;
+
+	for (int i = 0; i < mesh->texcoord_count; i++){
+		mesh->texcoords[i][0] = m->texcoords[cnt];
+		mesh->texcoords[i][1] = 1-m->texcoords[cnt+1];
+		cnt += 2;
+	}
+
+	for (int i = 0; i < mesh->face_count*3; i++){
+		mesh->indices[i] = m->indices[i].p;
+		mesh->t_indices[i] = m->indices[i].t;
+		mesh->n_indices[i] = m->indices[i].n;
+	}
+
+	if (texpath != NULL) { 
+			mesh->texture = luaP_loadpng(texpath, false);
+	} else {
+		free(mesh->texture); 
+		mesh->texture = NULL;
+	}
+
+	free(m);
+	return mesh;
+}
+
+void drawOBJ(ps2ObjMesh* m, float pos_x, float pos_y, float pos_z, float rot_x, float rot_y, float rot_z)
+{
+	
+	VECTOR object_position = { pos_x, pos_y, pos_z, 1.00f };
+	VECTOR object_rotation = { rot_x, rot_y, rot_z, 1.00f };
+
+	int i;
+
+	// Matrices to setup the 3D environment and camera
+	MATRIX local_world;
+	MATRIX local_light;
+	MATRIX world_view;
+	MATRIX local_screen;
+
+	// Allocate calculation space.
+	VECTOR *temp_normals  = (VECTOR     *)memalign(128, sizeof(VECTOR) * m->normal_count);
+	VECTOR *temp_lights   = (VECTOR     *)memalign(128, sizeof(VECTOR) * m->position_count);
+	color_f_t *temp_colours  = (color_f_t  *)memalign(128, sizeof(color_f_t)  * m->position_count);
+	vertex_f_t *temp_vertices = (vertex_f_t *)memalign(128, sizeof(vertex_f_t) * m->position_count);
+
+
+	gsGlobal->PrimAlphaEnable = GS_SETTING_OFF;
+	gsKit_set_test(gsGlobal, GS_ATEST_OFF);
+	gsGlobal->PrimAAEnable = GS_SETTING_ON;
+	gsKit_set_test(gsGlobal, GS_ZTEST_ON);
+
+	// Create the local_world matrix.
+	create_local_world(local_world, object_position, object_rotation);
+
+	// Create the local_light matrix.
+	create_local_light(local_light, object_rotation);
+
+	// Create the world_view matrix.
+	create_world_view(world_view, camera_position, camera_rotation);
+
+	// Create the local_screen matrix.
+	create_local_screen(local_screen, local_world, world_view, view_screen);
+
+	// Calculate the normal values.
+	calculate_normals(temp_normals, m->normal_count, m->normals, local_light);
+	
+	// Calculate the lighting values.
+	calculate_lights(temp_lights, m->position_count, temp_normals, light_direction, light_colour, light_type, light_count);
+
+	// Calculate the colour values after lighting.
+	calculate_colours((VECTOR *)temp_colours, m->position_count, m->colours, temp_lights);
+
+	// Calculate the vertex values.
+	//calculate_vertices((VECTOR *)temp_vertices, m->position_count, m->positions, local_screen);
+	calculate_vertices_no_clip((VECTOR *)temp_vertices, m->position_count, m->positions, local_screen);
+
+	// Convert floating point vertices to fixed point and translate to center of screen.
+	xyz_t   *verts  = (xyz_t   *)memalign(128, sizeof(xyz_t)   * m->position_count);
+	color_t *colors = (color_t *)memalign(128, sizeof(color_t) * m->position_count);
+	texel_t *tex = (texel_t *)memalign(128, sizeof(texel_t) * m->texcoord_count);
+	
+	draw_convert_xyz(verts, 2048, 2048, 16, m->position_count, temp_vertices);
+	draw_convert_rgbq(colors, m->position_count, temp_vertices, temp_colours, 0x80);
+	draw_convert_st(tex, m->texcoord_count, temp_vertices, (texel_f_t *)m->texcoords);
+
+	for (i = 0; i < (m->face_count*3); i+=3) {
+		float fX=gsGlobal->Width/2;
+		float fY=gsGlobal->Height/2;
+
+		//Backface culling
+		float orientation = (temp_vertices[m->indices[i+1]].x - temp_vertices[m->indices[i]].x) * (temp_vertices[m->indices[i+2]].y - temp_vertices[m->indices[i]].y) - (temp_vertices[m->indices[i+1]].y - temp_vertices[m->indices[i]].y) * (temp_vertices[m->indices[i+2]].x - temp_vertices[m->indices[i]].x);
+		if(orientation < 0.0) {
+			continue;
+		}
+		
+		// Clipping
+		if(temp_vertices[m->indices[i]].z < -1.0 || temp_vertices[m->indices[i]].z > 0 || temp_vertices[m->indices[i]].x > 1.0 || temp_vertices[m->indices[i]].x < -1.0 || temp_vertices[m->indices[i]].y > 1.0 || temp_vertices[m->indices[i]].y < -1.0){
+			continue;
+		}
+		if(temp_vertices[m->indices[i+1]].z < -1.0 || temp_vertices[m->indices[i+1]].z > 0 || temp_vertices[m->indices[i+1]].x > 1.0 || temp_vertices[m->indices[i+1]].x < -1.0 || temp_vertices[m->indices[i+1]].y > 1.0 || temp_vertices[m->indices[i+1]].y < -1.0){
+			continue;
+		}
+		if(temp_vertices[m->indices[i+2]].z < -1.0 || temp_vertices[m->indices[i+2]].z > 0 || temp_vertices[m->indices[i+2]].x > 1.0 || temp_vertices[m->indices[i+2]].x < -1.0 || temp_vertices[m->indices[i+2]].y > 1.0 || temp_vertices[m->indices[i+2]].y < -1.0){
+			continue;
+		}
+
+		if (m->texture == NULL){
+			gsKit_prim_triangle_gouraud_3d(gsGlobal
+				, (temp_vertices[m->indices[i]].x + 1.0f) * fX, (temp_vertices[m->indices[i]].y + 1.0f) * fY, verts[m->indices[i]].z
+				, (temp_vertices[m->indices[i+1]].x + 1.0f) * fX, (temp_vertices[m->indices[i+1]].y + 1.0f) * fY, verts[m->indices[i+1]].z
+				, (temp_vertices[m->indices[i+2]].x + 1.0f) * fX, (temp_vertices[m->indices[i+2]].y + 1.0f) * fY, verts[m->indices[i+2]].z
+				, colors[m->indices[i]].rgbaq, colors[m->indices[i+1]].rgbaq, colors[m->indices[i+2]].rgbaq);
+		} else {
+			gsKit_prim_triangle_goraud_texture_3d_st(gsGlobal, m->texture,
+					(temp_vertices[m->indices[i]].x + 1.0f) * fX, (temp_vertices[m->indices[i]].y + 1.0f) * fY, verts[m->indices[i]].z, tex[m->t_indices[i]].s, tex[m->t_indices[i]].t,
+					(temp_vertices[m->indices[i+1]].x + 1.0f) * fX, (temp_vertices[m->indices[i+1]].y + 1.0f) * fY, verts[m->indices[i+1]].z, tex[m->t_indices[i+1]].s, tex[m->t_indices[i+1]].t,
+					(temp_vertices[m->indices[i+2]].x + 1.0f) * fX, (temp_vertices[m->indices[i+2]].y + 1.0f) * fY, verts[m->indices[i+2]].z, tex[m->t_indices[i+2]].s, tex[m->t_indices[i+2]].t,
+					colors[m->indices[i]].rgbaq, colors[m->indices[i+1]].rgbaq, colors[m->indices[i+2]].rgbaq);
+		}
+
+	}
+	
+	free(temp_normals);
+	free(temp_lights);
+	free(temp_colours);
+	free(temp_vertices);
+	free(verts);
+	free(colors);
+	free(tex);
+
+}
+
 void initGraphics()
 {
 
@@ -1311,7 +1413,7 @@ void initGraphics()
 		gsGlobal->Height = 448;
 	}
 
-	gsGlobal->PSM  = GS_PSM_CT24;
+	gsGlobal->PSM  = GS_PSM_CT16;
 	gsGlobal->PSMZ = GS_PSMZ_16;
 	gsGlobal->ZBuffering = GS_SETTING_ON;
 	gsGlobal->DoubleBuffering = GS_SETTING_ON;

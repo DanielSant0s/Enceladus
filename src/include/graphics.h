@@ -40,31 +40,28 @@ typedef struct
 {
     /* Vertex data */
     unsigned int                position_count;
-    VECTOR*                      positions;
-
+    VECTOR*                     positions;
     unsigned int                texcoord_count;
-    VECTOR*                      texcoords;
-
+    VECTOR*                     texcoords;
     unsigned int                normal_count;
-    VECTOR*                      normals;
-
-	VECTOR*                      colours;
-
+    VECTOR*                     normals;
+	VECTOR*                     colours;
     /* Face data: one element for each face */
     unsigned int                face_count;
     unsigned int*               face_vertices;
     unsigned int*               face_materials;
-
     /* Index data: one element for each face vertex */
     unsigned int*               indices;
-
+    unsigned int*               t_indices;
+    unsigned int*               n_indices;
     /* Materials */
     unsigned int                material_count;
     fastObjMaterial*            materials;
-
     /* Mesh groups */
     unsigned int                group_count;
     fastObjGroup*               groups;
+
+    GSTEXTURE* texture;
 
 } ps2ObjMesh;
 
@@ -94,13 +91,11 @@ extern int FPSCounter(clock_t prevtime, clock_t curtime);
 
 extern void setVideoMode(s16 mode, int width, int height, int psm, s16 interlace, s16 field);
 
-extern GSTEXTURE* luaP_loadpng(const char *Path);
+extern GSTEXTURE* luaP_loadpng(const char *Path, bool delayed);
 
-extern GSTEXTURE* luaP_loadbmp(const char *Path);
+extern GSTEXTURE* luaP_loadbmp(const char *Path, bool delayed);
 
-extern GSTEXTURE* luaP_loadjpeg(const char *Path, bool scale_down);
-
-extern GSTEXTURE* luaP_loadrawimg(const char *Path);
+extern GSTEXTURE* luaP_loadjpeg(const char *Path, bool scale_down, bool delayed);
 
 extern void drawImage(GSTEXTURE* source, float x, float y, float width, float height, float startx, float starty, float endx, float endy, Color color);
 
@@ -152,8 +147,8 @@ extern void setLightQuantity(int quantity);
 
 extern void createLight(int lightid, float dir_x, float dir_y, float dir_z, int type, float r, float g, float b);
 
-extern ps2ObjMesh* loadOBJ(const char *Path);
+extern ps2ObjMesh* loadOBJ(const char *Path, const char *texpath);
 
-extern int drawOBJ(ps2ObjMesh* m, float pos_x, float pos_y, float pos_z, float rot_x, float rot_y, float rot_z);
+extern void drawOBJ(ps2ObjMesh* m, float pos_x, float pos_y, float pos_z, float rot_x, float rot_y, float rot_z);
 
 #endif

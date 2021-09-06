@@ -70,11 +70,14 @@ static int lua_createlight(lua_State *L){
 
 static int lua_loadobj(lua_State *L){
 	int argc = lua_gettop(L);
-	if (argc != 1) return luaL_error(L, "wrong number of arguments");
+	if (argc != 1 && argc != 2) return luaL_error(L, "wrong number of arguments");
 
 	const char *model_file = luaL_checkstring(L, 1); //Model filename
 
-	ps2ObjMesh* m = loadOBJ(model_file);
+	const char *texture_file = NULL;
+	if (argc == 2) texture_file = luaL_checkstring(L, 2); //Texture filename
+
+	ps2ObjMesh* m = loadOBJ(model_file, texture_file);
 
 	// Push model object into Lua stack
 	lua_pushinteger(L, (uint32_t)m);
