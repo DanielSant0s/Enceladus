@@ -67,52 +67,6 @@ void initMC(void)
 void systemInit()
 {
 
-    int ret;
-
-    #ifdef RESET_IOP  
-    SifInitRpc(0);
-    while (!SifIopReset("", 0)){};
-    while (!SifIopSync()){};
-    SifInitRpc(0);
-    #endif
-    
-    // install sbv patch fix
-    printf("Installing SBV Patch...\n");
-    sbv_patch_enable_lmb();
-    sbv_patch_disable_prefix_check(); 
-    sbv_patch_fileio(); 
-
-    SifLoadModule("rom0:SIO2MAN", 0, NULL);
-    SifLoadModule("rom0:MCMAN", 0, NULL);
-	SifLoadModule("rom0:MCSERV", 0, NULL);
-	SifLoadModule("rom0:PADMAN", 0, NULL);
-    SifLoadModule("rom0:LIBSD", 0, NULL);
-
-    // load pad & mc modules 
-    printf("Installing Pad & MC modules...\n");
-
-    // load USB modules    
-    SifExecModuleBuffer(&usbd_irx, size_usbd_irx, 0, NULL, NULL);
-    SifExecModuleBuffer(&bdm_irx, size_bdm_irx, 0, NULL, NULL);
-    SifExecModuleBuffer(&bdmfs_vfat_irx, size_bdmfs_vfat_irx, 0, NULL, NULL);
-    SifExecModuleBuffer(&usbmass_bd_irx, size_usbmass_bd_irx, 0, NULL, NULL);
-
-    SifExecModuleBuffer(&cdfs_irx, size_cdfs_irx, 0, NULL, NULL);
-
-    //load audio
-    SifExecModuleBuffer(&audsrv_irx, size_audsrv_irx, 0, NULL, NULL);
-
-    ret = audsrv_init();
-	if (ret != 0)
-	{
-		printf("sample: failed to initialize audsrv\n");
-		printf("audsrv returned error string: %s\n", audsrv_get_error_string());
-	}
-
-    initMC();
-
-    init_scr();
-
 }
 
 
@@ -156,8 +110,45 @@ int main(int argc, char * argv[])
 {
     const char * errMsg;
 
-	// PS2 specific initialization 
-	systemInit();
+    #ifdef RESET_IOP  
+    SifInitRpc(0);
+    while (!SifIopReset("", 0)){};
+    while (!SifIopSync()){};
+    SifInitRpc(0);
+    #endif
+    
+    // install sbv patch fix
+    printf("Installing SBV Patch...\n");
+    sbv_patch_enable_lmb();
+    sbv_patch_disable_prefix_check(); 
+    sbv_patch_fileio(); 
+
+    SifLoadModule("rom0:SIO2MAN", 0, NULL);
+    SifLoadModule("rom0:MCMAN", 0, NULL);
+	SifLoadModule("rom0:MCSERV", 0, NULL);
+	SifLoadModule("rom0:PADMAN", 0, NULL);
+    SifLoadModule("rom0:LIBSD", 0, NULL);
+
+    // load pad & mc modules 
+    printf("Installing Pad & MC modules...\n");
+
+    // load USB modules    
+    SifExecModuleBuffer(&usbd_irx, size_usbd_irx, 0, NULL, NULL);
+    SifExecModuleBuffer(&bdm_irx, size_bdm_irx, 0, NULL, NULL);
+    SifExecModuleBuffer(&bdmfs_vfat_irx, size_bdmfs_vfat_irx, 0, NULL, NULL);
+    SifExecModuleBuffer(&usbmass_bd_irx, size_usbmass_bd_irx, 0, NULL, NULL);
+
+    SifExecModuleBuffer(&cdfs_irx, size_cdfs_irx, 0, NULL, NULL);
+
+    //load audio
+    SifExecModuleBuffer(&audsrv_irx, size_audsrv_irx, 0, NULL, NULL);
+
+    audsrv_init();
+
+    initMC();
+
+    init_scr();
+
 	
         // if no parameters are specified, use the default boot
 	if (argc < 2)
@@ -186,9 +177,6 @@ int main(int argc, char * argv[])
     initGraphics();
 
     pad_init();
-    
-    // Init Libmikmod
-    //initMikmod();
 
     // set base path luaplayer
     chdir(boot_path); 

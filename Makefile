@@ -41,7 +41,7 @@ PS2LINK_IP = 192.168.1.10
 EE_BIN = enceladus.elf
 EE_BIN_PKD = enceladus_pkd.elf
 
-EE_LIBS = -L$(PS2SDK)/ports/lib -L$(PS2DEV)/gsKit/lib/ -lpatches -lfileXio -lpad -ldebug -llua -ljpeg -lfreetype -ldraw -lmath3d -lpacket2 -lgskit_toolkit -lgskit -ldmakit -lpng -lz -lmc -laudsrv
+EE_LIBS = -L$(PS2SDK)/ports/lib -L$(PS2DEV)/gsKit/lib/ -lpatches -lfileXio -lpad -ldebug -llua -ljpeg -lfreetype -lmath3d -lpacket2 -lgskit_toolkit -lgskit -ldmakit -lpng -lz -lmc -laudsrv
 
 EE_INCS += -I$(PS2DEV)/gsKit/include -I$(PS2SDK)/ports/include -I$(PS2SDK)/ports/include/freetype2 -I$(PS2SDK)/ports/include/zlib
 

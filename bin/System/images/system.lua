@@ -1,12 +1,12 @@
 
 --Screen.showSplash()
---Font.ftInit()
+Font.ftInit()
 Render.init()
 
 local grogu = Graphics.loadImage("System/images/grogu.jpg")
 local stars = Graphics.loadImage("System/images/stars.bmp")
 local ink = Graphics.loadImage("System/images/ink.png")
---local mario = Graphics.loadImage("System/images/mario.png")
+local mario = Graphics.loadImage("System/images/mario.png")
 
 Color1 = Color.new(0, 255, 255, 255)
 Color2 = Color.new(255, 0, 255, 255)
@@ -14,32 +14,31 @@ Color3 = Color.new(255, 255, 0, 255)
 Color4 = Color.new(0, 255, 0, 255)
 
 local rad = 0
-local mx = 100.0
 
 Font.fmLoad()
---local netron = Font.ftLoad("System/images/netron.ttf")
---Font.ftSetPixelSize(netron, 25, 25)
+local netron = Font.ftLoad("System/images/netron.ttf")
+Font.ftSetPixelSize(netron, 25, 25)
 
 local type, freespace, format = System.getMCInfo(0)
 
-local rx, ry
+local mx, my
 romver = System.openFile("rom0:ROMVER", FREAD)
 romver_size = System.sizeFile(romver)
 romver_data = System.readFile(romver, romver_size)
 System.closeFile(romver)
 
 --local cube = Render.load("System/images/mesh/plane.obj", "System/images/mesh/floor.png")
-local bomdecoito = Render.load("System/images/mesh/monkey.obj" , "System/images/mesh/monkey.png")
+local bomdecoito = Render.load("System/images/mesh/dragon.obj" , "System/images/mesh/dragon.png")
 
 Camera.position(0.0, 0.0, 50.0)
 Camera.rotation(0.0, 0.0,  0.0)
 
 Lights.create(4)
 
---Lights.set(1,  0.0,  0.0,  0.0, 1.0, 1.0, 1.0,     AMBIENT)
-Lights.set(2,  1.0,  0.0, -1.0, 1.0, 1.0, 1.0, DIRECTIONAL)
-Lights.set(3,  0.0,  1.0, -1.0, 0.3, 0.3, 0.3, DIRECTIONAL)
-Lights.set(4, -1.0, -1.0, -1.0, 0.5, 0.5, 0.5, DIRECTIONAL)
+Lights.set(1,  0.0,  0.0,  0.0, 1.0, 1.0, 1.0,     AMBIENT)
+--Lights.set(2,  1.0,  0.0, -1.0, 1.0, 1.0, 1.0, DIRECTIONAL)
+--Lights.set(3,  0.0,  1.0, -1.0, 0.3, 0.3, 0.3, DIRECTIONAL)
+--Lights.set(4, -1.0, -1.0, -1.0, 0.5, 0.5, 0.5, DIRECTIONAL)
 
 while true do
 
@@ -68,12 +67,10 @@ while true do
     --Graphics.drawRotateImage(mario, 400, 224, rad)
     rad = rad + 0.005
     --Graphics.drawImage(mario, mx, 224, Color.new(0, 128, 128, 128))
-    --mx = mx + 0.7
 
-
-    --Font.fmPrint(250, 350, 0.6, "ROMVER: " .. romver_data .. "\n")
-    --Font.fmPrint(200, 60, 0.6, "MC Info\nType: " .. type .. "\nFree Space: " .. freespace .. "\nFormat: " .. format .. "\n")
-    --Font.ftPrint(netron, 60, 60, 0, 200, 200, "MC Info\nType: " .. type .. "\nFree Space: " .. freespace .. "\nFormat: " .. format .. "\n")
+    Font.fmPrint(250, 350, 0.6, "ROMVER: " .. romver_data .. "\n")
+    Font.fmPrint(200, 60, 0.6, "MC Info\nType: " .. type .. "\nFree Space: " .. freespace .. "\nFormat: " .. format .. "\n")
+    Font.ftPrint(netron, 60, 60, 0, 200, 200, "MC Info\nType: " .. type .. "\nFree Space: " .. freespace .. "\nFormat: " .. format .. "\n")
     --Render.draw(cube, 0.0, 0.0, -50.0, 1.4, 0.0, 0.0)
     Render.draw(bomdecoito, 0.0, 0.0, 30, rad, rad, 0.0)
     

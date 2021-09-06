@@ -8,8 +8,6 @@
 #include <packet2.h>
 #include <packet2_utils.h>
 
-#include <draw3d.h>
-
 #include <jpeglib.h>
 #include <time.h>
 #include <png.h>
@@ -51,6 +49,15 @@ void enceladus_dma_send_packet2(packet2_t *packet2, int channel, u8 flush_cache)
 	}
 	else dmaKit_send(channel, (void *)((u32)packet2->base & 0x0FFFFFFF), ((u32)packet2->next - (u32)packet2->base) >> 4);
 }
+
+
+#ifdef ftoi4
+ #undef ftoi4
+ #define ftoi4(F) ((int)(((float)F)*16.0f))
+#else
+ #define ftoi4(F) ((int)(((float)F)*16.0f))
+#endif
+
 
 //2D drawing functions
 
@@ -1186,6 +1193,128 @@ static void gsKit_prim_triangle_goraud_texture_3d_st(
     *p_data++ = GS_SETREG_XYZ2( ix3, iy3, iz3 );
 }
 
+int draw_convert_rgbq(color_t *output, int count, vertex_f_t *vertices, color_f_t *colours, unsigned char alpha)
+{
+
+	int i;
+	float q = 1.00f;
+
+	// For each colour...
+	for (i=0;i<count;i++)
+	{
+
+		// Calculate the Q value.
+		if (vertices[i].w != 0)
+		{
+
+			q = 1 / vertices[i].w;
+
+		}
+
+		// Calculate the RGBA values.
+		output[i].r = (int)(colours[i].r * 128.0f);
+		output[i].g = (int)(colours[i].g * 128.0f);
+		output[i].b = (int)(colours[i].b * 128.0f);
+		output[i].a = alpha;
+		output[i].q = q;
+
+	}
+
+	// End function.
+	return 0;
+
+}
+
+int draw_convert_rgbaq(color_t *output, int count, vertex_f_t *vertices, color_f_t *colours)
+{
+
+	int i;
+	float q = 1.00f;
+
+	// For each colour...
+	for (i=0;i<count;i++)
+	{
+
+		// Calculate the Q value.
+		if (vertices[i].w != 0)
+		{
+
+			q = 1 / vertices[i].w;
+
+		}
+
+		// Calculate the RGBA values.
+		output[i].r = (int)(colours[i].r * 128.0f);
+		output[i].g = (int)(colours[i].g * 128.0f);
+		output[i].b = (int)(colours[i].b * 128.0f);
+		output[i].a = (int)(colours[i].a * 128.0f);
+		output[i].q = q;
+
+	}
+
+	// End function.
+	return 0;
+
+}
+
+int draw_convert_st(texel_t *output, int count, vertex_f_t *vertices, texel_f_t *coords)
+{
+
+	int i = 0;
+	float q = 1.00f;
+
+	// For each coordinate...
+	for (i=0;i<count;i++)
+	{
+
+		// Calculate the Q value.
+		if (vertices[i].w != 0)
+		{
+			q = 1 / vertices[i].w;
+		}
+
+		// Calculate the S and T values.
+		output[i].s = coords[i].s * q;
+		output[i].t = coords[i].t * q;
+
+	}
+
+	// End function.
+	return 0;
+
+}
+
+int draw_convert_xyz(xyz_t *output, float x, float y, int z, int count, vertex_f_t *vertices)
+{
+
+	int i;
+
+	int center_x;
+	int center_y;
+
+	unsigned int max_z;
+
+	center_x = ftoi4(x);
+	center_y = ftoi4(y);
+
+	max_z = 1 << (z - 1);
+
+	// For each colour...
+	for (i=0;i<count;i++)
+	{
+
+		// Calculate the XYZ values.
+		output[i].x = (short)((vertices[i].x + 1.0f) * center_x);
+		output[i].y = (short)((vertices[i].y + 1.0f) * -center_y);
+		output[i].z = (unsigned int)((vertices[i].z + 1.0f) * max_z);
+
+	}
+
+	// End function.
+	return 0;
+
+}
+
 void setCameraPosition(float x, float y, float z){
 	camera_position[0] = x;
 	camera_position[1] = y;
@@ -1221,6 +1350,8 @@ void createLight(int lightid, float dir_x, float dir_y, float dir_z, int type, f
 	light_type[lightid-1] = type;
 
 }
+
+
 
 ps2ObjMesh* loadOBJ(const char *Path, const char *texpath){
 
@@ -1281,6 +1412,7 @@ ps2ObjMesh* loadOBJ(const char *Path, const char *texpath){
 		mesh->indices[i] = m->indices[i].p;
 		mesh->t_indices[i] = m->indices[i].t;
 		mesh->n_indices[i] = m->indices[i].n;
+
 	}
 
 	if (texpath != NULL) { 
@@ -1342,7 +1474,6 @@ void drawOBJ(ps2ObjMesh* m, float pos_x, float pos_y, float pos_z, float rot_x, 
 	calculate_colours((VECTOR *)temp_colours, m->position_count, m->colours, temp_lights);
 
 	// Calculate the vertex values.
-	//calculate_vertices((VECTOR *)temp_vertices, m->position_count, m->positions, local_screen);
 	calculate_vertices_no_clip((VECTOR *)temp_vertices, m->position_count, m->positions, local_screen);
 
 	// Convert floating point vertices to fixed point and translate to center of screen.
@@ -1354,9 +1485,11 @@ void drawOBJ(ps2ObjMesh* m, float pos_x, float pos_y, float pos_z, float rot_x, 
 	draw_convert_rgbq(colors, m->position_count, temp_vertices, temp_colours, 0x80);
 	draw_convert_st(tex, m->texcoord_count, temp_vertices, (texel_f_t *)m->texcoords);
 
+
+	float fX=gsGlobal->Width/2;
+	float fY=gsGlobal->Height/2;
+
 	for (i = 0; i < (m->face_count*3); i+=3) {
-		float fX=gsGlobal->Width/2;
-		float fY=gsGlobal->Height/2;
 
 		//Backface culling
 		float orientation = (temp_vertices[m->indices[i+1]].x - temp_vertices[m->indices[i]].x) * (temp_vertices[m->indices[i+2]].y - temp_vertices[m->indices[i]].y) - (temp_vertices[m->indices[i+1]].y - temp_vertices[m->indices[i]].y) * (temp_vertices[m->indices[i+2]].x - temp_vertices[m->indices[i]].x);
@@ -1364,7 +1497,7 @@ void drawOBJ(ps2ObjMesh* m, float pos_x, float pos_y, float pos_z, float rot_x, 
 			continue;
 		}
 		
-		// Clipping
+		// Basic clipping
 		if(temp_vertices[m->indices[i]].z < -1.0 || temp_vertices[m->indices[i]].z > 0 || temp_vertices[m->indices[i]].x > 1.0 || temp_vertices[m->indices[i]].x < -1.0 || temp_vertices[m->indices[i]].y > 1.0 || temp_vertices[m->indices[i]].y < -1.0){
 			continue;
 		}
@@ -1429,7 +1562,7 @@ void initGraphics()
 	printf("\nGraphics: created video surface of (%d, %d)\n",
 		gsGlobal->Width, gsGlobal->Height);
 
-	gsKit_set_clamp(gsGlobal, GS_CMODE_CLAMP);
+	gsKit_set_clamp(gsGlobal, GS_CMODE_REPEAT);
 
 	gsKit_vram_clear(gsGlobal);
 
