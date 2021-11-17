@@ -13,8 +13,8 @@ static int lua_clear(lua_State *L){
 	int argc = lua_gettop(L);
 	if (argc != 0 && argc != 1) return luaL_error(L, "wrong number of arguments.");
 	Color color; 
-	if (argc == 1)color = luaL_checkinteger(L, 1);
-	else color = 0x000000FF;
+	if (argc == 1) color = luaL_checkinteger(L, 1);
+	else color = GS_SETREG_RGBAQ(0x00, 0x00, 0x00, 0x80, 0x00);
 	clearScreen(color);
 	return 0;
 }
@@ -88,7 +88,7 @@ static int lua_color(lua_State *L) {
 	int r = luaL_checkinteger(L, 1);
 	int g = luaL_checkinteger(L, 2);
 	int b = luaL_checkinteger(L, 3);
-	int a = 255;
+	int a = 0x80;
 	if (argc==4) a = luaL_checkinteger(L, 4);
 	int color = r | (g << 8) | (b << 16) | (a << 24);
 	lua_pushinteger(L,color);

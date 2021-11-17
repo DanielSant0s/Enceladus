@@ -1,1 +1,1 @@
-dofile("System/images/system.lua")
+dofile("pads/pads.lua")

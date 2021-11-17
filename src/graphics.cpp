@@ -777,7 +777,6 @@ void loadFontM()
 
 void printFontMText(char* text, float x, float y, float scale, Color color)
 {
-	gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
 	gsKit_set_test(gsGlobal, GS_ATEST_ON);
 	gsKit_fontm_print_scaled(gsGlobal, gsFontM, x, y, 1, scale, color, text);
 }
@@ -825,7 +824,6 @@ GSFONT* loadFont(const char* path){
 
 void printFontText(GSFONT* font, char* text, float x, float y, float scale, Color color)
 {
-	gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
 	gsKit_set_test(gsGlobal, GS_ATEST_ON);
 	gsKit_font_print_scaled(gsGlobal, font, x-0.5f, y-0.5f, 1, scale, color, text);
 }
@@ -851,16 +849,9 @@ int getFreeVRAM(){
 	return (4096 - (gsGlobal->CurrentPointer / 1024));
 }
 
-void drawImage(GSTEXTURE* source, float x, float y, float width, float height, float startx, float starty, float endx, float endy, Color color)
-{
 
-	if ((source->PSM == GS_PSM_CT32) || (source->Clut && source->ClutPSM == GS_PSM_CT32)) {
-        gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
-        gsKit_set_test(gsGlobal, GS_ATEST_ON);
-    } else {
-        gsGlobal->PrimAlphaEnable = GS_SETTING_OFF;
-        gsKit_set_test(gsGlobal, GS_ATEST_OFF);
-    }
+void drawImageCentered(GSTEXTURE* source, float x, float y, float width, float height, float startx, float starty, float endx, float endy, Color color)
+{
 
 	gsKit_TexManager_bind(gsGlobal, source);
 	gsKit_prim_sprite_texture(gsGlobal, source, 
@@ -877,19 +868,28 @@ void drawImage(GSTEXTURE* source, float x, float y, float width, float height, f
 
 }
 
+void drawImage(GSTEXTURE* source, float x, float y, float width, float height, float startx, float starty, float endx, float endy, Color color)
+{
+
+	gsKit_TexManager_bind(gsGlobal, source);
+	gsKit_prim_sprite_texture(gsGlobal, source, 
+					x-0.5f, // X1
+					y-0.5f, // Y1
+					startx,  // U1
+					starty,  // V1
+					(width+x)-0.5f, // X2
+					(height+y)-0.5f, // Y2
+					endx, // U2
+					endy, // V2
+					1, 
+					color);	
+}
+
 
 void drawImageRotate(GSTEXTURE* source, float x, float y, float width, float height, float startx, float starty, float endx, float endy, float angle, Color color){
 
 	float c = cosf(angle);
 	float s = sinf(angle);
-
-	if ((source->PSM == GS_PSM_CT32) || (source->Clut && source->ClutPSM == GS_PSM_CT32)) {
-        gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
-        gsKit_set_test(gsGlobal, GS_ATEST_ON);
-    } else {
-        gsGlobal->PrimAlphaEnable = GS_SETTING_OFF;
-        gsKit_set_test(gsGlobal, GS_ATEST_OFF);
-    }
 
 	gsKit_TexManager_bind(gsGlobal, source);
 	gsKit_prim_quad_texture(gsGlobal, source, 
@@ -903,43 +903,42 @@ void drawImageRotate(GSTEXTURE* source, float x, float y, float width, float hei
 
 void drawPixel(float x, float y, Color color)
 {
-	gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
 	gsKit_prim_point(gsGlobal, x, y, 1, color);
 }
 
 void drawLine(float x, float y, float x2, float y2, Color color)
 {
-	gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
 	gsKit_prim_line(gsGlobal, x, y, x2, y2, 1, color);
 }
 
+
 void drawRect(float x, float y, int width, int height, Color color)
 {
-	gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
+	gsKit_prim_sprite(gsGlobal, x-0.5f, y-0.5f, (x+width)-0.5f, (y+height)-0.5f, 1, color);
+}
+
+void drawRectCentered(float x, float y, int width, int height, Color color)
+{
 	gsKit_prim_sprite(gsGlobal, x-width/2, y-height/2, (x+width)-width/2, (y+height)-height/2, 1, color);
 }
 
 void drawTriangle(float x, float y, float x2, float y2, float x3, float y3, Color color)
 {
-	gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
 	gsKit_prim_triangle(gsGlobal, x, y, x2, y2, x3, y3, 1, color);
 }
 
 void drawTriangle_gouraud(float x, float y, float x2, float y2, float x3, float y3, Color color, Color color2, Color color3)
 {
-	gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
 	gsKit_prim_triangle_gouraud(gsGlobal, x, y, x2, y2, x3, y3, 1, color, color2, color3);
 }
 
 void drawQuad(float x, float y, float x2, float y2, float x3, float y3, float x4, float y4, Color color)
 {
-	gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
 	gsKit_prim_quad(gsGlobal, x, y, x2, y2, x3, y3, x4, y4, 1, color);
 }
 
 void drawQuad_gouraud(float x, float y, float x2, float y2, float x3, float y3, float x4, float y4, Color color, Color color2, Color color3, Color color4)
 {
-	gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
 	gsKit_prim_quad_gouraud(gsGlobal, x, y, x2, y2, x3, y3, x4, y4, 1, color, color2, color3, color4);
 }
 
@@ -959,8 +958,6 @@ void drawCircle(float x, float y, float radius, u64 color, u8 filled)
 		v[36*2] = radius + x;
 		v[36*2 + 1] = y;
 	}
-
-	gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
 	
 	if (filled)
 		gsKit_prim_triangle_fan(gsGlobal, v, 36, 1, color);
@@ -998,7 +995,7 @@ void setVideoMode(s16 mode, int width, int height, int psm, s16 interlace, s16 f
 
 	gsGlobal->PSM = psm;
 	gsGlobal->PSMZ = GS_PSMZ_16;
-	
+
 	gsGlobal->ZBuffering = GS_SETTING_OFF;
 	gsGlobal->DoubleBuffering = GS_SETTING_ON;
 	gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
