@@ -175,6 +175,13 @@ int main(int argc, char * argv[])
     
     // graphics (gsKit)
     initGraphics();
+	static const uint64_t c_black = GS_SETREG_RGBAQ(0x00, 0x00, 0x00, 0x80, 0x00);
+	clearScreen(c_black);
+	gsKit_vsync_wait();
+	flipScreen();
+	clearScreen(c_black);
+	gsKit_vsync_wait();
+	flipScreen();
 
     pad_init();
 

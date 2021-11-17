@@ -827,7 +827,7 @@ void printFontText(GSFONT* font, char* text, float x, float y, float scale, Colo
 {
 	gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
 	gsKit_set_test(gsGlobal, GS_ATEST_ON);
-	gsKit_font_print_scaled(gsGlobal, font, x, y, 1, scale, color, text);
+	gsKit_font_print_scaled(gsGlobal, font, x-0.5f, y-0.5f, 1, scale, color, text);
 }
 
 void unloadFont(GSFONT* font)
@@ -1017,9 +1017,9 @@ void fntDrawQuad(rm_quad_t *q)
 
     gsKit_TexManager_bind(gsGlobal, q->txt);
     gsKit_prim_sprite_texture(gsGlobal, q->txt,
-                              q->ul.x , q->ul.y,
+                              q->ul.x-0.5f, q->ul.y-0.5f,
                               q->ul.u, q->ul.v,
-                              q->br.x, q->br.y,
+                              q->br.x-0.5f, q->br.y-0.5f,
                               q->br.u, q->br.v, 1, q->color);
 }
 
@@ -1036,18 +1036,17 @@ void initGraphics()
 		gsGlobal->Height = 448;
 	}
 
-	gsGlobal->PSM  = GS_PSM_CT16;
+	gsGlobal->PSM  = GS_PSM_CT24;
 	gsGlobal->PSMZ = GS_PSMZ_16;
 	gsGlobal->ZBuffering = GS_SETTING_OFF;
 	gsGlobal->DoubleBuffering = GS_SETTING_ON;
 	gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
-	gsGlobal->Dithering = GS_SETTING_ON;
+	gsGlobal->Dithering = GS_SETTING_OFF;
 
 	gsKit_set_primalpha(gsGlobal, GS_SETREG_ALPHA(0, 1, 0, 1, 0), 0);
 
 	dmaKit_init(D_CTRL_RELE_OFF, D_CTRL_MFD_OFF, D_CTRL_STS_UNSPEC, D_CTRL_STD_OFF, D_CTRL_RCYC_8, 1 << DMA_CHANNEL_GIF);
 	dmaKit_chan_init(DMA_CHANNEL_GIF);
-	dmaKit_chan_init(DMA_CHANNEL_VIF1);
 
 	printf("\nGraphics: created video surface of (%d, %d)\n",
 		gsGlobal->Width, gsGlobal->Height);
@@ -1066,8 +1065,9 @@ void initGraphics()
 
 void flipScreen()
 {	
-	gsKit_sync_flip(gsGlobal);
 	gsKit_queue_exec(gsGlobal);
+	gsKit_finish();
+	gsKit_sync_flip(gsGlobal);
 	gsKit_TexManager_nextFrame(gsGlobal);
 }
 
