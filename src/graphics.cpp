@@ -989,20 +989,37 @@ int GetInterlacedFrameMode()
 GSGLOBAL *getGSGLOBAL(){return gsGlobal;}
 
 void setVideoMode(s16 mode, int width, int height, int psm, s16 interlace, s16 field) {
-	gsGlobal->PSM = psm;
 	gsGlobal->Mode = mode;
-	gsGlobal->Interlace = interlace;
-	gsGlobal->Field = field;
 	gsGlobal->Width = width;
 	if ((interlace == GS_INTERLACED) && (field == GS_FRAME))
 		gsGlobal->Height = height / 2;
 	else
 		gsGlobal->Height = height;
 
+	gsGlobal->PSM = psm;
+	gsGlobal->PSMZ = GS_PSMZ_16;
+	
+	gsGlobal->ZBuffering = GS_SETTING_OFF;
+	gsGlobal->DoubleBuffering = GS_SETTING_ON;
+	gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
+	gsGlobal->Dithering = GS_SETTING_OFF;
+
+	gsGlobal->Interlace = interlace;
+	gsGlobal->Field = field;
+
+	gsKit_set_primalpha(gsGlobal, GS_SETREG_ALPHA(0, 1, 0, 1, 0), 0);
+
+	printf("\nGraphics: created video surface of (%d, %d)\n",
+		gsGlobal->Width, gsGlobal->Height);
+
+	gsKit_set_clamp(gsGlobal, GS_CMODE_REPEAT);
 	gsKit_vram_clear(gsGlobal);
 	gsKit_init_screen(gsGlobal);
-	gsKit_set_display_offset(gsGlobal, 0.0f, 0.0f);
+	gsKit_set_display_offset(gsGlobal, -0.5f, -0.5f);
 	gsKit_sync_flip(gsGlobal);
+
+	gsKit_mode_switch(gsGlobal, GS_ONESHOT);
+    gsKit_clear(gsGlobal, BLACK_RGBAQ);	
 }
 
 void fntDrawQuad(rm_quad_t *q)
