@@ -263,8 +263,6 @@ const char * runScript(const char* script, bool isStringBuffer )
 
 	// init screen
 	luaScreen_init(L);
-
-	luaRender_init(L);
     
     //init Timer
     luaTimer_init(L);

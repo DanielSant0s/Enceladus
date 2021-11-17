@@ -8,9 +8,6 @@
 
 #include <gsToolkit.h>
 #include <gsInline.h>
-#include <math3d.h>
-
-#include "fast_obj.h"
 
 /// GSKit CLUT base struct. This should've been in gsKit from the start :)
 typedef struct
@@ -34,36 +31,6 @@ typedef struct
     u64 color;
     GSTEXTURE *txt;
 } rm_quad_t;
-
-
-typedef struct
-{
-    /* Vertex data */
-    unsigned int                position_count;
-    VECTOR*                     positions;
-    unsigned int                texcoord_count;
-    VECTOR*                     texcoords;
-    unsigned int                normal_count;
-    VECTOR*                     normals;
-	VECTOR*                     colours;
-    /* Face data: one element for each face */
-    unsigned int                face_count;
-    unsigned int*               face_vertices;
-    unsigned int*               face_materials;
-    /* Index data: one element for each face vertex */
-    unsigned int*               indices;
-    unsigned int*               t_indices;
-    unsigned int*               n_indices;
-    /* Materials */
-    unsigned int                material_count;
-    fastObjMaterial*            materials;
-    /* Mesh groups */
-    unsigned int                group_count;
-    fastObjGroup*               groups;
-
-    GSTEXTURE* texture;
-
-} ps2ObjMesh;
 
 typedef u32 Color;
 #define A(color) ((u8)(color >> 24 & 0xFF))
@@ -136,19 +103,5 @@ extern void printFontMText(char* text, float x, float y, float scale, Color colo
 extern void unloadFontM();
 
 extern void displaySplashScreen();
-
-extern void init3D();
-
-extern void setCameraPosition(float x, float y, float z);
-
-extern void setCameraRotation(float x, float y, float z);
-
-extern void setLightQuantity(int quantity);
-
-extern void createLight(int lightid, float dir_x, float dir_y, float dir_z, int type, float r, float g, float b);
-
-extern ps2ObjMesh* loadOBJ(const char *Path, const char *texpath);
-
-extern void drawOBJ(ps2ObjMesh* m, float pos_x, float pos_y, float pos_z, float rot_x, float rot_y, float rot_z);
 
 #endif

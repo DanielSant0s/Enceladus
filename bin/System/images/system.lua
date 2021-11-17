@@ -1,7 +1,6 @@
 
 --Screen.showSplash()
 Font.ftInit()
-Render.init()
 
 local grogu = Graphics.loadImage("System/images/grogu.jpg")
 local stars = Graphics.loadImage("System/images/stars.bmp")
@@ -27,18 +26,6 @@ romver_size = System.sizeFile(romver)
 romver_data = System.readFile(romver, romver_size)
 System.closeFile(romver)
 
---local cube = Render.load("System/images/mesh/plane.obj", "System/images/mesh/floor.png")
-local bomdecoito = Render.load("System/images/mesh/dragon.obj" , "System/images/mesh/dragon.png")
-
-Camera.position(0.0, 0.0, 50.0)
-Camera.rotation(0.0, 0.0,  0.0)
-
-Lights.create(4)
-
-Lights.set(1,  0.0,  0.0,  0.0, 1.0, 1.0, 1.0,     AMBIENT)
---Lights.set(2,  1.0,  0.0, -1.0, 1.0, 1.0, 1.0, DIRECTIONAL)
---Lights.set(3,  0.0,  1.0, -1.0, 0.3, 0.3, 0.3, DIRECTIONAL)
---Lights.set(4, -1.0, -1.0, -1.0, 0.5, 0.5, 0.5, DIRECTIONAL)
 
 while true do
 
@@ -71,8 +58,6 @@ while true do
     Font.fmPrint(250, 350, 0.6, "ROMVER: " .. romver_data .. "\n")
     Font.fmPrint(200, 60, 0.6, "MC Info\nType: " .. type .. "\nFree Space: " .. freespace .. "\nFormat: " .. format .. "\n")
     Font.ftPrint(netron, 60, 60, 0, 200, 200, "MC Info\nType: " .. type .. "\nFree Space: " .. freespace .. "\nFormat: " .. format .. "\n")
-    --Render.draw(cube, 0.0, 0.0, -50.0, 1.4, 0.0, 0.0)
-    Render.draw(bomdecoito, 0.0, 0.0, 30, rad, rad, 0.0)
     
     --Screen.waitVblankStart()
     Screen.flip()
