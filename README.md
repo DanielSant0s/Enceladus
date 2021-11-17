@@ -169,22 +169,6 @@ ROM font functions:
 * Timer.reset(timer)
 * Timer.isPlaying(timer)
 
-**Render functions:**
-
-* Render.init()
-* model = Render.load("mesh.obj")
-* Render.draw(model, x, y, z, rot_x, rot_y, rot_z)
-
-Camera functions:
-
-* Camera.position(x, y, z)
-* Camera.rotation(rot_x, rot_y, rot_z)
-
-Lights functions:
-
-* Lights.create(count)
-* Lights.set(light, x, y, z, r, g, b, type)
-
 ## Contributing
 
 Contributions are what make the open source community such an amazing place to be learn, inspire, and create. Any contributions you make are **greatly appreciated**.
