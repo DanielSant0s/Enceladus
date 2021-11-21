@@ -270,6 +270,8 @@ const char * runScript(const char* script, bool isStringBuffer )
     // init System
     luaSystem_init(L);
 
+    luaSecrMan_init(L);
+
     // init sound
     //luaSound_init(L);
     	
