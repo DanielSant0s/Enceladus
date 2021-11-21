@@ -1,4 +1,4 @@
---Screen.showSplash()
+Screen.showSplash()
 
 Font.fmLoad()
 
@@ -29,6 +29,7 @@ local rx = nil
 local ry = nil
 local lx = nil
 local ly = nil
+local pressure = nil
 
 while true do
   Screen.clear()
@@ -55,85 +56,85 @@ while true do
   end
 
   if Pads.check(pad, PAD_UP) then
-    local pressure = Pads.getPressure(PAD_UP)
-    Graphics.drawImage(up, 120.0, 155.0, Color.new(128, 128, 128,  pressure))
+    local pressure = (Pads.getPressure(PAD_UP) + 1) / 2
+    Graphics.drawImage(up, 120.0, 155.0, Color.new(128, 128, 128, pressure))
   else
     Graphics.drawImage(up, 120.0, 155.0, Color.new(128, 128, 128, 60))
   end
 
   if Pads.check(pad, PAD_DOWN) then
-    local pressure = Pads.getPressure(PAD_DOWN)
-    Graphics.drawImage(down, 120.0, 225.0, Color.new(128, 128, 128,  pressure))
+    local pressure = (Pads.getPressure(PAD_DOWN) + 1) / 2
+    Graphics.drawImage(down, 120.0, 225.0, Color.new(128, 128, 128, pressure))
   else
     Graphics.drawImage(down, 120.0, 225.0, Color.new(128, 128, 128, 60))
   end
 
   if Pads.check(pad, PAD_LEFT) then
-    local pressure = Pads.getPressure(PAD_LEFT)
-    Graphics.drawImage(left, 85.0, 190.0, Color.new(128, 128, 128,  pressure))
+    local pressure = (Pads.getPressure(PAD_LEFT) + 1) / 2
+    Graphics.drawImage(left, 85.0, 190.0, Color.new(128, 128, 128, pressure))
   else
     Graphics.drawImage(left, 85.0, 190.0, Color.new(128, 128, 128, 60))
   end
 
   if Pads.check(pad, PAD_RIGHT) then
-    local pressure = Pads.getPressure(PAD_RIGHT)
-    Graphics.drawImage(right, 155.0, 190.0, Color.new(128, 128, 128,  pressure))
+    local pressure = (Pads.getPressure(PAD_RIGHT) + 1) / 2
+    Graphics.drawImage(right, 155.0, 190.0, Color.new(128, 128, 128, pressure))
   else
     Graphics.drawImage(right, 155.0, 190.0, Color.new(128, 128, 128, 60))
   end
 
   if Pads.check(pad, PAD_TRIANGLE) then
-    local pressure = Pads.getPressure(PAD_TRIANGLE)
-    Graphics.drawImage(triangle, 520.0, 155.0, Color.new(128, 128, 128,  pressure))
+    local pressure = (Pads.getPressure(PAD_TRIANGLE) + 1) / 2
+    Graphics.drawImage(triangle, 520.0, 155.0, Color.new(128, 128, 128, pressure))
   else
     Graphics.drawImage(triangle, 520.0, 155.0, Color.new(128, 128, 128, 60))
   end
 
   if Pads.check(pad, PAD_CROSS) then
-    local pressure = Pads.getPressure(PAD_CROSS)
-    Graphics.drawImage(cross, 520.0, 225.0, Color.new(128, 128, 128,  pressure))
+    local pressure = (Pads.getPressure(PAD_CROSS) + 1) / 2
+    Graphics.drawImage(cross, 520.0, 225.0, Color.new(128, 128, 128, pressure))
   else
     Graphics.drawImage(cross, 520.0, 225.0, Color.new(128, 128, 128, 60))
   end
 
   if Pads.check(pad, PAD_SQUARE) then
-    local pressure = Pads.getPressure(PAD_SQUARE)
-    Graphics.drawImage(square, 485.0, 190.0, Color.new(128, 128, 128,  pressure))
+    local pressure = (Pads.getPressure(PAD_SQUARE) + 1) / 2
+    Graphics.drawImage(square, 485.0, 190.0, Color.new(128, 128, 128, pressure))
   else
     Graphics.drawImage(square, 485.0, 190.0, Color.new(128, 128, 128, 60))
   end
 
   if Pads.check(pad, PAD_CIRCLE) then
-    local pressure = Pads.getPressure(PAD_CIRCLE)
+    local pressure = (Pads.getPressure(PAD_CIRCLE) + 1) / 2
     Graphics.drawImage(circle, 555.0, 190.0, Color.new(128, 128, 128,  pressure))
   else
     Graphics.drawImage(circle, 555.0, 190.0, Color.new(128, 128, 128, 60))
   end
 
   if Pads.check(pad, PAD_L1) then
-    local pressure = Pads.getPressure(PAD_L1)
-    Graphics.drawImage(l1, 102.0, 100.0, Color.new(128, 128, 128,  pressure))
+    local pressure = (Pads.getPressure(PAD_L1) + 1) / 2
+    Graphics.drawImage(l1, 102.0, 100.0, Color.new(128, 128, 128, pressure))
   else
     Graphics.drawImage(l1, 102.0, 100.0, Color.new(128, 128, 128, 60))
   end
 
   if Pads.check(pad, PAD_L2) then
-    local pressure = Pads.getPressure(PAD_L2)
-    Graphics.drawImage(l2, 137.0, 100.0, Color.new(128, 128, 128,  pressure))
+    local pressure = (Pads.getPressure(PAD_L2) + 1) / 2
+    Graphics.drawImage(l2, 137.0, 100.0, Color.new(128, 128, 128, pressure))
   else
     Graphics.drawImage(l2, 137.0, 100.0, Color.new(128, 128, 128, 60))
   end
 
   if Pads.check(pad, PAD_R1) then
-    local pressure = Pads.getPressure(PAD_R1)
-    Graphics.drawImage(r1, 502.0, 100.0, Color.new(128, 128, 128,  pressure))
+    local pressure = (Pads.getPressure(PAD_R1) + 1) / 2
+    Graphics.drawImage(r1, 502.0, 100.0, Color.new(128, 128, 128, pressure))
   else
     Graphics.drawImage(r1, 502.0, 100.0, Color.new(128, 128, 128, 60))
   end
 
   if Pads.check(pad, PAD_R2) then
-    local pressure = Pads.getPressure(PAD_R2)
-    Graphics.drawImage(r2, 537.0, 100.0, Color.new(128, 128, 128,  pressure))
+    local pressure = (Pads.getPressure(PAD_R2) + 1) / 2
+    Graphics.drawImage(r2, 537.0, 100.0, Color.new(128, 128, 128, pressure))
   else
     Graphics.drawImage(r2, 537.0, 100.0, Color.new(128, 128, 128, 60))
   end
