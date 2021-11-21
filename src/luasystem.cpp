@@ -4,6 +4,7 @@
 #include <sys/fcntl.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <loadfile.h>
 #include "include/luaplayer.h"
 #include "include/md5.h"
 #include "include/graphics.h"
@@ -581,11 +582,63 @@ static const luaL_Reg System_functions[] = {
 	{"getMCInfo",                 lua_getmcinfo},
 	{0, 0}
 };
+
+
+static int lua_sifloadmodule(lua_State *L){
+	int argc = lua_gettop(L);
+	if (argc != 1 && argc != 3) return luaL_error(L, "wrong number of arguments");
+	const char *path = luaL_checkstring(L, 1);
+
+	int arg_len = 0;
+	const char *args = NULL;
+
+	if(argc == 3){
+		arg_len = luaL_checkinteger(L, 2);
+		args = luaL_checkstring(L, 3);
+	}
+	
+
+	int result = SifLoadModule(path, arg_len, args);
+	lua_pushinteger(L, result);
+	return 1;
+}
+
+
+static int lua_sifloadmodulebuffer(lua_State *L){
+	int argc = lua_gettop(L);
+	if (argc != 1 && argc != 3) return luaL_error(L, "wrong number of arguments");
+	int ptr = luaL_checkinteger(L, 1);
+
+	int arg_len = 0;
+	const char *args = NULL;
+
+	if(argc == 3){
+		arg_len = luaL_checkinteger(L, 2);
+		args = luaL_checkstring(L, 3);
+	}
+	
+
+	int result = SifLoadModuleBuffer((void *)ptr, arg_len, args);
+	lua_pushinteger(L, result);
+	return 1;
+}
+
+static const luaL_Reg Sif_functions[] = {
+	{"loadModule",             			   lua_sifloadmodule},
+	{"loadModuleBuffer",             lua_sifloadmodulebuffer},
+
+	{0, 0}
+};
+
 void luaSystem_init(lua_State *L) {
 	setModulePath();
 	lua_newtable(L);
 	luaL_setfuncs(L, System_functions, 0);
 	lua_setglobal(L, "System");
+
+	lua_newtable(L);
+	luaL_setfuncs(L, Sif_functions, 0);
+	lua_setglobal(L, "Sif");
 
 	lua_pushinteger(L, O_RDONLY);
 	lua_setglobal(L, "FREAD");

@@ -60,11 +60,11 @@ BIN2S = $(PS2SDK)/bin/bin2s
 
 #-------------------------- App Content ---------------------------#
 APP_CORE = src/main.o src/graphics.o src/atlas.o \
-		   src/fntsys.o src/md5.o
+		   src/fntsys.o src/md5.o src/secrman_rpc.o
 
 LUA_LIBS =	src/luaplayer.o src/luasound.o src/luacontrols.o \
 			src/luatimer.o src/luaScreen.o src/luagraphics.o \
-			src/luasystem.o
+			src/luasystem.o src/luasecrman.o
 
 IOP_MODULES = src/usbd.o src/audsrv.o src/bdm.o src/bdmfs_vfat.o \
 			  src/usbmass_bd.o src/cdfs.o
