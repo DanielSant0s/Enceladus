@@ -247,7 +247,7 @@ size_t GetFreeSize(void)
 
 const char * runScript(const char* script, bool isStringBuffer )
 {	
-	printf("Creating luaVM... \n");
+    printf("Creating luaVM... \n");
 
 	L = luaL_newstate();
 	
@@ -255,6 +255,7 @@ const char * runScript(const char* script, bool isStringBuffer )
 	luaL_openlibs(L);
 
     printf("Loading libs... ");
+
 	// init graphics
     luaGraphics_init(L);
 
@@ -270,6 +271,7 @@ const char * runScript(const char* script, bool isStringBuffer )
     // init System
     luaSystem_init(L);
 
+	//Secure Manager
     luaSecrMan_init(L);
 
     // init sound

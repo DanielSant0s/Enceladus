@@ -606,19 +606,19 @@ static int lua_sifloadmodule(lua_State *L){
 
 static int lua_sifloadmodulebuffer(lua_State *L){
 	int argc = lua_gettop(L);
-	if (argc != 1 && argc != 3) return luaL_error(L, "wrong number of arguments");
-	int ptr = luaL_checkinteger(L, 1);
+	if (argc != 2 && argc != 4) return luaL_error(L, "wrong number of arguments");
+	const char* ptr = luaL_checkstring(L, 1);
+	int size = luaL_checkinteger(L, 2);
 
 	int arg_len = 0;
 	const char *args = NULL;
 
-	if(argc == 3){
-		arg_len = luaL_checkinteger(L, 2);
-		args = luaL_checkstring(L, 3);
+	if(argc == 4){
+		arg_len = luaL_checkinteger(L, 3);
+		args = luaL_checkstring(L, 4);
 	}
-	
 
-	int result = SifLoadModuleBuffer((void *)ptr, arg_len, args);
+	int result = SifExecModuleBuffer((void*)ptr, size, arg_len, args, NULL);
 	lua_pushinteger(L, result);
 	return 1;
 }
