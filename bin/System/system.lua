@@ -1,1 +1,1 @@
-dofile("reloader.lua")
+dofile("pads/pads.lua")

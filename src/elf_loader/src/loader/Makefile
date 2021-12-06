@@ -9,8 +9,6 @@
 ### Adjust these three, for PS2Link compatibility tests
 ### Old LaunchELF used LA=0x90000, SA=0xB0000, SS=0x08000
 
-PS2SDKSRC = $(PS2DEV)/ps2dev/build/ps2sdk
-
 LOADADDR  = 0x90000
 STACKADDR = 0xA8000
 STACKSIZE = 0x04000
@@ -39,5 +37,5 @@ all: $(EE_BIN)
 clean:
 	rm -f -r $(EE_OBJS) $(EE_BIN)
 
-include $(PS2SDKSRC)/Defs.make
-include Rules.make
+include $(PS2SDK)/samples/Makefile.pref
+include $(PS2SDK)/samples/Makefile.eeglobal
