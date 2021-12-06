@@ -11,12 +11,9 @@
 
 #include "include/graphics.h"
 
-extern u8 rawlualogo;
-extern int size_rawlualogo;
-
 #define DEG2RAD(x) ((x)*0.01745329251)
 
-static const u64 BLACK_RGBAQ   = GS_SETREG_RGBAQ(0x00,0x00,0x00,0xFF,0x00);
+static const u64 BLACK_RGBAQ   = GS_SETREG_RGBAQ(0x00,0x00,0x00,0x80,0x00);
 static const u64 TEXTURE_RGBAQ = GS_SETREG_RGBAQ(0x80,0x80,0x80,0x80,0x00);
 
 GSGLOBAL *gsGlobal = NULL;
@@ -31,80 +28,6 @@ GSFONTM *gsFontM = NULL;
 
 
 //2D drawing functions
-
-void displaySplashScreen()
-{	
-	int t;
-   	int alpha = 0;
-   	GSTEXTURE eclSplash;
-
-   	int size;
-
-   	unsigned char *fb, *splash;
-   	eclSplash.Width = 180;
-	eclSplash.Height = 206;
-	eclSplash.PSM = GS_PSM_CT24;
-	
-	// useless but keep compiler happy :)
-	size = size_rawlualogo;
-	
-	size = gsKit_texture_size(180, 206, GS_PSM_CT24);
-	
-	eclSplash.Mem = (u32 *)malloc(size);
-	
-	// copy the texture into memory
-	// not sure if I can directly point to my buffer (alignement?)
-	fb = (unsigned char *)eclSplash.Mem;
-	splash = &rawlualogo;
-	for (int i=size;i--;) *fb++ = *splash++;
- 
-   gsKit_TexManager_bind(gsGlobal, &eclSplash);
-
-   while(alpha <= 0x80)
-	{
-	gsKit_clear(gsGlobal, BLACK_RGBAQ);
-    gsKit_prim_sprite_striped_texture(gsGlobal, &eclSplash,
-			320-(eclSplash.Width/2),
-			224-(eclSplash.Height/2),
-			0,
-			0,
-			320+(eclSplash.Width/2),
-			224+(eclSplash.Height/2),
-			eclSplash.Width,
-			eclSplash.Height,
-			1,
-			GS_SETREG_RGBAQ(0x80,0x80,0x80,alpha,0x00)
-			);
-	
-    flipScreen();
-	alpha +=2;	
-	}
-
-	for (t=0; t<240; t++) {
-		gsKit_vsync_wait();
-	}
-
-	while(alpha >= 0x00)
-	{
-	gsKit_clear(gsGlobal, BLACK_RGBAQ);
-    gsKit_prim_sprite_striped_texture(gsGlobal, &eclSplash,
-			320-(eclSplash.Width/2),
-			224-(eclSplash.Height/2),
-			0,
-			0,
-			320+(eclSplash.Width/2),
-			224+(eclSplash.Height/2),
-			eclSplash.Width,
-			eclSplash.Height,
-			1,
-			GS_SETREG_RGBAQ(0x80,0x80,0x80,alpha,0x00)
-			);
-	
-    flipScreen();
-	alpha -=1;	
-	}
-
-}
 
 
 GSTEXTURE* luaP_loadpng(const char *path, bool delayed)
@@ -972,7 +895,8 @@ void InvalidateTexture(GSTEXTURE *txt)
 
 void UnloadTexture(GSTEXTURE *txt)
 {
-    gsKit_TexManager_free(gsGlobal, txt);
+	gsKit_TexManager_free(gsGlobal, txt);
+	
 }
 
 int GetInterlacedFrameMode()
@@ -1021,13 +945,13 @@ void setVideoMode(s16 mode, int width, int height, int psm, s16 interlace, s16 f
 
 void fntDrawQuad(rm_quad_t *q)
 {
-    if ((q->txt->PSM == GS_PSM_CT32) || (q->txt->Clut && q->txt->ClutPSM == GS_PSM_CT32)) {
-        gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
-        gsKit_set_test(gsGlobal, GS_ATEST_ON);
-    } else {
-        gsGlobal->PrimAlphaEnable = GS_SETTING_OFF;
-        gsKit_set_test(gsGlobal, GS_ATEST_OFF);
-    }
+    //if ((q->txt->PSM == GS_PSM_CT32) || (q->txt->Clut && q->txt->ClutPSM == GS_PSM_CT32)) {
+    //    gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
+    //    gsKit_set_test(gsGlobal, GS_ATEST_ON);
+    //} else {
+    //    gsGlobal->PrimAlphaEnable = GS_SETTING_OFF;
+    //    gsKit_set_test(gsGlobal, GS_ATEST_OFF);
+    //}
 
     gsKit_TexManager_bind(gsGlobal, q->txt);
     gsKit_prim_sprite_texture(gsGlobal, q->txt,
@@ -1071,14 +995,22 @@ void initGraphics()
 
 	gsKit_init_screen(gsGlobal);
 
+	//gsKit_TexManager_init(gsGlobal);
+
 	gsKit_mode_switch(gsGlobal, GS_ONESHOT);
 
     gsKit_clear(gsGlobal, BLACK_RGBAQ);	
+	gsKit_vsync_wait();
+	flipScreen();
+	gsKit_clear(gsGlobal, BLACK_RGBAQ);	
+	gsKit_vsync_wait();
+	flipScreen();
 
 }
 
 void flipScreen()
 {	
+	//gsKit_set_finish(gsGlobal);
 	gsKit_queue_exec(gsGlobal);
 	gsKit_finish();
 	gsKit_sync_flip(gsGlobal);

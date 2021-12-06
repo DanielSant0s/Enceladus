@@ -40,13 +40,6 @@ static int lua_vblank(lua_State *L) {
 	return 0;
 }
 
-static int lua_splash(lua_State *L) {
-	int argc = lua_gettop(L);
-	if (argc != 0) return luaL_error(L, "wrong number of arguments");
-	displaySplashScreen();
-	return 0;
-}
-
 static int lua_setvmode(lua_State *L) {
 	int argc = lua_gettop(L);
 	if (argc != 6) return luaL_error(L, "wrong number of arguments");
@@ -63,6 +56,7 @@ static int lua_setvmode(lua_State *L) {
 static int lua_getvmode(lua_State *L) {
 	int argc = lua_gettop(L);
 	if (argc != 0) return luaL_error(L, "wrong number of arguments");
+	
 	printf("getMode isn't usable yet");
 	return 0;
 }
@@ -74,7 +68,6 @@ static const luaL_Reg Screen_functions[] = {
   {"flip",              	lua_flip},
   //{"getPixel",        	lua_getP},
   {"waitVblankStart", 	  lua_vblank},
-  {"showSplash",	  	  lua_splash},
   {"getMode",			lua_getvmode},
   {"setMode",			lua_setvmode},
   {0, 0}

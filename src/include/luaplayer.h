@@ -29,6 +29,8 @@ extern void luaC_collectgarbage (lua_State *L);
 
 extern int waitPadReady(int port, int slot);
 
+extern int isButtonPressed(u32 button);
+
 extern int initializePad(int port, int slot);
 
 extern void pad_init();
@@ -47,7 +49,6 @@ extern void luaScreen_init(lua_State *L);
 extern void luaTimer_init(lua_State *L);
 extern void luaSystem_init(lua_State *L);
 extern void luaRender_init(lua_State *L);
-extern void luaSecrMan_init(lua_State *L);
 extern void stackDump (lua_State *L);
 
 

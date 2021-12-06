@@ -4,10 +4,246 @@
 #include <sys/fcntl.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <sifrpc.h>
+#include <iopcontrol.h>
+#include <iopheap.h>
+#include <sbv_patches.h>
 #include <loadfile.h>
+#include <libcdvd.h>
 #include "include/luaplayer.h"
 #include "include/md5.h"
 #include "include/graphics.h"
+
+
+extern void *elf_loader;
+extern int  size_elf_loader;
+void IOP_Reset(void);
+
+void IOP_Reset(void)
+{
+	// resets IOP and update with EELOADCNF
+	
+  	while(!SifIopReset("rom0:UDNL rom0:EELOADCNF",0));
+  	while(!SifIopSync());
+  	SifExitIopHeap();
+  	SifLoadFileExit();
+  	SifExitRpc();
+  	SifExitCmd();
+  	
+  	SifInitRpc(0);
+  	FlushCache(0);
+  	FlushCache(2);
+}
+
+//--------------------------------------------------------------
+// ELF-header structures and identifiers
+#define ELF_MAGIC	0x464c457f
+#define ELF_PT_LOAD	1
+
+//--------------------------------------------------------------
+typedef struct
+{
+	u8	ident[16];
+	u16	type;
+	u16	machine;
+	u32	version;
+	u32	entry;
+	u32	phoff;
+	u32	shoff;
+	u32	flags;
+	u16	ehsize;
+	u16	phentsize;
+	u16	phnum;
+	u16	shentsize;
+	u16	shnum;
+	u16	shstrndx;
+} elf_header_t;
+//--------------------------------------------------------------
+typedef struct
+{
+	u32	  type;
+	u32	  offset;
+	void *vaddr;
+	u32	  paddr;
+	u32	  filesz;
+	u32	  memsz;
+	u32	  flags;
+	u32	  align;
+} elf_pheader_t;
+
+void load_modules(void)
+{
+    // Apply loadmodulebuffer and prefix check patch
+    sbv_patch_enable_lmb();
+    sbv_patch_disable_prefix_check();
+    
+    SifLoadModule("rom0:SIO2MAN", 0, 0);
+	SifLoadModule("rom0:CDVDFSV", 0, 0);  
+    SifLoadModule("rom0:CDVDMAN", 0, 0);
+    SifLoadModule("rom0:MCMAN", 0, 0);
+    SifLoadModule("rom0:MCSERV", 0, 0);
+   	SifLoadModule("rom0:PADMAN", 0, 0);  
+	
+}
+
+void CleanUp(int iop_reset)
+{	
+   if (iop_reset) {
+   		IOP_Reset();
+    
+   		SifLoadFileInit();
+		load_modules();
+	}
+	
+  	SifExitIopHeap();
+  	SifLoadFileExit();
+  	SifExitRpc();
+  	SifExitCmd();
+  	
+  	FlushCache(0);
+  	FlushCache(2);
+}
+
+
+void load_elf(const char *elf_path)
+{   
+	u8 *boot_elf;
+	elf_header_t *boot_header;
+	elf_pheader_t *boot_pheader;
+	int i;
+	char *args[6];
+	char elfpath[1024];
+	//int n = 0;
+	
+    CleanUp(1);	
+
+	SifInitRpc(0);
+	SifLoadFileInit();
+ 	SifLoadFileExit();  
+
+	strcpy(elfpath, elf_path);
+	args[0] = elfpath;
+
+	// Load & execute embedded loader from here	
+	boot_elf = (u8 *)&elf_loader;
+	
+	// Get Elf header
+	boot_header = (elf_header_t *)boot_elf;
+	
+	// Check elf magic
+	if ((*(u32*)boot_header->ident) != ELF_MAGIC) 
+		return;
+
+	// Get program headers
+	boot_pheader = (elf_pheader_t *)(boot_elf + boot_header->phoff);
+	
+	// Scan through the ELF's program headers and copy them into apropriate RAM
+	// section, then padd with zeros if needed.
+	for (i = 0; i < boot_header->phnum; i++) {
+		
+		if (boot_pheader[i].type != ELF_PT_LOAD)
+			continue;
+
+		memcpy(boot_pheader[i].vaddr, boot_elf + boot_pheader[i].offset, boot_pheader[i].filesz);
+	
+		if (boot_pheader[i].memsz > boot_pheader[i].filesz)
+			memset((void*)((int)boot_pheader[i].vaddr + boot_pheader[i].filesz), 0, boot_pheader[i].memsz - boot_pheader[i].filesz);
+	}		
+	
+	SifExitRpc();
+	
+	// Execute Elf Loader
+	ExecPS2((void *)boot_header->entry, 0, 1, args);	
+	
+}
+
+void load_elf_NoIOPReset(const char *elf_path)
+{   
+	u8 *boot_elf;
+	elf_header_t *boot_header;
+	elf_pheader_t *boot_pheader;
+	int i;
+	char *args[6];
+	char elfpath[1024];
+	//int n = 0;
+	
+    CleanUp(0);	
+
+	SifInitRpc(0);
+	SifLoadFileInit();
+ 	SifLoadFileExit();  
+
+	strcpy(elfpath, elf_path);
+	args[0] = elfpath;
+
+	// Load & execute embedded loader from here	
+	boot_elf = (u8 *)&elf_loader;
+	
+	// Get Elf header
+	boot_header = (elf_header_t *)boot_elf;
+	
+	// Check elf magic
+	if ((*(u32*)boot_header->ident) != ELF_MAGIC) 
+		return;
+
+	// Get program headers
+	boot_pheader = (elf_pheader_t *)(boot_elf + boot_header->phoff);
+	
+	// Scan through the ELF's program headers and copy them into apropriate RAM
+	// section, then padd with zeros if needed.
+	for (i = 0; i < boot_header->phnum; i++) {
+		
+		if (boot_pheader[i].type != ELF_PT_LOAD)
+			continue;
+
+		memcpy(boot_pheader[i].vaddr, boot_elf + boot_pheader[i].offset, boot_pheader[i].filesz);
+	
+		if (boot_pheader[i].memsz > boot_pheader[i].filesz)
+			memset((void*)((int)boot_pheader[i].vaddr + boot_pheader[i].filesz), 0, boot_pheader[i].memsz - boot_pheader[i].filesz);
+	}		
+	
+	SifExitRpc();
+	
+	// Execute Elf Loader
+	ExecPS2((void *)boot_header->entry, 0, 1, args);	
+	
+}
+
+///////////////////////////////////////////////
+
+
+#define SCECdESRDVD_0 0x15  // ESR-patched DVD, as seen without ESR driver active
+#define SCECdESRDVD_1 0x16  // ESR-patched DVD, as seen with ESR driver active
+
+typedef struct
+{
+	int type;
+	char name[16];
+	int value;
+} DiscType;
+
+DiscType DiscTypes[] = {
+    {SCECdGDTFUNCFAIL, "FAIL", -1},
+	{SCECdNODISC, "!", 1},
+    {SCECdDETCT, "??", 2},
+    {SCECdDETCTCD, "CD ?", 3},
+    {SCECdDETCTDVDS, "DVD-SL ?", 4},
+    {SCECdDETCTDVDD, "DVD-DL ?", 5},
+    {SCECdUNKNOWN, "Unknown", 6},
+    {SCECdPSCD, "PS1 CD", 7},
+    {SCECdPSCDDA, "PS1 CDDA", 8},
+    {SCECdPS2CD, "PS2 CD", 9},
+    {SCECdPS2CDDA, "PS2 CDDA", 10},
+    {SCECdPS2DVD, "PS2 DVD", 11},
+    {SCECdESRDVD_0, "ESR DVD (off)", 12},
+    {SCECdESRDVD_1, "ESR DVD (on)", 13},
+    {SCECdCDDA, "Audio CD", 14},
+    {SCECdDVDV, "Video DVD", 15},
+    {SCECdIllegalMedia, "Unsupported", 16},
+    {0x00, "", 0x00}  //end of list
+};              //ends DiscTypes array
+
+///////////////////////////////////////////////
 
 #define MAX_DIR_FILES 512
 
@@ -556,6 +792,73 @@ static int lua_checkexist(lua_State *L){
 }
 
 
+static int lua_loadELF(lua_State *L)
+{
+	size_t size;
+	const char *elftoload = luaL_checklstring(L, 1, &size);
+	if (!elftoload) return luaL_error(L, "Argument error: System.loadELF() takes a string as argument.");
+	load_elf_NoIOPReset(elftoload);
+	return 1;
+}
+
+static int lua_checkValidDisc(lua_State *L)
+{
+	int testValid;
+	int result;
+	result = 0;
+	testValid = sceCdGetDiskType();
+	switch (testValid) {
+		case SCECdPSCD:
+		case SCECdPSCDDA:
+		case SCECdPS2CD:
+		case SCECdPS2CDDA:
+		case SCECdPS2DVD:
+		case SCECdESRDVD_0:
+		case SCECdESRDVD_1:
+		case SCECdCDDA:
+		case SCECdDVDV:
+		case SCECdDETCTCD:
+		case SCECdDETCTDVDS:
+		case SCECdDETCTDVDD:
+			result = 1;
+		case SCECdNODISC:
+		case SCECdDETCT:
+		case SCECdUNKNOWN:
+		case SCECdIllegalMedia:
+			result = 0;
+	}
+	printf("Valid Disc: %d\n",result);
+	lua_pushinteger(L, result); //return the value itself to Lua stack
+    return 1; //return value quantity on stack
+}
+
+static int lua_checkDiscTray(lua_State *L)
+{
+	int result;
+	if (sceCdStatus() == SCECdStatShellOpen){
+		result = 1;
+	} else {
+		result = 0;
+	}
+	lua_pushinteger(L, result); //return the value itself to Lua stack
+    return 1; //return value quantity on stack
+}
+
+
+static int lua_getDiscType(lua_State *L)
+{
+    int discType;
+    int iz;
+    discType = sceCdGetDiskType();
+    
+    int DiscType_ix = 0;
+        for (iz = 0; DiscTypes[iz].name[0]; iz++)
+            if (DiscTypes[iz].type == discType)
+                DiscType_ix = iz;
+    printf("getDiscType: %d\n",DiscTypes[DiscType_ix].value);
+    lua_pushinteger(L, DiscTypes[DiscType_ix].value); //return the value itself to Lua stack
+    return 1; //return value quantity on stack
+}
 
 static const luaL_Reg System_functions[] = {
 	{"openFile",                   lua_openfile},
@@ -580,6 +883,10 @@ static const luaL_Reg System_functions[] = {
 	{"getFPS",                 		 lua_getFPS},
 	{"exitToBrowser",                  lua_exit},
 	{"getMCInfo",                 lua_getmcinfo},
+	{"loadELF",                 	lua_loadELF},
+	{"checkValidDisc",       lua_checkValidDisc},
+	{"getDiscType",             lua_getDiscType},
+	{"checkDiscTray",         lua_checkDiscTray},
 	{0, 0}
 };
 

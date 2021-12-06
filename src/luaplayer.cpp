@@ -147,6 +147,24 @@ padButtonStatus readPad(int port, int slot)
 
 }
 
+int isButtonPressed(u32 button)
+{
+   int ret;
+   u32 paddata;
+   
+   struct padButtonStatus padbuttons;
+   
+   while (((ret=padGetState(0, 0)) != PAD_STATE_STABLE)&&(ret!=PAD_STATE_FINDCTP1)&&(ret != PAD_STATE_DISCONN)); // more error check ?
+   if (padRead(0, 0, &padbuttons) != 0)
+   {
+    	paddata = 0xffff ^ padbuttons.btns;
+     	if(paddata & button)
+            return 1;
+   }
+   return 0;
+
+}
+
 void pad_init()
 {
     int ret;
@@ -271,9 +289,6 @@ const char * runScript(const char* script, bool isStringBuffer )
     // init System
     luaSystem_init(L);
 
-	//Secure Manager
-    luaSecrMan_init(L);
-
     // init sound
     //luaSound_init(L);
     	
@@ -288,14 +303,17 @@ const char * runScript(const char* script, bool isStringBuffer )
 	const char * errMsg = NULL;
 
 	if(!isStringBuffer) s = luaL_loadfile(L, script);
-	else s = luaL_loadbuffer(L, script, strlen(script), NULL);
+	else {
+    s = luaL_loadbuffer(L, script, strlen(script), NULL);
+  }
+
 		
 	if (s == 0) s = lua_pcall(L, 0, LUA_MULTRET, 0);
 
 	if (s) {
 		errMsg = lua_tostring(L, -1);
-		printf("error: %s\n", lua_tostring(L, -1));
-		dbgprintf("error: %s\n", lua_tostring(L, -1));
+		printf("error: %s\n", errMsg);
+		dbgprintf("error: %s\n", errMsg);
 		lua_pop(L, 1); // remove error message
 	}
 	lua_close(L);

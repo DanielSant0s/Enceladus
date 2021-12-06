@@ -41,7 +41,7 @@ PS2LINK_IP = 192.168.1.10
 EE_BIN = enceladus.elf
 EE_BIN_PKD = enceladus_pkd.elf
 
-EE_LIBS = -L$(PS2SDK)/ports/lib -L$(PS2DEV)/gsKit/lib/ -lpatches -lfileXio -lpad -ldebug -llua -ljpeg -lfreetype -lgskit_toolkit -lgskit -ldmakit -lpng -lz -lmc -laudsrv
+EE_LIBS = -L$(PS2SDK)/ports/lib -L$(PS2DEV)/gsKit/lib/ -lpatches -lfileXio -lpad -ldebug -llua -ljpeg -lfreetype -lgskit_toolkit -lgskit -ldmakit -lpng -lz -lmc -laudsrv -lelf-loader
 
 EE_INCS += -I$(PS2DEV)/gsKit/include -I$(PS2SDK)/ports/include -I$(PS2SDK)/ports/include/freetype2 -I$(PS2SDK)/ports/include/zlib
 
@@ -60,27 +60,25 @@ BIN2S = $(PS2SDK)/bin/bin2s
 
 #-------------------------- App Content ---------------------------#
 APP_CORE = src/main.o src/graphics.o src/atlas.o \
-		   src/fntsys.o src/md5.o src/secrman_rpc.o
+		   src/fntsys.o src/md5.o
 
 LUA_LIBS =	src/luaplayer.o src/luasound.o src/luacontrols.o \
 			src/luatimer.o src/luaScreen.o src/luagraphics.o \
-			src/luasystem.o src/luasecrman.o
+			src/luasystem.o
 
 IOP_MODULES = src/usbd.o src/audsrv.o src/bdm.o src/bdmfs_vfat.o \
 			  src/usbmass_bd.o src/cdfs.o
 
-EMBEDDED_RSC = src/lualogo.o src/boot.o
+EMBEDDED_RSC = src/boot.o
 
 EE_OBJS = $(IOP_MODULES) $(EMBEDDED_RSC) $(APP_CORE) $(LUA_LIBS)
+
+EE_OBJS += src/elf_loader.o
 
 #------------------------------------------------------------------#
 
 
 #--------------------- Embedded ressources ------------------------#
-
-src/lualogo.s: etc/lualogo.raw
-	echo "Embedding splash screen..."
-	$(BIN2S) $< $@ rawlualogo
 
 src/boot.s: etc/boot.lua
 	echo "Embedding boot script..."
@@ -118,6 +116,7 @@ src/cdfs.s: $(PS2SDK)/iop/irx/cdfs.irx
 
 all: $(EE_BIN)
 	@echo "$$HEADER"
+
 	echo "Building $(EE_BIN)..."
 	$(EE_STRIP) $(EE_BIN)
 
@@ -162,8 +161,9 @@ clean:
 	echo "Cleaning embedded boot script..."
 	rm -f src/boot.s
 
-	echo "Cleaning embedded splash screen...\n"
-	rm -f src/lualogo.s
+	echo "Cleaning ELF loader...\n"
+	rm -f src/elf_loader.s
+	$(MAKE) -C src/elf_loader/src/loader clean	
 
 rebuild: clean all
 
@@ -173,6 +173,10 @@ run:
 reset:
 	ps2client -h $(PS2LINK_IP) reset   
 
+src/elf_loader.s:
+	echo "Building ELF Loader..."
+	$(MAKE) -C src/elf_loader/src/loader
+	bin2s src/elf_loader/src/loader/loader.elf src/elf_loader.s elf_loader
 
 include $(PS2SDK)/samples/Makefile.pref
 include $(PS2SDK)/samples/Makefile.eeglobal

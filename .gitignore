@@ -1,3 +1,19 @@
 
 .vscode/settings.json
 .vscode/launch.json
+*.ttf
+*.otf
+bin/img/bg0.png
+bin/img/bg1.png
+bin/img/bg2.png
+bin/img/bg3.png
+bin/img/glow.png
+bin/img/logo.png
+bin/img/title.png
+bin/libpatch.lua
+bin/mods/test.lua
+bin/mods/test2.lua
+bin/reloader.lua
+bin/rl_intro.lua
+bin/SLUS_209.46
+bin/System/index.lua

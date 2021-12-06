@@ -63,13 +63,6 @@ void initMC(void)
    mcSync(MC_WAIT, NULL, &ret);
 }
 
-
-void systemInit()
-{
-
-}
-
-
 void setLuaBootPath(int argc, char ** argv, int idx)
 {
     if (argc>=(idx+1))
@@ -147,8 +140,6 @@ int main(int argc, char * argv[])
 
     initMC();
 
-    init_scr();
-
 	
         // if no parameters are specified, use the default boot
 	if (argc < 2)
@@ -165,37 +156,36 @@ int main(int argc, char * argv[])
               // set path global variable based on the given script path
 	      setLuaBootPath (argc, argv, 1);
 	}
-
-	
-	printf("boot path : %s\n", boot_path);
-	dbgprintf("boot path : %s\n", boot_path);
 	
 	// Lua init
 	// init internals library
     
     // graphics (gsKit)
     initGraphics();
-	static const uint64_t c_black = GS_SETREG_RGBAQ(0x00, 0x00, 0x00, 0x80, 0x00);
-	clearScreen(c_black);
-	gsKit_vsync_wait();
-	flipScreen();
-	clearScreen(c_black);
-	gsKit_vsync_wait();
-	flipScreen();
 
     pad_init();
 
     // set base path luaplayer
     chdir(boot_path); 
+
+    printf("boot path : %s\n", boot_path);
+	dbgprintf("boot path : %s\n", boot_path);
     
     while (1)
     {
     
         // if no parameters are specified, use the default boot
-        if (argc < 2) errMsg = runScript(bootString, true);     
-        else errMsg = runScript(argv[1], false);   
+        if (argc < 2) {
+            errMsg = runScript(bootString, true); 
+        } else {
+            errMsg = runScript(argv[1], false);
+        }   
 
         gsKit_clear_screens();
+
+        init_scr();
+
+        sleep(1);
 
         if (errMsg != NULL)
         {
@@ -203,7 +193,7 @@ int main(int argc, char * argv[])
         }
 
         scr_printf("\nPress [start] to restart\n");
-        while (1/*!isButtonPressed(PAD_START)*/) graphicWaitVblankStart();
+        while (!isButtonPressed(PAD_START)) graphicWaitVblankStart();
 
     }
 

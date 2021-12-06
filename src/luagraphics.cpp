@@ -56,8 +56,8 @@ static int lua_ftload(lua_State *L){
 static int lua_ftSetPixelSize(lua_State *L) {
 	if (lua_gettop(L) != 3) return luaL_error(L, "wrong number of arguments"); 
 	int fontid = luaL_checkinteger(L, 1);
-	int width = luaL_checkinteger(L, 2); 
-	int height = luaL_checkinteger(L, 3); 
+	int width = luaL_checknumber(L, 2); 
+	int height = luaL_checknumber(L, 3); 
 	fntSetPixelSize(fontid, width, height);
 	return 0;
 }
@@ -155,7 +155,6 @@ static const luaL_Reg Font_functions[] = {
 static int lua_loadimg(lua_State *L) {
 	int argc = lua_gettop(L);
 	if (argc != 1 && argc != 2) return luaL_error(L, "wrong number of arguments");
-    lua_gc(L, LUA_GCCOLLECT, 0);
 	const char* text = luaL_checkstring(L, 1);
 	int file = open(text, O_RDONLY, 0777);
 	bool delayed = true;
@@ -306,8 +305,8 @@ static int lua_rect(lua_State *L) {
 	if (argc != 5) return luaL_error(L, "wrong number of arguments");
 	float x = luaL_checknumber(L, 1);
 	float y = luaL_checknumber(L, 2);
-    int width = luaL_checkinteger(L, 3);
-    int height = luaL_checkinteger(L, 4);
+    float width = luaL_checknumber(L, 3);
+    float height = luaL_checknumber(L, 4);
     Color color =  luaL_checkinteger(L, 5);
 
 	drawRect(x, y, width, height, color);
@@ -414,8 +413,25 @@ static int lua_free(lua_State *L) {
 #ifndef SKIP_ERROR_HANDLING
 	if (argc != 1) return luaL_error(L, "wrong number of arguments");
 #endif
+	
 	GSTEXTURE* source = (GSTEXTURE*)(luaL_checkinteger(L, 1));
+
 	UnloadTexture(source);
+
+	free(source->Mem);
+	source->Mem = NULL;
+	
+	// Free texture CLUT
+	if(source->Clut != NULL)
+	{
+		
+		free(source->Clut);
+		source->Clut = NULL;
+	}
+
+	free(source);
+	source = NULL;
+
 	return 0;
 }
 
