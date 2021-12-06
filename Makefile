@@ -73,8 +73,6 @@ EMBEDDED_RSC = src/boot.o
 
 EE_OBJS = $(IOP_MODULES) $(EMBEDDED_RSC) $(APP_CORE) $(LUA_LIBS)
 
-EE_OBJS += src/elf_loader.o
-
 #------------------------------------------------------------------#
 
 
@@ -161,10 +159,6 @@ clean:
 	echo "Cleaning embedded boot script..."
 	rm -f src/boot.s
 
-	echo "Cleaning ELF loader...\n"
-	rm -f src/elf_loader.s
-	$(MAKE) -C src/elf_loader/src/loader clean	
-
 rebuild: clean all
 
 run:
@@ -172,11 +166,6 @@ run:
        
 reset:
 	ps2client -h $(PS2LINK_IP) reset   
-
-src/elf_loader.s:
-	echo "Building ELF Loader..."
-	$(MAKE) -C src/elf_loader/src/loader
-	bin2s src/elf_loader/src/loader/loader.elf src/elf_loader.s elf_loader
 
 include $(PS2SDK)/samples/Makefile.pref
 include $(PS2SDK)/samples/Makefile.eeglobal

@@ -13,10 +13,11 @@
 #include "include/luaplayer.h"
 #include "include/md5.h"
 #include "include/graphics.h"
+#include "elf_loader/src/loader.c"
 
 
-extern void *elf_loader;
-extern int  size_elf_loader;
+extern u8 loader_elf[];
+//extern int size_loader_elf;
 void IOP_Reset(void);
 
 void IOP_Reset(void)
@@ -125,7 +126,7 @@ void load_elf(const char *elf_path)
 	args[0] = elfpath;
 
 	// Load & execute embedded loader from here	
-	boot_elf = (u8 *)&elf_loader;
+	boot_elf = (u8 *)&loader_elf;
 	
 	// Get Elf header
 	boot_header = (elf_header_t *)boot_elf;
@@ -177,7 +178,7 @@ void load_elf_NoIOPReset(const char *elf_path)
 	args[0] = elfpath;
 
 	// Load & execute embedded loader from here	
-	boot_elf = (u8 *)&elf_loader;
+	boot_elf = (u8 *)&loader_elf;
 	
 	// Get Elf header
 	boot_header = (elf_header_t *)boot_elf;
