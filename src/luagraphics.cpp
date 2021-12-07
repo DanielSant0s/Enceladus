@@ -158,7 +158,7 @@ static int lua_loadimg(lua_State *L) {
 	const char* text = luaL_checkstring(L, 1);
 	int file = open(text, O_RDONLY, 0777);
 	bool delayed = true;
-	if (argc == 2) delayed = luaL_checkinteger(L, 2);
+	if (argc == 2) delayed = lua_toboolean(L, 2);
 	uint16_t magic;
 	read(file, &magic, 2);
 	close(file);

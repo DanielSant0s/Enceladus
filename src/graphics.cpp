@@ -776,7 +776,9 @@ int getFreeVRAM(){
 void drawImageCentered(GSTEXTURE* source, float x, float y, float width, float height, float startx, float starty, float endx, float endy, Color color)
 {
 
-	gsKit_TexManager_bind(gsGlobal, source);
+	if (source->Delayed == true) {
+		gsKit_TexManager_bind(gsGlobal, source);
+	}
 	gsKit_prim_sprite_texture(gsGlobal, source, 
 					x-width/2, // X1
 					y-height/2, // Y1
@@ -794,7 +796,9 @@ void drawImageCentered(GSTEXTURE* source, float x, float y, float width, float h
 void drawImage(GSTEXTURE* source, float x, float y, float width, float height, float startx, float starty, float endx, float endy, Color color)
 {
 
-	gsKit_TexManager_bind(gsGlobal, source);
+	if (source->Delayed == true) {
+		gsKit_TexManager_bind(gsGlobal, source);
+	}
 	gsKit_prim_sprite_texture(gsGlobal, source, 
 					x-0.5f, // X1
 					y-0.5f, // Y1
@@ -814,7 +818,9 @@ void drawImageRotate(GSTEXTURE* source, float x, float y, float width, float hei
 	float c = cosf(angle);
 	float s = sinf(angle);
 
-	gsKit_TexManager_bind(gsGlobal, source);
+	if (source->Delayed == true) {
+		gsKit_TexManager_bind(gsGlobal, source);
+	}
 	gsKit_prim_quad_texture(gsGlobal, source, 
 							(-width/2)*c - (-height/2)*s+x, (-height/2)*c + (-width/2)*s+y, startx, starty, 
 							(-width/2)*c - height/2*s+x, height/2*c + (-width/2)*s+y, startx, endy, 
@@ -945,14 +951,6 @@ void setVideoMode(s16 mode, int width, int height, int psm, s16 interlace, s16 f
 
 void fntDrawQuad(rm_quad_t *q)
 {
-    //if ((q->txt->PSM == GS_PSM_CT32) || (q->txt->Clut && q->txt->ClutPSM == GS_PSM_CT32)) {
-    //    gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
-    //    gsKit_set_test(gsGlobal, GS_ATEST_ON);
-    //} else {
-    //    gsGlobal->PrimAlphaEnable = GS_SETTING_OFF;
-    //    gsKit_set_test(gsGlobal, GS_ATEST_OFF);
-    //}
-
     gsKit_TexManager_bind(gsGlobal, q->txt);
     gsKit_prim_sprite_texture(gsGlobal, q->txt,
                               q->ul.x-0.5f, q->ul.y-0.5f,
