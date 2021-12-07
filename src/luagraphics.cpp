@@ -167,6 +167,7 @@ static int lua_loadimg(lua_State *L) {
 	else if (magic == 0xD8FF) image = luaP_loadjpeg(text, false, delayed);
 	else if (magic == 0x5089) image = luaP_loadpng(text, delayed);
 	else return luaL_error(L, "Error loading image (invalid magic).");
+
 	lua_pushinteger(L, (uint32_t)(image));
 	return 1;
 }

@@ -20,3 +20,10 @@ bin/System/index.lua
 *.elf
 *.o
 *.s
+*.adp
+*.wav
+bin/audio/adpenc.exe
+bin/audio/back.adpcm
+bin/audio/convert.bat
+bin/audio/nav.adpcm
+bin/audio/select.adpcm

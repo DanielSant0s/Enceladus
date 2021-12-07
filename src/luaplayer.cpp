@@ -267,21 +267,21 @@ const char * runScript(const char* script, bool isStringBuffer )
 {	
     printf("Creating luaVM... \n");
 
-	L = luaL_newstate();
+  	L = luaL_newstate();
 	
-	// Init Standard libraries
-	luaL_openlibs(L);
+	  // Init Standard libraries
+	  luaL_openlibs(L);
 
     printf("Loading libs... ");
 
-	// init graphics
+	  // init graphics
     luaGraphics_init(L);
 
     // init controls
     luaControls_init(L);
 
-	// init screen
-	luaScreen_init(L);
+	  // init screen
+	  luaScreen_init(L);
     
     //init Timer
     luaTimer_init(L);
@@ -290,7 +290,7 @@ const char * runScript(const char* script, bool isStringBuffer )
     luaSystem_init(L);
 
     // init sound
-    //luaSound_init(L);
+    luaSound_init(L);
     	
     printf("done !\n");
      
