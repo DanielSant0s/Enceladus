@@ -133,7 +133,6 @@ int main(int argc, char * argv[])
 
     SifExecModuleBuffer(&cdfs_irx, size_cdfs_irx, 0, NULL, NULL);
 
-    //load audio
     SifExecModuleBuffer(&audsrv_irx, size_audsrv_irx, 0, NULL, NULL);
 
     audsrv_init();

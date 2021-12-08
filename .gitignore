@@ -27,3 +27,4 @@ bin/audio/back.adpcm
 bin/audio/convert.bat
 bin/audio/nav.adpcm
 bin/audio/select.adpcm
+bin/audio/loading.adpcm

@@ -56,11 +56,56 @@ static int lua_setvmode(lua_State *L) {
 static int lua_getvmode(lua_State *L) {
 	int argc = lua_gettop(L);
 	if (argc != 0) return luaL_error(L, "wrong number of arguments");
-	
-	printf("getMode isn't usable yet");
-	return 0;
-}
 
+	GSGLOBAL *gsGlobal = getGSGLOBAL();
+
+	lua_newtable(L);
+    lua_pushstring(L, "mode");
+    lua_pushinteger(L, gsGlobal->Mode);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "interlace");
+    lua_pushinteger(L, gsGlobal->Interlace);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "field");
+    lua_pushinteger(L, gsGlobal->Field);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "dithering");
+    lua_pushinteger(L, gsGlobal->Dithering);
+    lua_settable(L, -3);
+
+	lua_pushstring(L, "doubleBuffering");
+    lua_pushinteger(L, gsGlobal->DoubleBuffering);
+    lua_settable(L, -3);
+
+	lua_pushstring(L, "zBuffering");
+    lua_pushinteger(L, gsGlobal->ZBuffering);
+    lua_settable(L, -3);
+
+	lua_pushstring(L, "width");
+    lua_pushinteger(L, gsGlobal->Width);
+    lua_settable(L, -3);
+
+	lua_pushstring(L, "height");
+    lua_pushinteger(L, gsGlobal->Height);
+    lua_settable(L, -3);
+
+	lua_pushstring(L, "aspect");
+    lua_pushinteger(L, gsGlobal->Aspect);
+    lua_settable(L, -3);
+	
+	lua_pushstring(L, "colorMode");
+    lua_pushinteger(L, gsGlobal->PSM);
+    lua_settable(L, -3);
+
+	lua_pushstring(L, "zColorMode");
+    lua_pushinteger(L, gsGlobal->PSMZ);
+    lua_settable(L, -3);
+
+	return 1;
+}
 
 //Register our Screen Functions
 static const luaL_Reg Screen_functions[] = {

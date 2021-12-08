@@ -52,10 +52,11 @@ static int lua_setvolume(lua_State *L) {
 static int lua_setadpcmvolume(lua_State *L) {
 	int argc = lua_gettop(L);
 	//if (argc != 3) return luaL_error(L, "wrong number of arguments");
-
-    int volume = luaL_checkinteger(L, 1);
 	
-	audsrv_adpcm_set_volume(0, volume);
+	int slot = luaL_checkinteger(L, 1);
+    int volume = luaL_checkinteger(L, 2);
+	
+	audsrv_adpcm_set_volume(slot, volume);
 
 	return 0;
 }
@@ -94,9 +95,11 @@ static int lua_loadadpcm(lua_State *L) {
 
 static int lua_playadpcm(lua_State *L) {
 	int argc = lua_gettop(L);
-	audsrv_adpcm_t *sample = (audsrv_adpcm_t *)luaL_checkinteger(L, 1);
 
-	audsrv_ch_play_adpcm(0, sample);
+	int slot = luaL_checkinteger(L, 1);
+	audsrv_adpcm_t *sample = (audsrv_adpcm_t *)luaL_checkinteger(L, 2);
+
+	audsrv_ch_play_adpcm(slot, sample);
 	return 0;
 }
 
