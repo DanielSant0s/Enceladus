@@ -42,7 +42,6 @@ Enceladus is a project that seeks to facilitate and at the same time brings a co
 ### Function types:
 * System: Everything that involves files, folders and system stuff.
 * Graphics: You can control the entire 2D part of your project, that is, draw images, shapes, lines, change their properties, etc.
-* Render: 3D! Basic support for rendering a 3D environment in your project.
 * Screen: The entire screen of your project (2D and 3D), being able to change the resolution, enable or disable parameters.
 * Font: Functions that control the texts that appear on the screen, loading texts, drawing and unloading from memory.
 * Pads: Above being able to draw and everything else, A human interface is important. Supports rumble and pressure sensitivity.
@@ -100,8 +99,24 @@ Image functions:
 * Screen.clear(color) *color isn't mandatory
 * Screen.flip()
 * Screen.waitVblankStart()
-* Screen.showSplash()
-* Screen.setMode()
+* Screen.setMode(mode, width, height, colormode, interlace, field)  
+  • Default NTSC mode: Screen.setMode(NTSC, 640, 448, CT24, INTERLACED, FIELD)  
+  • Default PAL mode: Screen.setMode(PAL, 640, 512, CT24, INTERLACED, FIELD)  
+  • Available modes: NTSC, _480p, PAL, _576p, _720p, _1080i  
+  • Available colormodes: CT16, CT16S, CT24, CT32  
+  • Available interlaces: INTERLACED, NONINTERLACED  
+  • Available fields: FIELD, FRAME  
+* modetable = Screen.getMode()  
+  • modetable.mode  
+  • modetable.interlace  
+  • modetable.field  
+  • modetable.dithering  
+  • modetable.doubleBuffering  
+  • modetable.zBuffering  
+  • modetable.width  
+  • modetable.height  
+  • modetable.aspect  
+  • modetable.colormode  
 
 **Font functions:**
 
@@ -125,13 +140,33 @@ ROM font functions:
 
 **Pads functions:**
 
-* pad = Pads.get(port)
-* Pads.getLeftStick(port)
-* Pads.getRightStick(port)
-* type = Pads.getType(port)
-* press = Pads.getPressure(button, port)
-* Pads.rumble(big, small)
+* pad = Pads.get(port) *port isn't mandatory
+* Pads.getLeftStick(port) *port isn't mandatory
+* Pads.getRightStick(port) *port isn't mandatory
+* type = Pads.getType(port) *port isn't mandatory  
+  • PAD_DIGITAL  
+  • PAD_ANALOG  
+  • PAD_DUALSHOCK  
+* press = Pads.getPressure(port, button) *port isn't mandatory
+* Pads.rumble(port, big, small) *port isn't mandatory
 * Pads.check(pad, button)
+* Buttons list:  
+  • PAD_SELECT  
+  • PAD_START  
+  • PAD_UP  
+  • PAD_RIGHT  
+  • PAD_DOWN  
+  • PAD_LEFT  
+  • PAD_TRIANGLE  
+  • PAD_CIRCLE  
+  • PAD_CROSS  
+  • PAD_SQUARE  
+  • PAD_L1  
+  • PAD_R1  
+  • PAD_L2  
+  • PAD_R2  
+  • PAD_L3  
+  • PAD_R3  
 
 **System functions:**
 
@@ -143,7 +178,10 @@ ROM font functions:
 * size = System.sizeFile(fd)
 * System.doesFileExist(path)
 * System.CurrentDirectory(path) *if path given, it sets the current dir, else it gets the current dir
-* System.listDirectory(path) *path isn't mandatory
+* listdir = System.listDirectory(path) *path isn't mandatory  
+  • listdir[index].name - return file name on indicated index(string)  
+  • listdir[index].size - return file size on indicated index(integer)  
+  • listdir[index].directory - return if indicated index is a file or a directory(bool)  
 * System.createDirectory(path)
 * System.removeDirectory(path)
 * System.removeFile(path)
@@ -152,8 +190,8 @@ ROM font functions:
 * System.rename(source, dest)
 * System.md5sum(string)
 * System.sleep(sec)
-* System.getFreeMemory()
-* System.getFreeVRAM()
+* freemem = System.getFreeMemory()
+* freevram = System.getFreeVRAM()
 * fps = System.getFPS(prev, cur)
 * System.exitToBrowser()
 * type, freespace, format = System.getMCInfo(slot)
@@ -168,6 +206,15 @@ ROM font functions:
 * Timer.resume(timer)
 * Timer.reset(timer)
 * Timer.isPlaying(timer)
+
+**Sound functions:**
+
+* Sound.setFormat(bitrate, freq, channels)
+* Sound.setVolume(volume)
+* Sound.initADPCM()
+* Sound.setADPCMVolume(channel, volume)
+* audio = Sound.loadADPCM(path)
+* Sound.playADPCM(channel, audio)
 
 ## Contributing
 
