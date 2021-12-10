@@ -28,8 +28,6 @@ GSFONTM *gsFontM = NULL;
 
 
 //2D drawing functions
-
-
 GSTEXTURE* luaP_loadpng(const char *path, bool delayed)
 {
 	GSTEXTURE* tex = (GSTEXTURE*)malloc(sizeof(GSTEXTURE));

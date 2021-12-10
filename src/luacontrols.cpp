@@ -60,11 +60,15 @@ static int lua_getpressure(lua_State *L){
 	int argc = lua_gettop(L);
 	if (argc != 1 && argc != 2) return luaL_error(L, "wrong number of arguments.");
 	int port = 0;
-	if (argc == 2){
-		port = luaL_checkinteger(L, 2);
+	int button;
+	if (argc == 2) {
+		port = luaL_checkinteger(L, 1);
 		if (port > 1) return luaL_error(L, "wrong port number.");
+		button = luaL_checkinteger(L, 2);
+	} else {
+		button = luaL_checkinteger(L, 1);
 	}
-	int button = luaL_checkinteger(L, 1);
+	
 	padButtonStatus pad = readPad(port, 0);
 	unsigned char pressure;
 	switch (button) {
@@ -117,9 +121,18 @@ static int lua_rumble(lua_State *L){
 	int argc = lua_gettop(L);
 	if (argc != 2 && argc != 3) return luaL_error(L, "wrong number of arguments.");
 	static char actAlign[6];
-	actAlign[0] = luaL_checkinteger(L, 1);
-	actAlign[1] = luaL_checkinteger(L, 2);
-	padSetActDirect(0, 0, actAlign);
+	int port = 0;
+	if (argc == 3){
+		port = luaL_checkinteger(L, 1);
+		actAlign[0] = luaL_checkinteger(L, 2);
+		actAlign[1] = luaL_checkinteger(L, 3);
+	} else {
+		actAlign[0] = luaL_checkinteger(L, 1);
+		actAlign[1] = luaL_checkinteger(L, 2);
+	}
+	
+	
+	padSetActDirect(port, 0, actAlign);
 	return 0;
 }
 
