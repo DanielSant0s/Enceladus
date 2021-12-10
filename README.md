@@ -64,6 +64,9 @@ In this section you will have some information about how to code using Enceladus
 Using Enceladus you only need one way to code and one way to test your code, that is, if you want, you can even create your code on PS2, but I'll leave some recommendations below.
 
 * PC: [Visual Studio Code](https://code.visualstudio.com)(with Lua extension) and [PCSX2](https://pcsx2.net/download/development/dev-windows.html)(1.7.0 or above, enabled HostFS is required) or PS2Client for test.
+* How to enable HostFS on PCSX2 1.7.0:  
+![image](https://user-images.githubusercontent.com/47725160/145600021-b07dd873-137d-4364-91ec-7ace0b1936e2.png)
+
 * Android: [QuickEdit](https://play.google.com/store/apps/details?id=com.rhmsoft.edit&hl=pt_BR&gl=US) and a PS2 with uLE for test.
 
 Oh, and I also have to mention that an essential prerequisite for using Enceladus is knowing how to code in Lua.
