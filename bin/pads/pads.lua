@@ -1,5 +1,3 @@
-Screen.showSplash()
-
 Font.fmLoad()
 
 local circle = Graphics.loadImage("pads/circle.png")
