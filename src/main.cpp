@@ -50,7 +50,7 @@ void initMC(void)
    
    printf("Initializing Memory Card\n");
 
-   ret = mcInit(MC_TYPE_MC);
+   ret = mcInit(MC_TYPE_XMC);
    
    if( ret < 0 ) {
 	printf("MC_Init : failed to initialize memcard server.\n");

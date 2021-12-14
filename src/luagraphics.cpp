@@ -4,9 +4,49 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#include "include/luaplayer.h"
 #include "include/graphics.h"
 #include "include/fntsys.h"
+#include "include/luaplayer.h"
+
+static bool asyncDelayed = true;
+
+volatile int imgThreadResult = 1;
+unsigned char* imgThreadData = NULL;
+uint32_t imgThreadSize = 0;
+
+static u8 imgThreadStack[4096] __attribute__((aligned(16)));
+
+// Extern symbol 
+extern void *_gp;
+
+static int imgThread(void* data)
+{
+	char* text = (char*)data;
+	int file = open(text, O_RDONLY, 0777);
+	bool delayed = asyncDelayed;
+	uint16_t magic;
+	read(file, &magic, 2);
+	close(file);
+	GSTEXTURE* image = NULL;
+	if (magic == 0x4D42) image = luaP_loadbmp(text, delayed);
+	else if (magic == 0xD8FF) image = luaP_loadjpeg(text, false, delayed);
+	else if (magic == 0x5089) image = luaP_loadpng(text, delayed);
+	else 
+	{
+		imgThreadResult = 1;
+		ExitDeleteThread();
+		return 0;
+	}
+	char* buffer = (char*)malloc(16);
+	memset(buffer, 0, 16);
+	sprintf(buffer, "%i", (int)image);
+	imgThreadData = (unsigned char*)buffer;
+	imgThreadSize = strlen(buffer);
+	imgThreadResult = 1;
+	ExitDeleteThread();
+	return 0;
+}
+
 
 static int lua_fontload(lua_State *L){
 	if (lua_gettop(L) != 1) return luaL_error(L, "wrong number of arguments"); 
@@ -151,6 +191,33 @@ static const luaL_Reg Font_functions[] = {
 	{"fmUnload",         	    lua_fmunload}, 
   {0, 0}
 };
+
+
+static int lua_loadimgasync(lua_State *L){
+	int argc = lua_gettop(L);
+	if (argc != 1) return luaL_error(L, "wrong number of arguments");
+	char* text = (char*)(luaL_checkstring(L, 1));
+	if (argc == 2) asyncDelayed = lua_toboolean(L, 2);
+	
+	ee_thread_t thread_param;
+	
+	thread_param.gp_reg = &_gp;
+    thread_param.func = (void*)imgThread;
+    thread_param.stack = (void *)imgThreadStack;
+    thread_param.stack_size = sizeof(imgThreadStack);
+    thread_param.initial_priority = 16;
+	int thread = CreateThread(&thread_param);
+	if (thread < 0)
+	{
+		imgThreadResult = -1;
+		return 0;
+	}
+	
+	imgThreadResult = 0;
+	StartThread(thread, (void*)text);
+	return 0;
+}
+
 
 static int lua_loadimg(lua_State *L) {
 	int argc = lua_gettop(L);
@@ -436,6 +503,29 @@ static int lua_free(lua_State *L) {
 	return 0;
 }
 
+
+static int lua_getloadstate(lua_State *L){
+	int argc = lua_gettop(L);
+#ifndef SKIP_ERROR_HANDLING
+	if(argc != 0) return luaL_error(L, "wrong number of arguments.");
+#endif
+	lua_pushinteger(L, imgThreadResult);
+	return 1;
+}
+
+static int lua_getloaddata(lua_State *L){
+	int argc = lua_gettop(L);
+#ifndef SKIP_ERROR_HANDLING
+	if(argc != 0) return luaL_error(L, "wrong number of arguments.");
+#endif
+	if (imgThreadData != NULL){
+		lua_pushlstring(L,(const char*)imgThreadData,imgThreadSize);
+		free(imgThreadData);
+		imgThreadData = NULL;
+		return 1;
+	}else return 0;
+}
+
 //Register our Graphics Functions
 static const luaL_Reg Graphics_functions[] = {
   	{"drawPixel",           		   lua_pixel},
@@ -446,6 +536,7 @@ static const luaL_Reg Graphics_functions[] = {
 	{"drawTriangle",        		lua_triangle},
 	{"drawQuad",        				lua_quad},
     {"loadImage",           		 lua_loadimg},
+  	{"threadLoadImage",        	lua_loadimgasync},
   //{"loadAnimatedImage",   	   lua_loadanimg},
   //{"getImageFramesNum",   	lua_getnumframes},
   //{"setImageFrame",       		lua_setframe},
@@ -459,6 +550,8 @@ static const luaL_Reg Graphics_functions[] = {
   	{"getImageWidth",       		   lua_width},
   	{"getImageHeight",      		  lua_height},
     {"freeImage",           			lua_free},
+	{"getLoadState",            lua_getloadstate},
+  	{"getLoadData",     	     lua_getloaddata},
   {0, 0}
 };
 

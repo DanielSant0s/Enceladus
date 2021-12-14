@@ -1,13 +1,15 @@
 #ifndef __LUAPLAYER_H
 #define __LUAPLAYER_H
 
-#include "libpad.h"
+#include <stdlib.h>
+#include <libpad.h>
+#include <debug.h>
 
 extern "C" {
-#include <debug.h>
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
+}
 
 extern char boot_path[255];
 
@@ -19,13 +21,11 @@ extern char boot_path[255];
 
 int getBootDevice(void);
 
-extern void luaC_collectgarbage (lua_State *L);
-}
-
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define CLAMP(val, min, max) ((val)>(max)?(max):((val)<(min)?(min):(val)))
 
 #define ASYNC_TASKS_MAX 1
+
 
 extern int waitPadReady(int port, int slot);
 
@@ -50,7 +50,6 @@ extern void luaTimer_init(lua_State *L);
 extern void luaSystem_init(lua_State *L);
 extern void luaSound_init(lua_State *L);
 extern void stackDump (lua_State *L);
-
 
 #endif
 

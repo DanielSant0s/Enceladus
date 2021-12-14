@@ -30,3 +30,4 @@ bin/audio/select.adpcm
 bin/audio/loading.adpcm
 bin/audio/test/adpenc.exe
 bin/audio/test/convert.bat
+bin/test.pdf
