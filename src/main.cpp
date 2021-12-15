@@ -10,6 +10,7 @@
 #include <iopcontrol.h>
 #include <smod.h>
 #include <audsrv.h>
+#include <sys/stat.h>
 
 #include <sbv_patches.h>
 #include <smem.h>
@@ -50,7 +51,7 @@ void initMC(void)
    
    printf("Initializing Memory Card\n");
 
-   ret = mcInit(MC_TYPE_XMC);
+   ret = mcInit(MC_TYPE_MC);
    
    if( ret < 0 ) {
 	printf("MC_Init : failed to initialize memcard server.\n");
@@ -139,6 +140,20 @@ int main(int argc, char * argv[])
 
     initMC();
 
+    //waitUntilDeviceIsReady by fjtrujy
+
+    struct stat buffer;
+    int ret = -1;
+    int retries = 50;
+
+    while(ret != 0 && retries > 0)
+    {
+        ret = stat("mass:/", &buffer);
+        /* Wait untill the device is ready */
+        nopdelay();
+
+        retries--;
+    }
 	
         // if no parameters are specified, use the default boot
 	if (argc < 2)
