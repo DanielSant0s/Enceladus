@@ -19,6 +19,12 @@
 #include "include/sound.h"
 #include "include/luaplayer.h"
 
+
+extern "C"{
+#include <libds34bt.h>
+#include <libds34usb.h>
+}
+
 extern char bootString[];
 extern unsigned int size_bootString;
 
@@ -39,6 +45,12 @@ extern unsigned int size_usbmass_bd_irx;
 
 extern unsigned char audsrv_irx;
 extern unsigned int size_audsrv_irx;
+
+extern unsigned char ds34usb_irx;
+extern unsigned int size_ds34usb_irx;
+
+extern unsigned char ds34bt_irx;
+extern unsigned int size_ds34bt_irx;
 
 char boot_path[255];
 
@@ -128,6 +140,14 @@ int main(int argc, char * argv[])
 
     // load USB modules    
     SifExecModuleBuffer(&usbd_irx, size_usbd_irx, 0, NULL, NULL);
+
+    
+    int ds3pads = 1;
+    SifExecModuleBuffer(&ds34usb_irx, size_ds34usb_irx, 4, (char *)&ds3pads, NULL);
+    SifExecModuleBuffer(&ds34bt_irx, size_ds34bt_irx, 4, (char *)&ds3pads, NULL);
+    ds34usb_init();
+    ds34bt_init();
+
     SifExecModuleBuffer(&bdm_irx, size_bdm_irx, 0, NULL, NULL);
     SifExecModuleBuffer(&bdmfs_vfat_irx, size_bdmfs_vfat_irx, 0, NULL, NULL);
     SifExecModuleBuffer(&usbmass_bd_irx, size_usbmass_bd_irx, 0, NULL, NULL);
@@ -135,8 +155,8 @@ int main(int argc, char * argv[])
     SifExecModuleBuffer(&cdfs_irx, size_cdfs_irx, 0, NULL, NULL);
 
     SifExecModuleBuffer(&audsrv_irx, size_audsrv_irx, 0, NULL, NULL);
-
     audsrv_init();
+
 
     initMC();
 

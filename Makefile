@@ -41,9 +41,11 @@ PS2LINK_IP = 192.168.1.10
 EE_BIN = enceladus.elf
 EE_BIN_PKD = enceladus_pkd.elf
 
-EE_LIBS = -L$(PS2SDK)/ports/lib -L$(PS2DEV)/gsKit/lib/ -lpatches -lfileXio -lpad -ldebug -llua -ljpeg -lfreetype -lgskit_toolkit -lgskit -ldmakit -lpng -lz -lmc -laudsrv -lelf-loader
+EE_LIBS = -L$(PS2SDK)/ports/lib -L$(PS2DEV)/gsKit/lib/ -Lmodules/ds34bt/ee/ -Lmodules/ds34usb/ee/ -lpatches -lfileXio -lpad -ldebug -llua -ljpeg -lfreetype -lgskit_toolkit -lgskit -ldmakit -lpng -lz -lmc -laudsrv -lelf-loader -lds34bt -lds34usb
 
 EE_INCS += -I$(PS2DEV)/gsKit/include -I$(PS2SDK)/ports/include -I$(PS2SDK)/ports/include/freetype2 -I$(PS2SDK)/ports/include/zlib
+
+EE_INCS += -Imodules/ds34bt/ee -Imodules/ds34usb/ee
 
 EE_CFLAGS   += -Wno-sign-compare -fno-strict-aliasing -fno-exceptions -DLUA_USE_PS2
 EE_CXXFLAGS += -Wno-sign-compare -fno-strict-aliasing -fno-exceptions -DLUA_USE_PS2
@@ -59,6 +61,8 @@ endif
 BIN2S = $(PS2SDK)/bin/bin2s
 
 #-------------------------- App Content ---------------------------#
+EXT_LIBS = src/libds34usb.a src/libds34bt.a
+
 APP_CORE = src/main.o src/graphics.o src/atlas.o \
 		   src/fntsys.o src/md5.o
 
@@ -67,7 +71,7 @@ LUA_LIBS =	src/luaplayer.o src/luasound.o src/luacontrols.o \
 			src/luasystem.o
 
 IOP_MODULES = src/usbd.o src/audsrv.o src/bdm.o src/bdmfs_vfat.o \
-			  src/usbmass_bd.o src/cdfs.o
+			  src/usbmass_bd.o src/cdfs.o src/ds34bt.o src/ds34usb.o
 
 EMBEDDED_RSC = src/boot.o
 
@@ -110,9 +114,38 @@ src/usbmass_bd.s: $(PS2SDK)/iop/irx/usbmass_bd.irx
 src/cdfs.s: $(PS2SDK)/iop/irx/cdfs.irx
 	echo "Embedding CDFS Driver..."
 	$(BIN2S) $< $@ cdfs_irx
+
+src/libds34bt.a: modules/ds34bt/ee/libds34bt.a
+	cp $< $@
+
+modules/ds34bt/ee/libds34bt.a: modules/ds34bt/ee
+	$(MAKE) -C $<
+
+modules/ds34bt/iop/ds34bt.irx: modules/ds34bt/iop
+	echo "Building DS3/4 Bluetooth Driver..."
+	$(MAKE) -C $<
+
+src/ds34bt.s: modules/ds34bt/iop/ds34bt.irx
+	echo "Embedding DS3/4 Bluetooth Driver..."
+	$(BIN2S) $< $@ ds34bt_irx
+
+src/libds34usb.a: modules/ds34usb/ee/libds34usb.a
+	cp $< $@
+
+modules/ds34usb/ee/libds34usb.a: modules/ds34usb/ee
+	$(MAKE) -C $<
+
+modules/ds34usb/iop/ds34usb.irx: modules/ds34usb/iop
+	echo "Building DS3/4 USB Driver..."
+	$(MAKE) -C $<
+
+src/ds34usb.s: modules/ds34usb/iop/ds34usb.irx
+	echo "Embedding DS3/4 USB Driver..."
+	$(BIN2S) $< $@ ds34usb_irx
+	
 #------------------------------------------------------------------#
 
-all: $(EE_BIN)
+all: $(EXT_LIBS) $(EE_BIN)
 	@echo "$$HEADER"
 
 	echo "Building $(EE_BIN)..."
@@ -155,6 +188,12 @@ clean:
 	
 	echo "Cleaning CDFS Driver..."
 	rm -f src/cdfs.s
+
+	echo "Cleaning DS3/4 Drivers..."
+	rm -f src/ds34bt.s
+	rm -f src/ds34usb.s
+	$(MAKE) -C modules/ds34usb clean
+	$(MAKE) -C modules/ds34bt clean
 	
 	echo "Cleaning embedded boot script..."
 	rm -f src/boot.s

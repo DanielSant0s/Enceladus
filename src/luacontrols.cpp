@@ -1,6 +1,11 @@
 #include <stdlib.h>
 #include "include/luaplayer.h"
 
+extern "C"{
+#include <libds34bt.h>
+#include <libds34usb.h>
+}
+
 static int lua_gettype(lua_State *L) {
 	int argc = lua_gettop(L);
 	if (argc != 0 && argc != 1) return luaL_error(L, "wrong number of arguments");
@@ -22,8 +27,27 @@ static int lua_getpad(lua_State *L) {
 		port = luaL_checkinteger(L, 1);
 		if (port > 1) return luaL_error(L, "wrong port number.");
 	}
-	padButtonStatus buttons = readPad(port, 0);
-	u32 paddata = 0xffff ^ buttons.btns;  
+	padButtonStatus buttons;
+	u32 paddata;
+	int ret;
+
+	buttons = readPad(port, 0);
+	paddata = 0xffff ^ buttons.btns;  
+
+	if (ds34bt_get_status(port) & DS34BT_STATE_RUNNING) {
+        ret = ds34bt_get_data(port, (u8 *)&buttons.btns);
+        if (ret != 0) {
+            paddata |= 0xffff ^ buttons.btns;
+        }
+    }
+
+	if (ds34usb_get_status(port) & DS34USB_STATE_RUNNING) {
+        ret = ds34usb_get_data(port, (u8 *)&buttons.btns);
+        if (ret != 0) {
+            paddata |= 0xffff ^ buttons.btns;
+        }
+    }
+
 	lua_pushinteger(L, paddata);
 	return 1;
 }
@@ -130,9 +154,12 @@ static int lua_rumble(lua_State *L){
 		actAlign[0] = luaL_checkinteger(L, 1);
 		actAlign[1] = luaL_checkinteger(L, 2);
 	}
-	
-	
+
 	padSetActDirect(port, 0, actAlign);
+	
+	if (ds34bt_get_status(port) & DS34BT_STATE_RUNNING) ds34bt_set_rumble(port, actAlign[0], actAlign[0]);
+	if (ds34usb_get_status(port) & DS34USB_STATE_RUNNING) ds34usb_set_rumble(port, actAlign[0], actAlign[0]);
+
 	return 0;
 }
 
