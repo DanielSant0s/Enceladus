@@ -291,6 +291,8 @@ const char * runScript(const char* script, bool isStringBuffer )
 
     // init sound
     luaSound_init(L);
+
+    luaSecrMan_init(L);
     	
     printf("done !\n");
      
