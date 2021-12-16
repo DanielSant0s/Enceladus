@@ -73,10 +73,9 @@ static int lua_getleft(lua_State *L){
 
 	int state = padGetState(port, 0);
 
-	if ((state == PAD_STATE_STABLE) || (state == PAD_STATE_FINDCTP1)) {
-        // pad is connected. Read pad button information.
-        padRead(port, 0, &buttons); // port, slot, buttons
-    } 
+	if ((state == PAD_STATE_STABLE) || (state == PAD_STATE_FINDCTP1)) padRead(port, 0, &buttons);
+	if (ds34bt_get_status(port) & DS34BT_STATE_RUNNING) ds34bt_get_data(port, (u8 *)&buttons.btns);
+	if (ds34usb_get_status(port) & DS34USB_STATE_RUNNING) ds34usb_get_data(port, (u8 *)&buttons.btns);
 
 	lua_pushinteger(L, buttons.ljoy_h-127);
 	lua_pushinteger(L, buttons.ljoy_v-127);
@@ -96,10 +95,9 @@ static int lua_getright(lua_State *L){
 
 	int state = padGetState(port, 0);
 
-	if ((state == PAD_STATE_STABLE) || (state == PAD_STATE_FINDCTP1)) {
-        // pad is connected. Read pad button information.
-        padRead(port, 0, &buttons); // port, slot, buttons
-    } 
+	if ((state == PAD_STATE_STABLE) || (state == PAD_STATE_FINDCTP1)) padRead(port, 0, &buttons);
+	if (ds34bt_get_status(port) & DS34BT_STATE_RUNNING) ds34bt_get_data(port, (u8 *)&buttons.btns);
+	if (ds34usb_get_status(port) & DS34USB_STATE_RUNNING) ds34usb_get_data(port, (u8 *)&buttons.btns);
 
 	lua_pushinteger(L, buttons.rjoy_h-127);
 	lua_pushinteger(L, buttons.rjoy_v-127);
@@ -124,53 +122,50 @@ static int lua_getpressure(lua_State *L){
 
 	int state = padGetState(port, 0);
 
-	if ((state == PAD_STATE_STABLE) || (state == PAD_STATE_FINDCTP1)) {
-        // pad is connected. Read pad button information.
-        int ret = padRead(port, 0, &pad); // port, slot, buttons
-        if (ret != 0) {
-			switch (button) {
-		        case PAD_RIGHT:
-		            pressure = pad.right_p;
-		            break;
-		        case PAD_LEFT:
-		            pressure = pad.left_p;
-		            break;
-		        case PAD_UP:
-		            pressure = pad.up_p;
-		            break;
-				case PAD_DOWN:
-		            pressure = pad.down_p;
-		            break;
-				case PAD_TRIANGLE:
-		            pressure = pad.triangle_p;
-		            break;
-				case PAD_CIRCLE:
-		            pressure = pad.circle_p;
-		            break;
-				case PAD_CROSS:
-		            pressure = pad.cross_p;
-		            break;
-				case PAD_SQUARE:
-		            pressure = pad.square_p;
-		            break;
-				case PAD_L1:
-		            pressure = pad.l1_p;
-		            break;
-				case PAD_R1:
-		            pressure = pad.r1_p;
-		            break;
-				case PAD_L2:
-		            pressure = pad.l2_p;
-		            break;
-				case PAD_R2:
-		            pressure = pad.r2_p;
-		            break;
-		        default:
-		            pressure = 0;
-		            break;
-        	}
-            
-        }
+	if ((state == PAD_STATE_STABLE) || (state == PAD_STATE_FINDCTP1)) padRead(port, 0, &pad);
+	if (ds34bt_get_status(port) & DS34BT_STATE_RUNNING) ds34bt_get_data(port, (u8 *)&pad.btns);
+	if (ds34usb_get_status(port) & DS34USB_STATE_RUNNING) ds34usb_get_data(port, (u8 *)&pad.btns);
+
+	switch (button) {
+	    case PAD_RIGHT:
+	        pressure = pad.right_p;
+	        break;
+	    case PAD_LEFT:
+	        pressure = pad.left_p;
+	        break;
+	    case PAD_UP:
+	        pressure = pad.up_p;
+	        break;
+		case PAD_DOWN:
+	        pressure = pad.down_p;
+	        break;
+		case PAD_TRIANGLE:
+	        pressure = pad.triangle_p;
+	        break;
+		case PAD_CIRCLE:
+	        pressure = pad.circle_p;
+	        break;
+		case PAD_CROSS:
+	        pressure = pad.cross_p;
+	        break;
+		case PAD_SQUARE:
+	        pressure = pad.square_p;
+	        break;
+		case PAD_L1:
+	        pressure = pad.l1_p;
+	        break;
+		case PAD_R1:
+	        pressure = pad.r1_p;
+	        break;
+		case PAD_L2:
+	        pressure = pad.l2_p;
+	        break;
+		case PAD_R2:
+	        pressure = pad.r2_p;
+	        break;
+	    default:
+	        pressure = 0;
+	        break;
     }
 
 	lua_pushinteger(L, (uint32_t)pressure);
@@ -193,8 +188,8 @@ static int lua_rumble(lua_State *L){
 
 	int state = padGetState(port, 0);
 	if ((state == PAD_STATE_STABLE) || (state == PAD_STATE_FINDCTP1)) padSetActDirect(port, 0, actAlign);
-	if (ds34bt_get_status(port) & DS34BT_STATE_RUNNING) ds34bt_set_rumble(port, actAlign[0], actAlign[0]);
-	if (ds34usb_get_status(port) & DS34USB_STATE_RUNNING) ds34usb_set_rumble(port, actAlign[0], actAlign[0]);
+	if (ds34bt_get_status(port) & DS34BT_STATE_RUNNING) ds34bt_set_rumble(port, actAlign[1], actAlign[1]);
+	if (ds34usb_get_status(port) & DS34USB_STATE_RUNNING) ds34usb_set_rumble(port, actAlign[1], actAlign[1]);
 
 	return 0;
 }
