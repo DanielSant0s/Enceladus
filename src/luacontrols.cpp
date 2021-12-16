@@ -207,7 +207,7 @@ static int lua_check(lua_State *L){
 static int lua_set_led(lua_State *L){
 	int argc = lua_gettop(L);
 	if (argc != 3 && argc != 4) return luaL_error(L, "wrong number of arguments.");
-	u8 led[3];
+	u8 led[4];
 	int port = 0;
 	if (argc == 4){
 		port = luaL_checkinteger(L, 1);
@@ -219,6 +219,8 @@ static int lua_set_led(lua_State *L){
 		led[1] = luaL_checkinteger(L, 2);
 		led[2] = luaL_checkinteger(L, 3);
 	}
+
+	led[3] = 0;
 
 	if (ds34bt_get_status(port) & DS34BT_STATE_RUNNING) ds34bt_set_led(port, led);
 	if (ds34usb_get_status(port) & DS34USB_STATE_RUNNING) ds34usb_set_led(port, led);

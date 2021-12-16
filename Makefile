@@ -116,6 +116,7 @@ src/cdfs.s: $(PS2SDK)/iop/irx/cdfs.irx
 	$(BIN2S) $< $@ cdfs_irx
 
 modules/ds34bt/ee/libds34bt.a: modules/ds34bt/ee
+	echo "Building DS3/4 Bluetooth Library..."
 	$(MAKE) -C $<
 
 modules/ds34bt/iop/ds34bt.irx: modules/ds34bt/iop
@@ -127,6 +128,7 @@ src/ds34bt.s: modules/ds34bt/iop/ds34bt.irx
 	$(BIN2S) $< $@ ds34bt_irx
 
 modules/ds34usb/ee/libds34usb.a: modules/ds34usb/ee
+	echo "Building DS3/4 USB Library..."
 	$(MAKE) -C $<
 
 modules/ds34usb/iop/ds34usb.irx: modules/ds34usb/iop
