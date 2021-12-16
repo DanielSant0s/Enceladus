@@ -203,6 +203,29 @@ static int lua_check(lua_State *L){
 	return 1;
 }
 
+
+static int lua_set_led(lua_State *L){
+	int argc = lua_gettop(L);
+	if (argc != 3 && argc != 4) return luaL_error(L, "wrong number of arguments.");
+	u8 led[3];
+	int port = 0;
+	if (argc == 4){
+		port = luaL_checkinteger(L, 1);
+		led[0] = luaL_checkinteger(L, 2);
+		led[1] = luaL_checkinteger(L, 3);
+		led[2] = luaL_checkinteger(L, 4);
+	} else {
+		led[0] = luaL_checkinteger(L, 1);
+		led[1] = luaL_checkinteger(L, 2);
+		led[2] = luaL_checkinteger(L, 3);
+	}
+
+	if (ds34bt_get_status(port) & DS34BT_STATE_RUNNING) ds34bt_set_led(port, led);
+	if (ds34usb_get_status(port) & DS34USB_STATE_RUNNING) ds34usb_set_led(port, led);
+
+	return 0;
+}
+
 //Register our Screen Functions
 static const luaL_Reg Pads_functions[] = {
   {"get",              lua_getpad},
@@ -211,6 +234,7 @@ static const luaL_Reg Pads_functions[] = {
   {"getType",         lua_gettype},
   {"getPressure", lua_getpressure},
   {"rumble",           lua_rumble},
+  {"setLED",          lua_set_led},
   {"check",             lua_check},
   {0, 0}
 };

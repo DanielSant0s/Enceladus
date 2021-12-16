@@ -109,15 +109,18 @@ int ds34usb_set_rumble(int port, u8 lrum, u8 rrum)
     return (SifCallRpc(&ds34usb, DS34USB_SET_RUMBLE, 0, rpcbuf, 3, NULL, 0, NULL, NULL) == 0);
 }
 
-int ds34usb_set_led(int port, u8 led)
+int ds34usb_set_led(int port, u8 *led)
 {
     if (!ds34usb_inited)
         return 0;
 
     rpcbuf[0] = port;
-    rpcbuf[1] = led;
+    rpcbuf[1] = led[0];
+    rpcbuf[2] = led[1];
+    rpcbuf[3] = led[2];
+    rpcbuf[4] = 0;
 
-    return (SifCallRpc(&ds34usb, DS34USB_SET_LED, 0, rpcbuf, 2, NULL, 0, NULL, NULL) == 0);
+    return (SifCallRpc(&ds34usb, DS34USB_SET_LED, 0, rpcbuf, 5, NULL, 0, NULL, NULL) == 0);
 }
 
 int ds34usb_get_data(int port, u8 *data)
