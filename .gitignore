@@ -41,3 +41,4 @@ src/ds34bt.s
 src/ds34usb.s
 src/usbd.s
 src/usbmass_bd.s
+bin/System/noindex.lua

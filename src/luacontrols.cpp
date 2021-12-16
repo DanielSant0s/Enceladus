@@ -27,12 +27,20 @@ static int lua_getpad(lua_State *L) {
 		port = luaL_checkinteger(L, 1);
 		if (port > 1) return luaL_error(L, "wrong port number.");
 	}
+
 	padButtonStatus buttons;
-	u32 paddata;
+	u32 paddata = 0;
 	int ret;
 
-	buttons = readPad(port, 0);
-	paddata = 0xffff ^ buttons.btns;  
+	int state = padGetState(port, 0);
+
+	if ((state == PAD_STATE_STABLE) || (state == PAD_STATE_FINDCTP1)) {
+        // pad is connected. Read pad button information.
+        ret = padRead(port, 0, &buttons); // port, slot, buttons
+        if (ret != 0) {
+            paddata = 0xffff ^ buttons.btns;
+        }
+    } 
 
 	if (ds34bt_get_status(port) & DS34BT_STATE_RUNNING) {
         ret = ds34bt_get_data(port, (u8 *)&buttons.btns);
@@ -60,7 +68,16 @@ static int lua_getleft(lua_State *L){
 		port = luaL_checkinteger(L, 1);
 		if (port > 1) return luaL_error(L, "wrong port number.");
 	}
-	padButtonStatus buttons = readPad(port, 0);
+
+	padButtonStatus buttons;
+
+	int state = padGetState(port, 0);
+
+	if ((state == PAD_STATE_STABLE) || (state == PAD_STATE_FINDCTP1)) {
+        // pad is connected. Read pad button information.
+        padRead(port, 0, &buttons); // port, slot, buttons
+    } 
+
 	lua_pushinteger(L, buttons.ljoy_h-127);
 	lua_pushinteger(L, buttons.ljoy_v-127);
 	return 2;
@@ -74,7 +91,16 @@ static int lua_getright(lua_State *L){
 		port = luaL_checkinteger(L, 1);
 		if (port > 1) return luaL_error(L, "wrong port number.");
 	}
-	padButtonStatus buttons = readPad(port, 0);
+
+	padButtonStatus buttons;
+
+	int state = padGetState(port, 0);
+
+	if ((state == PAD_STATE_STABLE) || (state == PAD_STATE_FINDCTP1)) {
+        // pad is connected. Read pad button information.
+        padRead(port, 0, &buttons); // port, slot, buttons
+    } 
+
 	lua_pushinteger(L, buttons.rjoy_h-127);
 	lua_pushinteger(L, buttons.rjoy_v-127);
 	return 2;
@@ -87,55 +113,65 @@ static int lua_getpressure(lua_State *L){
 	int button;
 	if (argc == 2) {
 		port = luaL_checkinteger(L, 1);
-		if (port > 1) return luaL_error(L, "wrong port number.");
 		button = luaL_checkinteger(L, 2);
 	} else {
 		button = luaL_checkinteger(L, 1);
 	}
 	
-	padButtonStatus pad = readPad(port, 0);
-	unsigned char pressure;
-	switch (button) {
-            case PAD_RIGHT:
-                pressure = pad.right_p;
-                break;
-            case PAD_LEFT:
-                pressure = pad.left_p;
-                break;
-            case PAD_UP:
-                pressure = pad.up_p;
-                break;
-			case PAD_DOWN:
-                pressure = pad.down_p;
-                break;
-			case PAD_TRIANGLE:
-                pressure = pad.triangle_p;
-                break;
-			case PAD_CIRCLE:
-                pressure = pad.circle_p;
-                break;
-			case PAD_CROSS:
-                pressure = pad.cross_p;
-                break;
-			case PAD_SQUARE:
-                pressure = pad.square_p;
-                break;
-			case PAD_L1:
-                pressure = pad.l1_p;
-                break;
-			case PAD_R1:
-                pressure = pad.r1_p;
-                break;
-			case PAD_L2:
-                pressure = pad.l2_p;
-                break;
-			case PAD_R2:
-                pressure = pad.r2_p;
-                break;
-            default:
-                pressure = 0;
-                break;
+	padButtonStatus pad;
+
+	unsigned char pressure = 255;
+
+	int state = padGetState(port, 0);
+
+	if ((state == PAD_STATE_STABLE) || (state == PAD_STATE_FINDCTP1)) {
+        // pad is connected. Read pad button information.
+        int ret = padRead(port, 0, &pad); // port, slot, buttons
+        if (ret != 0) {
+			switch (button) {
+		        case PAD_RIGHT:
+		            pressure = pad.right_p;
+		            break;
+		        case PAD_LEFT:
+		            pressure = pad.left_p;
+		            break;
+		        case PAD_UP:
+		            pressure = pad.up_p;
+		            break;
+				case PAD_DOWN:
+		            pressure = pad.down_p;
+		            break;
+				case PAD_TRIANGLE:
+		            pressure = pad.triangle_p;
+		            break;
+				case PAD_CIRCLE:
+		            pressure = pad.circle_p;
+		            break;
+				case PAD_CROSS:
+		            pressure = pad.cross_p;
+		            break;
+				case PAD_SQUARE:
+		            pressure = pad.square_p;
+		            break;
+				case PAD_L1:
+		            pressure = pad.l1_p;
+		            break;
+				case PAD_R1:
+		            pressure = pad.r1_p;
+		            break;
+				case PAD_L2:
+		            pressure = pad.l2_p;
+		            break;
+				case PAD_R2:
+		            pressure = pad.r2_p;
+		            break;
+		        default:
+		            pressure = 0;
+		            break;
+        	}
+            
         }
+    }
 
 	lua_pushinteger(L, (uint32_t)pressure);
 	return 1;
@@ -155,8 +191,8 @@ static int lua_rumble(lua_State *L){
 		actAlign[1] = luaL_checkinteger(L, 2);
 	}
 
-	padSetActDirect(port, 0, actAlign);
-	
+	int state = padGetState(port, 0);
+	if ((state == PAD_STATE_STABLE) || (state == PAD_STATE_FINDCTP1)) padSetActDirect(port, 0, actAlign);
 	if (ds34bt_get_status(port) & DS34BT_STATE_RUNNING) ds34bt_set_rumble(port, actAlign[0], actAlign[0]);
 	if (ds34usb_get_status(port) & DS34USB_STATE_RUNNING) ds34usb_set_rumble(port, actAlign[0], actAlign[0]);
 

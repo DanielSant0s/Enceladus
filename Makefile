@@ -61,7 +61,7 @@ endif
 BIN2S = $(PS2SDK)/bin/bin2s
 
 #-------------------------- App Content ---------------------------#
-EXT_LIBS = src/libds34usb.a src/libds34bt.a
+EXT_LIBS = modules/ds34usb/ee/libds34usb.a modules/ds34bt/ee/libds34bt.a
 
 APP_CORE = src/main.o src/graphics.o src/atlas.o \
 		   src/fntsys.o src/md5.o
@@ -115,9 +115,6 @@ src/cdfs.s: $(PS2SDK)/iop/irx/cdfs.irx
 	echo "Embedding CDFS Driver..."
 	$(BIN2S) $< $@ cdfs_irx
 
-src/libds34bt.a: modules/ds34bt/ee/libds34bt.a
-	cp $< $@
-
 modules/ds34bt/ee/libds34bt.a: modules/ds34bt/ee
 	$(MAKE) -C $<
 
@@ -128,9 +125,6 @@ modules/ds34bt/iop/ds34bt.irx: modules/ds34bt/iop
 src/ds34bt.s: modules/ds34bt/iop/ds34bt.irx
 	echo "Embedding DS3/4 Bluetooth Driver..."
 	$(BIN2S) $< $@ ds34bt_irx
-
-src/libds34usb.a: modules/ds34usb/ee/libds34usb.a
-	cp $< $@
 
 modules/ds34usb/ee/libds34usb.a: modules/ds34usb/ee
 	$(MAKE) -C $<
