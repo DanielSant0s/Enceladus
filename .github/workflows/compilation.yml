@@ -53,6 +53,15 @@ jobs:
         tag_name: "latest"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: delete previous tag/release
+      if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
+      uses: dev-drprasad/delete-tag-and-release@v0.2.0
+      with:
+        delete_release: true
+        tag_name: ${{TAG_NAME}}
+      env:
+       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Release
       if: startsWith(github.ref, 'refs/tags/')
