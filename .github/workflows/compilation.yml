@@ -59,7 +59,7 @@ jobs:
       uses: dev-drprasad/delete-tag-and-release@v0.2.0
       with:
         delete_release: true
-        tag_name: ${{TAG_NAME}}
+        tag_name: ${{ steps.tag.outputs.VERSION }}
       env:
        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
