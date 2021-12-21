@@ -42,6 +42,7 @@ Enceladus is a project that seeks to facilitate and at the same time brings a co
 ### Function types:
 * System: Everything that involves files, folders and system stuff.
 * Graphics: You can control the entire 2D part of your project, that is, draw images, shapes, lines, change their properties, etc.
+* Render: 3D! Basic support for rendering a 3D environment in your project.
 * Screen: The entire screen of your project (2D and 3D), being able to change the resolution, enable or disable parameters.
 * Font: Functions that control the texts that appear on the screen, loading texts, drawing and unloading from memory.
 * Pads: Above being able to draw and everything else, A human interface is important. Supports rumble and pressure sensitivity.
@@ -97,16 +98,35 @@ Image functions:
 * height = Graphics.getImageHeight(image)
 * Graphics.freeImage(image)
 
+**Render functions:**
+
+* Render.init(aspect) *default aspect is 4/3, widescreen is 16/9
+* model = Render.loadOBJ(path, texture) *texture isn't mandatory
+* Render.drawOBJ(model, pos_x, pos_y, pos_z, rot_x, rot_y, rot_z)
+* Render.freeOBJ(model)  
+
+Camera functions:  
+* Camera.position(x, y, z)
+* Camera.rotation(x, y, z)
+
+Lights functions:
+* Lights.create(count)
+* Lights.set(light, dir_x, dir_y, dir_z, r, g, b, type)  
+  • Avaiable light types: AMBIENT, DIRECTIONAL  
+
 **Screen functions:**
 
 * Screen.clear(color) *color isn't mandatory
 * Screen.flip()
 * Screen.waitVblankStart()
-* Screen.setMode(mode, width, height, colormode, interlace, field)  
-  • Default NTSC mode: Screen.setMode(NTSC, 640, 448, CT24, INTERLACED, FIELD)  
-  • Default PAL mode: Screen.setMode(PAL, 640, 512, CT24, INTERLACED, FIELD)  
+* Screen.setMode(mode, width, height, colormode, interlace, field, zbuffering, zbuf_colormode)  
+  • Default NTSC mode(3D disabled): Screen.setMode(NTSC, 640, 448, CT24, INTERLACED, FIELD)  
+  • Default NTSC mode(3D enabled):  Screen.setMode(NTSC, 640, 448, CT24, INTERLACED, FIELD, true, Z16S)  
+  • Default PAL mode(3D disabled): Screen.setMode(PAL, 640, 512, CT24, INTERLACED, FIELD)  
+  • Default PAL mode(3D enabled):  Screen.setMode(PAL, 640, 512, CT24, INTERLACED, FIELD, true, Z16S)  
   • Available modes: NTSC, _480p, PAL, _576p, _720p, _1080i  
   • Available colormodes: CT16, CT16S, CT24, CT32  
+  • Available zbuffer colormodes: Z16, Z16S, Z24, Z32  
   • Available interlaces: INTERLACED, NONINTERLACED  
   • Available fields: FIELD, FRAME  
 * modetable = Screen.getMode()  
