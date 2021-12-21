@@ -100,6 +100,9 @@ Image functions:
 
 **Render functions:**
 
+• Remember to enable zbuffering on screen mode, put the line of code below
+• Default NTSC mode(3D enabled): Screen.setMode(NTSC, 640, 448, CT24, INTERLACED, FIELD, true, Z16S)
+
 * Render.init(aspect) *default aspect is 4/3, widescreen is 16/9
 * model = Render.loadOBJ(path, texture) *texture isn't mandatory
 * Render.drawOBJ(model, pos_x, pos_y, pos_z, rot_x, rot_y, rot_z)
