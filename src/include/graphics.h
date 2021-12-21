@@ -9,6 +9,8 @@
 #include <gsToolkit.h>
 #include <gsInline.h>
 
+#include <math3d.h>
+
 /// GSKit CLUT base struct. This should've been in gsKit from the start :)
 typedef struct
 {
@@ -31,6 +33,16 @@ typedef struct
     u64 color;
     GSTEXTURE *txt;
 } rm_quad_t;
+
+struct model{
+	uint32_t facesCount;
+    uint16_t* idxList;
+    VECTOR* positions;
+	VECTOR* texcoords;
+	VECTOR* normals;
+    VECTOR* colours;
+    GSTEXTURE* texture;
+};
 
 typedef u32 Color;
 #define A(color) ((u8)(color >> 24 & 0xFF))
@@ -56,7 +68,7 @@ extern int getFreeVRAM();
 
 extern int FPSCounter(clock_t prevtime, clock_t curtime);
 
-extern void setVideoMode(s16 mode, int width, int height, int psm, s16 interlace, s16 field);
+extern void setVideoMode(s16 mode, int width, int height, int psm, s16 interlace, s16 field, bool zbuffering, int psmz);
 
 extern GSTEXTURE* luaP_loadpng(const char *Path, bool delayed);
 
@@ -102,6 +114,18 @@ extern void printFontMText(char* text, float x, float y, float scale, Color colo
 
 extern void unloadFontM();
 
-extern void displaySplashScreen();
+extern void init3D(float aspect);
+
+extern void setCameraPosition(float x, float y, float z);
+
+extern void setCameraRotation(float x, float y, float z);
+
+extern void setLightQuantity(int quantity);
+
+extern void createLight(int lightid, float dir_x, float dir_y, float dir_z, int type, float r, float g, float b);
+
+extern model* loadOBJ(const char* path, GSTEXTURE* text);
+
+extern void drawOBJ(model* m, float pos_x, float pos_y, float pos_z, float rot_x, float rot_y, float rot_z);
 
 #endif

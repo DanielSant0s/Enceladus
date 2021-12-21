@@ -19,14 +19,6 @@ static const u64 TEXTURE_RGBAQ = GS_SETREG_RGBAQ(0x80,0x80,0x80,0x80,0x00);
 GSGLOBAL *gsGlobal = NULL;
 GSFONTM *gsFontM = NULL;
 
-#ifdef ftoi4
- #undef ftoi4
- #define ftoi4(F) ((int)(((float)F)*16.0f))
-#else
- #define ftoi4(F) ((int)(((float)F)*16.0f))
-#endif
-
-
 //2D drawing functions
 GSTEXTURE* luaP_loadpng(const char *path, bool delayed)
 {
@@ -913,7 +905,7 @@ int GetInterlacedFrameMode()
 
 GSGLOBAL *getGSGLOBAL(){return gsGlobal;}
 
-void setVideoMode(s16 mode, int width, int height, int psm, s16 interlace, s16 field) {
+void setVideoMode(s16 mode, int width, int height, int psm, s16 interlace, s16 field, bool zbuffering, int psmz) {
 	gsGlobal->Mode = mode;
 	gsGlobal->Width = width;
 	if ((interlace == GS_INTERLACED) && (field == GS_FRAME))
@@ -922,9 +914,9 @@ void setVideoMode(s16 mode, int width, int height, int psm, s16 interlace, s16 f
 		gsGlobal->Height = height;
 
 	gsGlobal->PSM = psm;
-	gsGlobal->PSMZ = GS_PSMZ_16;
+	gsGlobal->PSMZ = psmz;
 
-	gsGlobal->ZBuffering = GS_SETTING_OFF;
+	gsGlobal->ZBuffering = zbuffering;
 	gsGlobal->DoubleBuffering = GS_SETTING_ON;
 	gsGlobal->PrimAlphaEnable = GS_SETTING_ON;
 	gsGlobal->Dithering = GS_SETTING_OFF;
@@ -957,7 +949,6 @@ void fntDrawQuad(rm_quad_t *q)
                               q->br.u, q->br.v, 1, q->color);
 }
 
-
 void initGraphics()
 {
 
@@ -971,7 +962,7 @@ void initGraphics()
 	}
 
 	gsGlobal->PSM  = GS_PSM_CT24;
-	gsGlobal->PSMZ = GS_PSMZ_16;
+	gsGlobal->PSMZ = GS_PSMZ_16S;
 	gsGlobal->ZBuffering = GS_SETTING_OFF;
 	gsGlobal->DoubleBuffering = GS_SETTING_ON;
 	gsGlobal->PrimAlphaEnable = GS_SETTING_ON;

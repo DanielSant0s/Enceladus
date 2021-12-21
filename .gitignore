@@ -42,3 +42,8 @@ src/ds34usb.s
 src/usbd.s
 src/usbmass_bd.s
 bin/System/noindex.lua
+bin/mesh/dragon.obj
+bin/mesh/dragon.png
+bin/mesh/mesh.lua
+bin/mesh/monkey.obj
+bin/mesh/monkey.png

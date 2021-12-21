@@ -41,7 +41,7 @@ PS2LINK_IP = 192.168.1.10
 EE_BIN = enceladus.elf
 EE_BIN_PKD = enceladus_pkd.elf
 
-EE_LIBS = -L$(PS2SDK)/ports/lib -L$(PS2DEV)/gsKit/lib/ -Lmodules/ds34bt/ee/ -Lmodules/ds34usb/ee/ -lpatches -lfileXio -lpad -ldebug -llua -ljpeg -lfreetype -lgskit_toolkit -lgskit -ldmakit -lpng -lz -lmc -laudsrv -lelf-loader -lds34bt -lds34usb
+EE_LIBS = -L$(PS2SDK)/ports/lib -L$(PS2DEV)/gsKit/lib/ -Lmodules/ds34bt/ee/ -Lmodules/ds34usb/ee/ -lpatches -lfileXio -lpad -ldebug -llua -lmath3d -ljpeg -lfreetype -lgskit_toolkit -lgskit -ldmakit -lpng -lz -lmc -laudsrv -lelf-loader -lds34bt -lds34usb
 
 EE_INCS += -I$(PS2DEV)/gsKit/include -I$(PS2SDK)/ports/include -I$(PS2SDK)/ports/include/freetype2 -I$(PS2SDK)/ports/include/zlib
 
@@ -63,12 +63,12 @@ BIN2S = $(PS2SDK)/bin/bin2s
 #-------------------------- App Content ---------------------------#
 EXT_LIBS = modules/ds34usb/ee/libds34usb.a modules/ds34bt/ee/libds34bt.a
 
-APP_CORE = src/main.o src/graphics.o src/atlas.o \
-		   src/fntsys.o src/md5.o
+APP_CORE = src/main.o src/graphics.o src/render.o \
+		   src/atlas.o src/fntsys.o src/md5.o
 
 LUA_LIBS =	src/luaplayer.o src/luasound.o src/luacontrols.o \
 			src/luatimer.o src/luaScreen.o src/luagraphics.o \
-			src/luasystem.o
+			src/luasystem.o src/luaRender.o
 
 IOP_MODULES = src/usbd.o src/audsrv.o src/bdm.o src/bdmfs_vfat.o \
 			  src/usbmass_bd.o src/cdfs.o src/ds34bt.o src/ds34usb.o
