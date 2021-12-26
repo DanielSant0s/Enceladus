@@ -70,7 +70,8 @@ LUA_LIBS =	src/luaplayer.o src/luasound.o src/luacontrols.o \
 			src/luatimer.o src/luaScreen.o src/luagraphics.o \
 			src/luasystem.o src/luaRender.o
 
-IOP_MODULES = src/usbd.o src/audsrv.o src/bdm.o src/bdmfs_vfat.o \
+IOP_MODULES = src/sio2man.o src/mcman.o src/mcserv.o src/padman.o src/libsd.o \
+			  src/usbd.o src/audsrv.o src/bdm.o src/bdmfs_vfat.o \
 			  src/usbmass_bd.o src/cdfs.o src/ds34bt.o src/ds34usb.o
 
 EMBEDDED_RSC = src/boot.o
@@ -90,6 +91,25 @@ src/boot.s: etc/boot.lua
 
 
 #-------------------- Embedded IOP Modules ------------------------#
+src/sio2man.s: $(PS2SDK)/iop/irx/sio2man.irx
+	echo "Embedding SIO2MAN Driver..."
+	$(BIN2S) $< $@ sio2man_irx
+	
+src/mcman.s: $(PS2SDK)/iop/irx/mcman.irx
+	echo "Embedding MCMAN Driver..."
+	$(BIN2S) $< $@ mcman_irx
+
+src/mcserv.s: $(PS2SDK)/iop/irx/mcserv.irx
+	echo "Embedding MCSERV Driver..."
+	$(BIN2S) $< $@ mcserv_irx
+
+src/padman.s: $(PS2SDK)/iop/irx/padman.irx
+	echo "Embedding PADMAN Driver..."
+	$(BIN2S) $< $@ padman_irx
+	
+src/libsd.s: $(PS2SDK)/iop/irx/libsd.irx
+	echo "Embedding LIBSD Driver..."
+	$(BIN2S) $< $@ libsd_irx
 
 src/usbd.s: $(PS2SDK)/iop/irx/usbd.irx
 	echo "Embedding USB Driver..."
@@ -167,6 +187,22 @@ clean:
 	echo "\nCleaning objects..."
 	rm -f $(EE_OBJS)
 	
+		
+	echo "Cleaning SIO2MAN Driver..."
+	rm -f src/sio2man.s
+
+	echo "Cleaning MCMAN Driver..."
+	rm -f src/mcman.s
+
+	echo "Cleaning MCSERV Driver..."
+	rm -f src/mcserv.s
+
+	echo "Cleaning PADMAN Driver..."
+	rm -f src/padman.s
+
+	echo "Cleaning LIBSD Driver..."
+	rm -f src/libsd.s
+
 	echo "Cleaning Block Device Manager(BDM)..."
 	rm -f src/bdm.s
 	

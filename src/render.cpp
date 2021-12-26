@@ -50,37 +50,116 @@ void init3D(float aspect)
 
 }
 
+VECTOR* read_normalmapping(){
+	GSTEXTURE* normalmaps = luaP_loadpng("mesh/moon_normals.png", true);
+
+	VECTOR* colorlist = (VECTOR*)malloc(gsKit_texture_size_ee(normalmaps->Width, normalmaps->Height, normalmaps->PSM) * sizeof(float));
+
+	int charlist = 0;
+	for(int i = 0; i < gsKit_texture_size_ee(normalmaps->Width, normalmaps->Height, normalmaps->PSM)/4; i++){
+		colorlist[i][0] = ((unsigned char)normalmaps->Mem[charlist]/255.0f) * 2.0f - 1.0f;
+		colorlist[i][1] = ((unsigned char)normalmaps->Mem[charlist+1]/255.0f * 2.0f - 1.0f);
+		colorlist[i][2] = ((unsigned char)normalmaps->Mem[charlist+2]/255.0f * 2.0f - 1.0f);
+		colorlist[i][3] = 1.00f;
+
+		charlist += 4;
+	}
+
+	
+	UnloadTexture(normalmaps);
+	free(normalmaps->Mem);
+	normalmaps->Mem = NULL;
+	free(normalmaps);
+	normalmaps = NULL;
+
+	return colorlist;
+	
+}
+
 void calculate_vertices_no_clip(VECTOR *output,  int count, VECTOR *vertices, MATRIX local_screen) {
 	asm __volatile__ (
-					  "lqc2		$vf1, 0x00(%3)	\n"
-					  "lqc2		$vf2, 0x10(%3)	\n"
-					  "lqc2		$vf3, 0x20(%3)	\n"
-					  "lqc2		$vf4, 0x30(%3)	\n"
-					  "1:					\n"
-					  "lqc2		$vf6, 0x00(%2)	\n"
-					  "vmulaw		$ACC, $vf4, $vf0	\n"
-					  "vmaddax		$ACC, $vf1, $vf6	\n"
-					  "vmadday		$ACC, $vf2, $vf6	\n"
-					  "vmaddz		$vf7, $vf3, $vf6	\n"
-//					  "vclipw.xyz	$vf7, $vf7	\n" // FIXME: Clip detection is still kinda broken.
-					  "cfc2		$10, $18	\n"
-					  "beq			$10, $0, 3f	\n"
-					  "2:					\n"
-   					  "sqc2		$0, 0x00(%0)	\n"
-   					  "j			4f		\n"
-					  "3:					\n"
-					  "vdiv		$Q, $vf0w, $vf7w	\n"
-					  "vwaitq				\n"
-					  "vmulq.xyz		$vf7, $vf7, $Q	\n"
-					  "sqc2		$vf7, 0x00(%0)	\n"
-					  "4:					\n"
-					  "addi		%0, 0x10	\n"
-					  "addi		%2, 0x10	\n"
-					  "addi		%1, -1		\n"
-					  "bne		$0, %1, 1b	\n"
-					  : : "r" (output), "r" (count), "r" (vertices), "r" (local_screen) : "$10", "memory"
-					  );
+					"lqc2		$vf1, 0x00(%3)	\n"	//set local_screen matrix[0]
+					"lqc2		$vf2, 0x10(%3)	\n"	//set local_screen matrix[1]
+					"lqc2		$vf3, 0x20(%3)	\n"	//set local_screen matrix[2]
+					"lqc2		$vf4, 0x30(%3)	\n"	//set local_screen matrix[3]
+
+					"calcvertnoclip_loop:	\n"
+					"lqc2		$vf6, 0x00(%2)	\n" //load XYZ
+					"vmulaw		$ACC, $vf4, $vf0	\n"
+					"vmaddax		$ACC, $vf1, $vf6	\n"
+					"vmadday		$ACC, $vf2, $vf6	\n"
+					"vmaddz		$vf7, $vf3, $vf6	\n"
+					"vdiv    	$Q,	$vf0w,	$vf7w		\n"
+					"vwaitq								\n"
+					"vmulq.xyz	$vf7,	$vf7, $Q		\n"
+					"vnop								\n"
+					"sqc2		$vf7, 0x00(%0)	\n" //Store XYZ
+					"addi		%0, 0x10	\n"
+					"addi		%2, 0x10	\n"
+					"addi		%1, -1		\n"
+					"bne		$0, %1, calcvertnoclip_loop	\n"
+					: : "r" (output), "r" (count), "r" (vertices), "r" (local_screen) : "$10", "memory"
+					);
 }
+
+void calculate_vertices_clipped(VECTOR *output,  int count, VECTOR *vertices, MATRIX local_screen) {
+	asm __volatile__ (
+					"lqc2		$vf1, 0x00(%3)	\n"	//set local_screen matrix[0]
+					"lqc2		$vf2, 0x10(%3)	\n"	//set local_screen matrix[1]
+					"lqc2		$vf3, 0x20(%3)	\n"	//set local_screen matrix[2]
+					"lqc2		$vf4, 0x30(%3)	\n"	//set local_screen matrix[3]
+					// GS CLIP
+					"li      $2,0x4580				\n"
+					"dsll    $2, 16					\n"
+					"ori     $2, 0x4580				\n"
+					"dsll    $2, 16					\n"
+					"qmtc2   $2,	$vf29			\n"
+					"li      $2,	0x8000			\n"
+					"ctc2    $2,	$vi1			\n"
+					"li      $9,	0x0				\n"
+
+					"calcvertices_loop:	\n"
+					"lqc2		$vf6, 0x00(%2)	\n" //load XYZ
+					"vmulaw		$ACC, $vf4, $vf0	\n"
+					"vmaddax	$ACC, $vf1, $vf6	\n"
+					"vmadday	$ACC, $vf2, $vf6	\n"
+					"vmaddz		$vf7, $vf3, $vf6	\n"
+					"vdiv    	$Q,	$vf0w,	$vf7w		\n"
+					"vwaitq								\n"
+					"vmulq.xyz		$vf7,	$vf7, $Q	\n"
+					"vftoi4.xyzw	$vf8,	$vf7		\n"
+
+					//GS CLIP
+					"vnop							 \n"
+					"vnop							 \n"
+					"ctc2    $0,	$vi16            \n"	//clear status flag
+					"vsub.xyw  $vf0, $vf7,	$vf0     \n"	//(z,ZBz,PPy,PPx)-(1,0,0,0);
+					"vsub.xy   $vf0, $vf29,	$vf7  	 \n"	//(Zmax,0,Ymax,Xmax) -(z,ZBz,PPy,PPx)
+					"vnop                            \n"
+					"vnop                            \n"
+					"vnop							 \n"
+					"vnop							 \n"
+					"sll     $9,	1				 \n"
+					"andi    $9,	$9, 6			 \n"
+					"cfc2    $2,	$vi16            \n"	//read status flag
+					"andi    $2,	$2,0xc0			 \n"
+					"beqz    $2,	_rotTPNCGC_skip1 \n"
+					"ori     $9,	$9,1			 \n"
+					"vclipw.xyz $vf7xyz,$vf7w\n"
+					"_rotTPNCGC_skip1:				 \n"
+					"beqz    $9,_rotTPNCGC_skip2	 \n"
+					"vmfir.w $vf8,	$vi1			 \n"
+					"_rotTPNCGC_skip2:				 \n"
+
+					"sqc2		$vf7, 0x00(%0)	\n" //Store XYZ
+					"addi		%0, 0x10	\n"
+					"addi		%2, 0x10	\n"
+					"addi		%1, -1		\n"
+					"bne		$0, %1, calcvertices_loop	\n"
+					: : "r" (output), "r" (count), "r" (vertices), "r" (local_screen) : "$10", "memory"
+					);
+}
+
 
 
 typedef union TexCoord { 
@@ -272,7 +351,6 @@ int draw_convert_st(texel_t *output, int count, vertex_f_t *vertices, texel_f_t 
 
 	// End function.
 	return 0;
-
 }
 
 int draw_convert_xyz(xyz_t *output, float x, float y, int z, int count, vertex_f_t *vertices)
@@ -353,6 +431,8 @@ model* loadOBJ(const char* path, GSTEXTURE* text){
 	
 	// Closing file
 	close(file);
+
+	//read_normalmapping();
 	
 	// Creating temp vertexList
 	rawVertexList* vl = (rawVertexList*)malloc(sizeof(rawVertexList));
@@ -712,7 +792,6 @@ void drawOBJ(model* m, float pos_x, float pos_y, float pos_z, float rot_x, float
 	draw_convert_xyz(verts, 2048, 2048, 16,  (m->facesCount*3), temp_vertices);
 	draw_convert_rgbq(colors,  (m->facesCount*3), temp_vertices, (color_f_t*)temp_lights, 0x80);
 	draw_convert_st(tex,  (m->facesCount*3), temp_vertices, (texel_f_t *)m->texcoords);
-
 
 	float fX=gsGlobal->Width/2;
 	float fY=gsGlobal->Height/2;

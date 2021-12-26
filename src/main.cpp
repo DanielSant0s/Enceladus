@@ -28,6 +28,21 @@ extern "C"{
 extern char bootString[];
 extern unsigned int size_bootString;
 
+extern unsigned char sio2man_irx;
+extern unsigned int size_sio2man_irx;
+
+extern unsigned char mcman_irx;
+extern unsigned int size_mcman_irx;
+
+extern unsigned char mcserv_irx;
+extern unsigned int size_mcserv_irx;
+
+extern unsigned char padman_irx;
+extern unsigned int size_padman_irx;
+
+extern unsigned char libsd_irx;
+extern unsigned int size_libsd_irx;
+
 extern unsigned char cdfs_irx;
 extern unsigned int size_cdfs_irx;
 
@@ -124,16 +139,16 @@ int main(int argc, char * argv[])
     #endif
     
     // install sbv patch fix
-    printf("Installing SBV Patch...\n");
+    printf("Installing SBV Patches...\n");
     sbv_patch_enable_lmb();
     sbv_patch_disable_prefix_check(); 
     sbv_patch_fileio(); 
 
-    SifLoadModule("rom0:SIO2MAN", 0, NULL);
-    SifLoadModule("rom0:MCMAN", 0, NULL);
-	SifLoadModule("rom0:MCSERV", 0, NULL);
-	SifLoadModule("rom0:PADMAN", 0, NULL);
-    SifLoadModule("rom0:LIBSD", 0, NULL);
+    SifExecModuleBuffer(&sio2man_irx, size_sio2man_irx, 0, NULL, NULL);
+    SifExecModuleBuffer(&mcman_irx, size_mcman_irx, 0, NULL, NULL);
+    SifExecModuleBuffer(&mcserv_irx, size_mcserv_irx, 0, NULL, NULL);
+    SifExecModuleBuffer(&padman_irx, size_padman_irx, 0, NULL, NULL);
+    SifExecModuleBuffer(&libsd_irx, size_libsd_irx, 0, NULL, NULL);
 
     // load pad & mc modules 
     printf("Installing Pad & MC modules...\n");
@@ -169,7 +184,7 @@ int main(int argc, char * argv[])
     while(ret != 0 && retries > 0)
     {
         ret = stat("mass:/", &buffer);
-        /* Wait untill the device is ready */
+        /* Wait until the device is ready */
         nopdelay();
 
         retries--;
