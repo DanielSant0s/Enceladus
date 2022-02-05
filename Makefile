@@ -63,8 +63,9 @@ BIN2S = $(PS2SDK)/bin/bin2s
 #-------------------------- App Content ---------------------------#
 EXT_LIBS = modules/ds34usb/ee/libds34usb.a modules/ds34bt/ee/libds34bt.a
 
-APP_CORE = src/main.o src/graphics.o src/render.o \
-		   src/atlas.o src/fntsys.o src/md5.o
+APP_CORE = src/main.o src/system.o src/pad.o src/graphics.o src/render.o \
+		   src/calc_3d.o src/gsKit3d_sup.o src/atlas.o src/fntsys.o src/md5.o \
+		   src/sound.o
 
 LUA_LIBS =	src/luaplayer.o src/luasound.o src/luacontrols.o \
 			src/luatimer.o src/luaScreen.o src/luagraphics.o \

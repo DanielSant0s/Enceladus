@@ -20,7 +20,7 @@ GSGLOBAL *gsGlobal = NULL;
 GSFONTM *gsFontM = NULL;
 
 //2D drawing functions
-GSTEXTURE* luaP_loadpng(const char *path, bool delayed)
+GSTEXTURE* loadpng(const char *path, bool delayed)
 {
 	GSTEXTURE* tex = (GSTEXTURE*)malloc(sizeof(GSTEXTURE));
 	tex->Delayed = delayed;
@@ -203,7 +203,7 @@ GSTEXTURE* luaP_loadpng(const char *path, bool delayed)
 }
 
 
-GSTEXTURE* luaP_loadbmp(const char *Path, bool delayed)
+GSTEXTURE* loadbmp(const char *Path, bool delayed)
 {
 	GSBITMAP Bitmap;
 	int x, y;
@@ -570,7 +570,7 @@ static void  _ps2_load_JPEG_generic(GSTEXTURE *Texture, struct jpeg_decompress_s
 	jpeg_finish_decompress(cinfo);
 }
 
-GSTEXTURE* luaP_loadjpeg(const char *Path, bool scale_down, bool delayed)
+GSTEXTURE* loadjpeg(const char *Path, bool scale_down, bool delayed)
 {
 
 	
@@ -688,10 +688,10 @@ void loadFontM()
 	gsFontM->Spacing = 0.70f;
 }
 
-void printFontMText(char* text, float x, float y, float scale, Color color)
+void printFontMText(const char* text, float x, float y, float scale, Color color)
 {
 	gsKit_set_test(gsGlobal, GS_ATEST_ON);
-	gsKit_fontm_print_scaled(gsGlobal, gsFontM, x, y, 1, scale, color, text);
+	gsKit_fontm_print_scaled(gsGlobal, gsFontM, x-0.5f, y-0.5f, 1, scale, color, text);
 }
 
 void unloadFontM()
@@ -735,7 +735,7 @@ GSFONT* loadFont(const char* path){
 	return font;
 }
 
-void printFontText(GSFONT* font, char* text, float x, float y, float scale, Color color)
+void printFontText(GSFONT* font, const char* text, float x, float y, float scale, Color color)
 {
 	gsKit_set_test(gsGlobal, GS_ATEST_ON);
 	gsKit_font_print_scaled(gsGlobal, font, x-0.5f, y-0.5f, 1, scale, color, text);
@@ -973,7 +973,7 @@ void initGraphics()
 	dmaKit_init(D_CTRL_RELE_OFF, D_CTRL_MFD_OFF, D_CTRL_STS_UNSPEC, D_CTRL_STD_OFF, D_CTRL_RCYC_8, 1 << DMA_CHANNEL_GIF);
 	dmaKit_chan_init(DMA_CHANNEL_GIF);
 
-	printf("\nGraphics: created video surface of (%d, %d)\n",
+	printf("\nGraphics: created %ix%i video surface\n",
 		gsGlobal->Width, gsGlobal->Height);
 
 	gsKit_set_clamp(gsGlobal, GS_CMODE_REPEAT);

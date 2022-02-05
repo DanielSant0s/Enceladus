@@ -18,7 +18,7 @@
 #include "include/graphics.h"
 #include "include/sound.h"
 #include "include/luaplayer.h"
-
+#include "include/pad.h"
 
 extern "C"{
 #include <libds34bt.h>
@@ -68,28 +68,6 @@ extern unsigned char ds34bt_irx;
 extern unsigned int size_ds34bt_irx;
 
 char boot_path[255];
-
-void initMC(void)
-{
-   int ret;
-   // mc variables
-   int mc_Type, mc_Free, mc_Format;
-
-   
-   printf("Initializing Memory Card\n");
-
-   ret = mcInit(MC_TYPE_MC);
-   
-   if( ret < 0 ) {
-	printf("MC_Init : failed to initialize memcard server.\n");
-	dbgprintf("MC_Init : failed to initialize memcard server.\n");
-   }
-   
-   // Since this is the first call, -1 should be returned.
-   // makes me sure that next ones will work !
-   mcGetInfo(0, 0, &mc_Type, &mc_Free, &mc_Format); 
-   mcSync(MC_WAIT, NULL, &ret);
-}
 
 void setLuaBootPath(int argc, char ** argv, int idx)
 {
@@ -170,10 +148,6 @@ int main(int argc, char * argv[])
     SifExecModuleBuffer(&cdfs_irx, size_cdfs_irx, 0, NULL, NULL);
 
     SifExecModuleBuffer(&audsrv_irx, size_audsrv_irx, 0, NULL, NULL);
-    audsrv_init();
-
-
-    initMC();
 
     //waitUntilDeviceIsReady by fjtrujy
 
@@ -232,17 +206,20 @@ int main(int argc, char * argv[])
 
         gsKit_clear_screens();
 
-        init_scr();
-
-        sleep(1);
+		loadFontM();
 
         if (errMsg != NULL)
         {
-   	    scr_printf("Error: %s\n", errMsg);
+        	while (!isButtonPressed(PAD_START)) {
+				clearScreen(GS_SETREG_RGBAQ(0x20,0x60,0xB0,0x80,0x00));
+				printFontMText("Enceladus ERROR!", 15.0f, 15.0f, 0.9f, 0x80808080);
+				printFontMText(errMsg, 15.0f, 80.0f, 0.6f, 0x80808080);
+		   		printFontMText("\nPress [start] to restart\n", 15.0f, 400.0f, 0.6f, 0x80808080);
+				flipScreen();
+			}
         }
 
-        scr_printf("\nPress [start] to restart\n");
-        while (!isButtonPressed(PAD_START)) graphicWaitVblankStart();
+        unloadFontM();
 
     }
 

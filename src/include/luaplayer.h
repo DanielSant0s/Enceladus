@@ -1,8 +1,6 @@
 #ifndef __LUAPLAYER_H
 #define __LUAPLAYER_H
 
-#include <stdlib.h>
-#include <libpad.h>
 #include <debug.h>
 
 extern "C" {
@@ -25,17 +23,6 @@ int getBootDevice(void);
 #define CLAMP(val, min, max) ((val)>(max)?(max):((val)<(min)?(min):(val)))
 
 #define ASYNC_TASKS_MAX 1
-
-
-extern int waitPadReady(int port, int slot);
-
-extern int isButtonPressed(u32 button);
-
-extern int initializePad(int port, int slot);
-
-extern void pad_init();
-
-extern padButtonStatus readPad(int port, int slot);
 
 extern size_t GetFreeSize(void);
 

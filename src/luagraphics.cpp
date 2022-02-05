@@ -28,9 +28,9 @@ static int imgThread(void* data)
 	read(file, &magic, 2);
 	close(file);
 	GSTEXTURE* image = NULL;
-	if (magic == 0x4D42) image = luaP_loadbmp(text, delayed);
-	else if (magic == 0xD8FF) image = luaP_loadjpeg(text, false, delayed);
-	else if (magic == 0x5089) image = luaP_loadpng(text, delayed);
+	if (magic == 0x4D42) image =      loadbmp(text, delayed);
+	else if (magic == 0xD8FF) image = loadjpeg(text, false, delayed);
+	else if (magic == 0x5089) image = loadpng(text, delayed);
 	else 
 	{
 		imgThreadResult = 1;
@@ -64,7 +64,7 @@ static int lua_print(lua_State *L) {
     float x = luaL_checknumber(L, 2);
 	float y = luaL_checknumber(L, 3);
     float scale =  luaL_checknumber(L, 4);
-    char* text = (char*)(luaL_checkstring(L, 5));
+    const char* text = luaL_checkstring(L, 5);
 	Color color = 0x80808080;
 	if (argc == 6) color = luaL_checkinteger(L, 6);
 	printFontText(font, text, x, y, scale, color);
@@ -157,7 +157,7 @@ static int lua_fmprint(lua_State *L) {
     float x = luaL_checknumber(L, 1);
 	float y = luaL_checknumber(L, 2);
     float scale =  luaL_checknumber(L, 3);
-    char* text = (char*)(luaL_checkstring(L, 4));
+    const char* text = luaL_checkstring(L, 4);
 	Color color = 0x80808080;
 	if (argc == 5) color =  luaL_checkinteger(L, 5);
 	printFontMText(text, x, y, scale, color);
@@ -230,9 +230,9 @@ static int lua_loadimg(lua_State *L) {
 	read(file, &magic, 2);
 	close(file);
 	GSTEXTURE* image = NULL;
-	if (magic == 0x4D42) image = luaP_loadbmp(text, delayed);
-	else if (magic == 0xD8FF) image = luaP_loadjpeg(text, false, delayed);
-	else if (magic == 0x5089) image = luaP_loadpng(text, delayed);
+	if (magic == 0x4D42) image =      loadbmp(text, delayed);
+	else if (magic == 0xD8FF) image = loadjpeg(text, false, delayed);
+	else if (magic == 0x5089) image = loadpng(text, delayed);
 	else return luaL_error(L, "Error loading image (invalid magic).");
 
 	lua_pushinteger(L, (uint32_t)(image));

@@ -1,3 +1,4 @@
+
 if System.doesFileExist("System/index.lua") then
 	dofile("System/index.lua");
   elseif System.doesFileExist("System/script.lua") then

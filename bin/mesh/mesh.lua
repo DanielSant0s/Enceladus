@@ -60,6 +60,7 @@ while true do
      end
 
     Render.drawOBJ(orange,  savedrx, savedry, modelz, savedly, savedlx, 0.0)
+    Render.drawBbox(orange,  savedrx, savedry, modelz, savedly, savedlx, 0.0, Color.new(0, 255, 0, 128))
 
     Screen.flip()
 end

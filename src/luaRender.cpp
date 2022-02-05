@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#include "include/graphics.h"
+#include "include/render.h"
 #include "include/luaplayer.h"
 
 static int lua_initrender(lua_State *L) {
@@ -45,14 +45,21 @@ static int lua_freeobj(lua_State *L) {
 
     free(m->idxList);
 	m->idxList = NULL;
+
 	free(m->positions);
 	m->positions = NULL;
-    free(m->positions);
-	m->positions = NULL;
+
+    free(m->colours);
+	m->colours = NULL;
+
     free(m->normals);
 	m->normals = NULL;
+
     free(m->texcoords);
 	m->texcoords = NULL;
+	
+	free(m->bounding_box);
+	m->bounding_box = NULL;
 	
 	free(m);
 	m = NULL;
@@ -76,11 +83,30 @@ static int lua_drawobj(lua_State *L){
 	return 0;
 }
 
+
+static int lua_drawbbox(lua_State *L){
+	int argc = lua_gettop(L);
+	if (argc != 8) return luaL_error(L, "wrong number of arguments");
+	model* m = (model*)luaL_checkinteger(L, 1);
+	float pos_x = luaL_checknumber(L, 2);
+	float pos_y = luaL_checknumber(L, 3);
+	float pos_z = luaL_checknumber(L, 4);
+	float rot_x = luaL_checknumber(L, 5);
+	float rot_y = luaL_checknumber(L, 6);
+	float rot_z = luaL_checknumber(L, 7);
+	Color color = (Color)luaL_checkinteger(L, 8);
+	
+	draw_bbox(m, pos_x, pos_y, pos_z, rot_x, rot_y, rot_z, color);
+
+	return 0;
+}
+
 //Register our Render Functions
 static const luaL_Reg Render_functions[] = {
     {"init",           		    lua_initrender},
   	{"loadOBJ",           		   lua_loadobj},
     {"drawOBJ",           		   lua_drawobj},
+	{"drawBbox",           		  lua_drawbbox},
     {"freeOBJ",           		   lua_freeobj},
   {0, 0}
 };

@@ -1,5 +1,5 @@
-#include <stdlib.h>
 #include "include/luaplayer.h"
+#include "include/pad.h"
 
 extern "C"{
 #include <libds34bt.h>
