@@ -43,17 +43,16 @@ jobs:
       run: |
         mv bin/ Enceladus/
         tar -zcvf Enceladus.tar.gz Enceladus
-  
+ 
     - name: Create pre-release
-      if: github.ref == 'refs/heads/master'
-      uses: softprops/action-gh-release@v1
+      if: github.ref == 'refs/heads/main'
+      uses: marvinpinto/action-automatic-releases@latest
       with:
-        files: Enceladus.tar.gz
-        prerelease: true
-        name: "Development build"
-        tag_name: "latest"
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "latest"
+        title: "Development build"
+        files: |
+               Enceladus.tar.gz
 
     - name: Release
       if: startsWith(github.ref, 'refs/tags/')
