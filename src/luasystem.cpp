@@ -400,17 +400,29 @@ void recursive_mkdir(char *dir) {
 
 static int lua_getmcinfo(lua_State *L){
 	int argc = lua_gettop(L);
-	int mcslot, type, freespace, format, result;
-	mcslot = 1;
+	int type, freespace, format, result;
+
+	int mcslot = 0;
 	if(argc == 1) mcslot = luaL_checkinteger(L, 1);
 
 	mcGetInfo(mcslot, 0, &type, &freespace, &format);
 	mcSync(0, NULL, &result);
 
+	lua_newtable(L);
+
+	lua_pushstring(L, "type");
 	lua_pushinteger(L, type);
+	lua_settable(L, -3);
+
+	lua_pushstring(L, "freemem");
 	lua_pushinteger(L, freespace);
+	lua_settable(L, -3);
+
+	lua_pushstring(L, "format");
 	lua_pushinteger(L, format);
-	return 3;
+	lua_settable(L, -3);
+
+	return 1;
 }
 
 static int lua_openfile(lua_State *L){
