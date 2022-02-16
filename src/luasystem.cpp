@@ -350,28 +350,6 @@ static int lua_getFreeMemory(lua_State *L)
 	return 1;
 }
 
-static int lua_getFreeVRAM(lua_State *L)
-{
-	if (lua_gettop(L) != 0) return luaL_error(L, "no arguments expected.");
-	
-	int result = getFreeVRAM();
-
-	lua_pushinteger(L, (uint32_t)(result));
-	return 1;
-}
-
-
-static int lua_getFPS(lua_State *L)
-{
-	if (lua_gettop(L) != 2) return luaL_error(L, "2 arguments expected.");
-	clock_t prev = luaL_checkinteger(L, 1);
-	clock_t cur = luaL_checkinteger(L, 2);
-	int result = FPSCounter(prev, cur);
-
-	lua_pushinteger(L, (uint32_t)(result));
-	return 1;
-}
-
 static int lua_exit(lua_State *L)
 {
 	int argc = lua_gettop(L);
@@ -701,8 +679,6 @@ static const luaL_Reg System_functions[] = {
 	{"md5sum",                       lua_md5sum},
 	{"sleep",                         lua_sleep},
 	{"getFreeMemory",         lua_getFreeMemory},
-	{"getFreeVRAM",          	lua_getFreeVRAM},
-	{"getFPS",                 		 lua_getFPS},
 	{"exitToBrowser",                  lua_exit},
 	{"getMCInfo",                 lua_getmcinfo},
 	{"loadELF",                 	lua_loadELF},

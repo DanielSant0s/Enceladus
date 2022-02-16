@@ -40,6 +40,25 @@ static int lua_vblank(lua_State *L) {
 	return 0;
 }
 
+
+static int lua_getFreeVRAM(lua_State *L)
+{
+	if (lua_gettop(L) != 0) return luaL_error(L, "no arguments expected.");
+	
+	int result = getFreeVRAM();
+	lua_pushinteger(L, (uint32_t)(result));
+	return 1;
+}
+
+
+static int lua_getFPS(lua_State *L)
+{
+	if (lua_gettop(L) != 1) return luaL_error(L, "no arguments expected.");
+	int result = FPSCounter(luaL_checkinteger(L, 1));
+	lua_pushinteger(L, (uint32_t)(result));
+	return 1;
+}
+
 static int lua_setvmode(lua_State *L) {
 	int argc = lua_gettop(L);
 	if (argc != 6 && argc != 8) return luaL_error(L, "wrong number of arguments");
@@ -116,13 +135,15 @@ static int lua_getvmode(lua_State *L) {
 
 //Register our Screen Functions
 static const luaL_Reg Screen_functions[] = {
-  {"clear",            	   lua_clear},
-  {"flip",              	lua_flip},
+	{"clear",              lua_clear},
+	{"flip",              	lua_flip},
+	{"getFreeVRAM",  lua_getFreeVRAM},
+	{"getFPS",            lua_getFPS},
   //{"getPixel",        	lua_getP},
-  {"waitVblankStart", 	  lua_vblank},
-  {"getMode",			lua_getvmode},
-  {"setMode",			lua_setvmode},
-  {0, 0}
+	{"waitVblankStart",	  lua_vblank},
+	{"getMode",			lua_getvmode},
+	{"setMode",			lua_setvmode},
+	{0, 0}
 };
 
 static int lua_color(lua_State *L) {

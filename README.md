@@ -121,6 +121,9 @@ Lights functions:
 
 * Screen.clear(color) *color isn't mandatory
 * Screen.flip()
+* freevram = Screen.getFreeVRAM()
+* fps = Screen.getFPS(frame_interval)
+* Screen.setVSync(bool)
 * Screen.waitVblankStart()
 * Screen.setMode(mode, width, height, colormode, interlace, field, zbuffering, zbuf_colormode)  
   • Default NTSC mode(3D disabled): Screen.setMode(NTSC, 640, 448, CT24, INTERLACED, FIELD)  
@@ -217,8 +220,6 @@ ROM font functions:
 * System.md5sum(string)
 * System.sleep(sec)
 * freemem = System.getFreeMemory()
-* freevram = System.getFreeVRAM()
-* fps = System.getFPS(prev, cur)
 * System.exitToBrowser()
 * info = System.getMCInfo(slot)
   • info.type 
