@@ -235,8 +235,8 @@ ROM font functions:
 * System.sleep(sec)
 * freemem = System.getFreeMemory()
 * System.exitToBrowser()
-* info = System.getMCInfo(slot)
-  • info.type 
+* info = System.getMCInfo(slot)  
+  • info.type  
   • info.freemem  
   • info.format  
   
