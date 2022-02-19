@@ -96,8 +96,13 @@ Image functions:
 * Graphics.setImageFilters(image, filter) *Choose between NEAREST and LINEAR filters
 * width = Graphics.getImageWidth(image)
 * height = Graphics.getImageHeight(image)
-* Graphics.freeImage(image)
-
+* Graphics.freeImage(image)  
+  
+Asynchronous functions:  
+* Graphics.threadLoadImage(path) *Supports BMP, JPG and PNG
+* state = Graphics.getLoadState()
+* image = Graphics.getLoadData()  
+   
 **Render functions:**
 
 • Remember to enable zbuffering on screen mode, put the line of code below  
@@ -200,10 +205,19 @@ ROM font functions:
 **System functions:**
 
 * fd = System.openFile(path, type)
+* Types list:  
+  • FREAD   
+  • FWRITE  
+  • FCREATE  
+  • FRDWR  
 * buffer = System.readFile(file, size)
 * System.writeFile(fd, data, size)
 * System.closeFile(fd)
 * System.seekFile(fd, pos, type)
+* Types list:  
+  • SET  
+  • CUR  
+  • END  
 * size = System.sizeFile(fd)
 * System.doesFileExist(path)
 * System.CurrentDirectory(path) *if path given, it sets the current dir, else it gets the current dir
@@ -223,9 +237,15 @@ ROM font functions:
 * System.exitToBrowser()
 * info = System.getMCInfo(slot)
   • info.type 
-  • info.freespace  
+  • info.freemem  
   • info.format  
-
+  
+Asynchronous functions:  
+* System.threadCopyFile(source, dest)
+* progress = System.getFileProgress()  
+  • progress.current  
+  • progress.final  
+  
 **Timer functions:**
 
 * timer = Timer.new()

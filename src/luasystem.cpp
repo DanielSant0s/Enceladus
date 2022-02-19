@@ -647,7 +647,7 @@ static int lua_getfileprogress(lua_State *L) {
 
 	lua_newtable(L);
 
-    lua_pushstring(L, "progress");
+    lua_pushstring(L, "current");
     lua_pushinteger(L, (int)progress);
     lua_settable(L, -3);
 
