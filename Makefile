@@ -80,8 +80,17 @@ EMBEDDED_RSC = src/boot.o
 EE_OBJS = $(IOP_MODULES) $(EMBEDDED_RSC) $(APP_CORE) $(LUA_LIBS)
 
 #------------------------------------------------------------------#
+all: $(EXT_LIBS) $(EE_BIN)
+	@echo "$$HEADER"
 
+	echo "Building $(EE_BIN)..."
+	$(EE_STRIP) $(EE_BIN)
 
+	echo "Compressing $(EE_BIN_PKD)...\n"
+	ps2-packer $(EE_BIN) $(EE_BIN_PKD) > /dev/null
+	
+	mv $(EE_BIN) bin/
+	mv $(EE_BIN_PKD) bin/
 #--------------------- Embedded ressources ------------------------#
 
 src/boot.s: etc/boot.lua
@@ -161,18 +170,6 @@ src/ds34usb.s: modules/ds34usb/iop/ds34usb.irx
 	$(BIN2S) $< $@ ds34usb_irx
 	
 #------------------------------------------------------------------#
-
-all: $(EXT_LIBS) $(EE_BIN)
-	@echo "$$HEADER"
-
-	echo "Building $(EE_BIN)..."
-	$(EE_STRIP) $(EE_BIN)
-
-	echo "Compressing $(EE_BIN_PKD)...\n"
-	ps2-packer $(EE_BIN) $(EE_BIN_PKD) > /dev/null
-	
-	mv $(EE_BIN) bin/
-	mv $(EE_BIN_PKD) bin/
 
 debug: $(EE_BIN)
 	echo "Building $(EE_BIN) with debug symbols..."
