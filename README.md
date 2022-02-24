@@ -283,7 +283,7 @@ Distributed under GNU GPL-3.0 License. See `LICENSE` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Daniel Santos - [@danadsees](https://twitter.com/your_username) - danielsantos346@gmail.com
+Daniel Santos - [@danadsees](https://twitter.com/DanaDSeeS) - danielsantos346@gmail.com
 
 Project Link: [https://github.com/DanielSant0s/Enceladus](https://github.com/DanielSant0s/Enceladus)
 
