@@ -88,6 +88,10 @@ src/boot.s: etc/boot.lua
 	echo "Embedding boot script..."
 	$(BIN2S) $< $@ bootString
 
+# Images
+EMBED/%.s: EMBED/%.png
+	$(BIN2S) $< $@ $(shell basename $< .png)
+	echo "Embedding $< Image..."
 #------------------------------------------------------------------#
 
 
@@ -228,8 +232,9 @@ clean:
 	$(MAKE) -C modules/ds34usb clean
 	$(MAKE) -C modules/ds34bt clean
 	
-	echo "Cleaning embedded boot script..."
-	rm -f src/boot.s
+	
+	echo "Cleaning embedded Resources..."
+	rm -f $(EMBEDDED_RSC)
 
 rebuild: clean all
 
