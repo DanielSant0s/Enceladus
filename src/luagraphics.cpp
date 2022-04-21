@@ -22,16 +22,9 @@ extern void *_gp;
 static int imgThread(void* data)
 {
 	char* text = (char*)data;
-	int file = open(text, O_RDONLY, 0777);
 	bool delayed = asyncDelayed;
-	uint16_t magic;
-	read(file, &magic, 2);
-	close(file);
-	GSTEXTURE* image = NULL;
-	if (magic == 0x4D42) image =      loadbmp(text, delayed);
-	else if (magic == 0xD8FF) image = loadjpeg(text, false, delayed);
-	else if (magic == 0x5089) image = loadpng(text, delayed);
-	else 
+	GSTEXTURE* image = load_image(text, delayed);
+	if (image == NULL) 
 	{
 		imgThreadResult = 1;
 		ExitDeleteThread();
@@ -223,17 +216,9 @@ static int lua_loadimg(lua_State *L) {
 	int argc = lua_gettop(L);
 	if (argc != 1 && argc != 2) return luaL_error(L, "wrong number of arguments");
 	const char* text = luaL_checkstring(L, 1);
-	int file = open(text, O_RDONLY, 0777);
 	bool delayed = true;
 	if (argc == 2) delayed = lua_toboolean(L, 2);
-	uint16_t magic;
-	read(file, &magic, 2);
-	close(file);
-	GSTEXTURE* image = NULL;
-	if (magic == 0x4D42) image =      loadbmp(text, delayed);
-	else if (magic == 0xD8FF) image = loadjpeg(text, false, delayed);
-	else if (magic == 0x5089) image = loadpng(text, delayed);
-	else return luaL_error(L, "Error loading image (invalid magic).");
+	GSTEXTURE* image = load_image(text, delayed);
 
 	lua_pushinteger(L, (uint32_t)(image));
 	return 1;

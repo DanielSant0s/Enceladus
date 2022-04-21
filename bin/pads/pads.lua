@@ -13,14 +13,14 @@ local right = Graphics.loadImage("pads/right.png")
 local start = Graphics.loadImage("pads/start.png")
 local pad_select = Graphics.loadImage("pads/select.png")
 
-local r1 = Graphics.loadImage("pads/r1.png")
-local r2 = Graphics.loadImage("pads/r2.png")
+local r1 = Graphics.loadImage("pads/R1.png")
+local r2 = Graphics.loadImage("pads/R2.png")
 
-local l1 = Graphics.loadImage("pads/l1.png")
-local l2 = Graphics.loadImage("pads/l2.png")
+local l1 = Graphics.loadImage("pads/L1.png")
+local l2 = Graphics.loadImage("pads/L2.png")
 
-local l3 = Graphics.loadImage("pads/l3.png")
-local r3 = Graphics.loadImage("pads/r3.png")
+local l3 = Graphics.loadImage("pads/L3.png")
+local r3 = Graphics.loadImage("pads/R3.png")
 
 local pad = nil
 local rx = nil
