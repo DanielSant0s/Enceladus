@@ -37,18 +37,30 @@ DEBUG = 0
 #----------------------- Set IP for PS2Client ---------------------#
 PS2LINK_IP = 192.168.1.10
 #------------------------------------------------------------------#
+VM=none
+
 
 EE_BIN = enceladus.elf
 EE_BIN_PKD = enceladus_pkd.elf
 
-EE_LIBS = -L$(PS2SDK)/ports/lib -L$(PS2DEV)/gsKit/lib/ -Lmodules/ds34bt/ee/ -Lmodules/ds34usb/ee/ -lpatches -lfileXio -lpad -ldebug -llua -lmath3d -ljpeg -lfreetype -lgskit_toolkit -lgskit -ldmakit -lpng -lz -lmc -laudsrv -lelf-loader -lds34bt -lds34usb
+ifeq ($(VM), js)
+EE_BIN = enceladus_js.elf
+EE_BIN_PKD = enceladus_js_pkd.elf
+endif
+
+EE_LIBS = -L$(PS2SDK)/ports/lib -L$(PS2DEV)/gsKit/lib/ -Lmodules/ds34bt/ee/ -Lmodules/ds34usb/ee/ -lpatches -lfileXio -lpad -ldebug -lmath3d -ljpeg -lfreetype -lgskit_toolkit -lgskit -ldmakit -lpng -lz -lmc -laudsrv -lelf-loader -lds34bt -lds34usb
+
+ifeq ($(VM), lua)
+EE_LIBS += -llua
+EE_CXXFLAGS += -DLUA
+endif
 
 EE_INCS += -I$(PS2DEV)/gsKit/include -I$(PS2SDK)/ports/include -I$(PS2SDK)/ports/include/freetype2 -I$(PS2SDK)/ports/include/zlib
 
 EE_INCS += -Imodules/ds34bt/ee -Imodules/ds34usb/ee
 
-EE_CFLAGS   += -Wno-sign-compare -fno-strict-aliasing -fno-exceptions -DLUA_USE_PS2
-EE_CXXFLAGS += -Wno-sign-compare -fno-strict-aliasing -fno-exceptions -DLUA_USE_PS2
+EE_CFLAGS   += -Wno-sign-compare -fno-strict-aliasing -fno-exceptions -DLUA_USE_PS2 -D_R5900
+EE_CXXFLAGS += -Wno-sign-compare -fno-strict-aliasing -fno-exceptions -DLUA_USE_PS2 -D_R5900
 
 ifeq ($(RESET_IOP),1)
 EE_CXXFLAGS += -DRESET_IOP
@@ -67,17 +79,25 @@ APP_CORE = src/main.o src/system.o src/pad.o src/graphics.o src/render.o \
 		   src/calc_3d.o src/gsKit3d_sup.o src/atlas.o src/fntsys.o src/md5.o \
 		   src/sound.o
 
-LUA_LIBS =	src/luaplayer.o src/luasound.o src/luacontrols.o \
-			src/luatimer.o src/luaScreen.o src/luagraphics.o \
-			src/luasystem.o src/luaRender.o
-
 IOP_MODULES = src/sio2man.o src/mcman.o src/mcserv.o src/padman.o src/libsd.o \
 			  src/usbd.o src/audsrv.o src/bdm.o src/bdmfs_vfat.o \
 			  src/usbmass_bd.o src/cdfs.o src/ds34bt.o src/ds34usb.o
 
-EMBEDDED_RSC = src/boot.o
 
-EE_OBJS = $(IOP_MODULES) $(EMBEDDED_RSC) $(APP_CORE) $(LUA_LIBS)
+ifeq ($(VM), lua)
+EMBEDDED_RSC = src/boot.o
+LANG_MODULES = src/luaplayer.o src/luasound.o src/luacontrols.o \
+			  src/luatimer.o src/luaScreen.o src/luagraphics.o \
+			  src/luasystem.o src/luaRender.o
+endif
+
+ifeq ($(VM), js)
+LANG_MODULES = src/duktape/duktape.o src/duktape/duk_console.o src/duktape/duk_module_node.o \
+				 src/ath_env.o src/ath_screen.o src/ath_graphics.o src/ath_pads.o src/ath_sound.o \
+				 src/ath_system.o src/ath_timer.o src/ath_render.o
+endif
+
+EE_OBJS = $(IOP_MODULES) $(EMBEDDED_RSC) $(APP_CORE) $(LANG_MODULES)
 
 #------------------------------------------------------------------#
 all: $(EXT_LIBS) $(EE_BIN)
@@ -91,6 +111,7 @@ all: $(EXT_LIBS) $(EE_BIN)
 	
 	mv $(EE_BIN) bin/
 	mv $(EE_BIN_PKD) bin/
+
 #--------------------- Embedded ressources ------------------------#
 
 src/boot.s: etc/boot.lua
@@ -243,4 +264,4 @@ reset:
 	ps2client -h $(PS2LINK_IP) reset   
 
 include $(PS2SDK)/samples/Makefile.pref
-include $(PS2SDK)/samples/Makefile.eeglobal
+include $(PS2SDK)/samples/Makefile.eeglobal_cpp

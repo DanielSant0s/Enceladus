@@ -15,9 +15,14 @@
 #include <sbv_patches.h>
 #include <smem.h>
 
+#ifdef LUA
+#include "include/luaplayer.h"
+#else
+#include "ath_env.h"
+#endif
+
 #include "include/graphics.h"
 #include "include/sound.h"
-#include "include/luaplayer.h"
 #include "include/pad.h"
 
 extern "C"{
@@ -25,8 +30,10 @@ extern "C"{
 #include <libds34usb.h>
 }
 
+#ifdef LUA
 extern char bootString[];
 extern unsigned int size_bootString;
+#endif
 
 extern unsigned char sio2man_irx;
 extern unsigned int size_sio2man_irx;
@@ -216,17 +223,19 @@ int main(int argc, char * argv[])
     chdir(boot_path); 
 
     printf("boot path : %s\n", boot_path);
-	dbgprintf("boot path : %s\n", boot_path);
     
-    while (1)
+    while(true)
     {
-    
+        #ifdef LUA
         // if no parameters are specified, use the default boot
         if (argc < 2) {
             errMsg = runScript(bootString, true); 
         } else {
             errMsg = runScript(argv[1], false);
         }   
+        #else
+        errMsg = runScript("main.js", false);
+        #endif
 
         gsKit_clear_screens();
 

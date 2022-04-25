@@ -46,7 +46,7 @@ typedef struct
     VECTOR*     test;
 } vData;
 
-struct model{
+typedef struct{
 	uint32_t facesCount;
     uint16_t* idxList;
     VECTOR* positions;
@@ -55,7 +55,7 @@ struct model{
     VECTOR* colours;
     VECTOR* bounding_box;
     GSTEXTURE* texture;
-};
+} model;
 
 typedef u32 Color;
 #define A(color) ((u8)(color >> 24 & 0xFF))

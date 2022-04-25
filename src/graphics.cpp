@@ -28,7 +28,53 @@ static int frames = 0;
 static int frame_interval = -1;
 
 //2D drawing functions
-GSTEXTURE* loadpng(FILE* File, bool delayed)
+
+int texture_upload(GSTEXTURE *Texture)
+{
+	if(!Texture->Delayed)
+	{
+		Texture->Vram = gsKit_vram_alloc(gsGlobal, gsKit_texture_size(Texture->Width, Texture->Height, Texture->PSM), GSKIT_ALLOC_USERBUFFER);
+		if(Texture->Vram == GSKIT_ALLOC_ERROR)
+		{
+			printf("VRAM Allocation Failed. Will not upload texture.\n");
+			return -1;
+		}
+
+		if(Texture->Clut != NULL)
+		{
+			if(Texture->PSM == GS_PSM_T4)
+				Texture->VramClut = gsKit_vram_alloc(gsGlobal, gsKit_texture_size(8, 2, GS_PSM_CT32), GSKIT_ALLOC_USERBUFFER);
+			else
+				Texture->VramClut = gsKit_vram_alloc(gsGlobal, gsKit_texture_size(16, 16, GS_PSM_CT32), GSKIT_ALLOC_USERBUFFER);
+
+			if(Texture->VramClut == GSKIT_ALLOC_ERROR)
+			{
+				printf("VRAM CLUT Allocation Failed. Will not upload texture.\n");
+				return -1;
+			}
+		}
+
+		// Upload texture
+		gsKit_texture_upload(gsGlobal, Texture);
+		// Free texture
+		free(Texture->Mem);
+		Texture->Mem = NULL;
+		// Free texture CLUT
+		if(Texture->Clut != NULL)
+		{
+			free(Texture->Clut);
+			Texture->Clut = NULL;
+		}
+	}
+	else
+	{
+		gsKit_setup_tbw(Texture);
+	}
+
+	return 0;
+}
+
+GSTEXTURE* load_png(FILE* File, bool delayed)
 {
 	GSTEXTURE* tex = (GSTEXTURE*)malloc(sizeof(GSTEXTURE));
 	tex->Delayed = delayed;
@@ -273,51 +319,13 @@ GSTEXTURE* loadpng(FILE* File, bool delayed)
 	png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp) NULL);
 	fclose(File);
 
-	if(!tex->Delayed)
-	{
-		tex->Vram = gsKit_vram_alloc(gsGlobal, gsKit_texture_size(tex->Width, tex->Height, tex->PSM), GSKIT_ALLOC_USERBUFFER);
-		if(tex->Vram == GSKIT_ALLOC_ERROR)
-		{
-			printf("VRAM Allocation Failed. Will not upload texture.\n");
-			return NULL;
-		}
-
-		if(tex->Clut != NULL)
-		{
-			if(tex->PSM == GS_PSM_T4)
-				tex->VramClut = gsKit_vram_alloc(gsGlobal, gsKit_texture_size(8, 2, GS_PSM_CT32), GSKIT_ALLOC_USERBUFFER);
-			else
-				tex->VramClut = gsKit_vram_alloc(gsGlobal, gsKit_texture_size(16, 16, GS_PSM_CT32), GSKIT_ALLOC_USERBUFFER);
-
-			if(tex->VramClut == GSKIT_ALLOC_ERROR)
-			{
-				printf("VRAM CLUT Allocation Failed. Will not upload texture.\n");
-				return NULL;
-			}
-		}
-
-		// Upload texture
-		gsKit_texture_upload(gsGlobal, tex);
-		// Free texture
-		free(tex->Mem);
-		tex->Mem = NULL;
-		// Free texture CLUT
-		if(tex->Clut != NULL)
-		{
-			free(tex->Clut);
-			tex->Clut = NULL;
-		}
-	}
-	else
-	{
-		gsKit_setup_tbw(tex);
-	}
+	texture_upload(tex);
 
 	return tex;
 
 }
 
-GSTEXTURE* loadbmp(FILE* File, bool delayed)
+GSTEXTURE* load_bmp(FILE* File, bool delayed)
 {
 	GSBITMAP Bitmap;
 	int x, y;
@@ -579,45 +587,7 @@ GSTEXTURE* loadbmp(FILE* File, bool delayed)
 
 	fclose(File);
 
-	if(!tex->Delayed)
-	{
-		tex->Vram = gsKit_vram_alloc(gsGlobal, gsKit_texture_size(tex->Width, tex->Height, tex->PSM), GSKIT_ALLOC_USERBUFFER);
-		if(tex->Vram == GSKIT_ALLOC_ERROR)
-		{
-			printf("VRAM Allocation Failed. Will not upload texture.\n");
-			return NULL;
-		}
-
-		if(tex->Clut != NULL)
-		{
-			if(tex->PSM == GS_PSM_T4)
-				tex->VramClut = gsKit_vram_alloc(gsGlobal, gsKit_texture_size(8, 2, GS_PSM_CT32), GSKIT_ALLOC_USERBUFFER);
-			else
-				tex->VramClut = gsKit_vram_alloc(gsGlobal, gsKit_texture_size(16, 16, GS_PSM_CT32), GSKIT_ALLOC_USERBUFFER);
-
-			if(tex->VramClut == GSKIT_ALLOC_ERROR)
-			{
-				printf("VRAM CLUT Allocation Failed. Will not upload texture.\n");
-				return NULL;
-			}
-		}
-
-		// Upload texture
-		gsKit_texture_upload(gsGlobal, tex);
-		// Free texture
-		free(tex->Mem);
-		tex->Mem = NULL;
-		// Free texture CLUT
-		if(tex->Clut != NULL)
-		{
-			free(tex->Clut);
-			tex->Clut = NULL;
-		}
-	}
-	else
-	{
-		gsKit_setup_tbw(tex);
-	}
+	texture_upload(tex);
 
 	return tex;
 
@@ -683,7 +653,7 @@ static void  _ps2_load_JPEG_generic(GSTEXTURE *Texture, struct jpeg_decompress_s
 	jpeg_finish_decompress(cinfo);
 }
 
-GSTEXTURE* loadjpeg(FILE* fp, bool scale_down, bool delayed)
+GSTEXTURE* load_jpeg(FILE* fp, bool scale_down, bool delayed)
 {
 
 	
@@ -727,47 +697,8 @@ GSTEXTURE* loadjpeg(FILE* fp, bool scale_down, bool delayed)
 	
 	jpeg_destroy_decompress(&cinfo);
 	fclose(fp);
-
 	
-	if(!tex->Delayed)
-	{
-		tex->Vram = gsKit_vram_alloc(gsGlobal, gsKit_texture_size(tex->Width, tex->Height, tex->PSM), GSKIT_ALLOC_USERBUFFER);
-		if(tex->Vram == GSKIT_ALLOC_ERROR)
-		{
-			printf("VRAM Allocation Failed. Will not upload texture.\n");
-			return NULL;
-		}
-
-		if(tex->Clut != NULL)
-		{
-			if(tex->PSM == GS_PSM_T4)
-				tex->VramClut = gsKit_vram_alloc(gsGlobal, gsKit_texture_size(8, 2, GS_PSM_CT32), GSKIT_ALLOC_USERBUFFER);
-			else
-				tex->VramClut = gsKit_vram_alloc(gsGlobal, gsKit_texture_size(16, 16, GS_PSM_CT32), GSKIT_ALLOC_USERBUFFER);
-
-			if(tex->VramClut == GSKIT_ALLOC_ERROR)
-			{
-				printf("VRAM CLUT Allocation Failed. Will not upload texture.\n");
-				return NULL;
-			}
-		}
-
-		// Upload texture
-		gsKit_texture_upload(gsGlobal, tex);
-		// Free texture
-		free(tex->Mem);
-		tex->Mem = NULL;
-		// Free texture CLUT
-		if(tex->Clut != NULL)
-		{
-			free(tex->Clut);
-			tex->Clut = NULL;
-		}
-	}
-	else
-	{
-		gsKit_setup_tbw(tex);
-	}
+	texture_upload(tex);
 
 	return tex;
 
@@ -779,9 +710,9 @@ GSTEXTURE* load_image(const char* path, bool delayed){
 	fread(&magic, 1, 2, file);
 	fseek(file, 0, SEEK_SET);
 	GSTEXTURE* image = NULL;
-	if (magic == 0x4D42) image =      loadbmp(file, delayed);
-	else if (magic == 0xD8FF) image = loadjpeg(file, false, delayed);
-	else if (magic == 0x5089) image = loadpng(file, delayed);
+	if (magic == 0x4D42) image =      load_bmp(file, delayed);
+	else if (magic == 0xD8FF) image = load_jpeg(file, false, delayed);
+	else if (magic == 0x5089) image = load_png(file, delayed);
 	if (image == NULL) printf("Failed to load image %s.", path);
 
 	return image;
