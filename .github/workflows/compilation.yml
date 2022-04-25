@@ -28,9 +28,13 @@ jobs:
     - run: |
         git fetch --prune --unshallow
 
-    - name: Compile project
+    - name: Compile lua VM
       run: |
-        make clean all
+        make VM=lua clean all
+
+    - name: Compile JS VM
+      run: |
+        make VM=js clean all
 
     - name: Get short SHA
       id: slug
