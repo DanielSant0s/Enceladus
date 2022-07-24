@@ -220,7 +220,7 @@ ROM font functions:
   • END  
 * size = System.sizeFile(fd)
 * System.doesFileExist(path)
-* System.CurrentDirectory(path) *if path given, it sets the current dir, else it gets the current dir
+* System.currentDirectory(path) *if path given, it sets the current dir, else it gets the current dir
 * listdir = System.listDirectory(path) *path isn't mandatory  
   • listdir[index].name - return file name on indicated index(string)  
   • listdir[index].size - return file size on indicated index(integer)  
