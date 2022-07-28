@@ -20,6 +20,10 @@
 #include "include/luaplayer.h"
 #include "include/pad.h"
 
+#define NEWLIB_PORT_AWARE
+#include <fileXio_rpc.h>
+#include <fileio.h>
+
 extern "C"{
 #include <libds34bt.h>
 #include <libds34usb.h>
@@ -27,6 +31,12 @@ extern "C"{
 
 extern char bootString[];
 extern unsigned int size_bootString;
+
+extern unsigned char iomanX_irx[];
+extern unsigned int size_iomanX_irx;
+
+extern unsigned char fileXio_irx[];
+extern unsigned int size_fileXio_irx;
 
 extern unsigned char sio2man_irx;
 extern unsigned int size_sio2man_irx;
@@ -144,7 +154,10 @@ int main(int argc, char * argv[])
     sbv_patch_disable_prefix_check(); 
     sbv_patch_fileio(); 
 
+	SifExecModuleBuffer(&iomanX_irx, size_iomanX_irx, 0, NULL, NULL);
+    SifExecModuleBuffer(&fileXio_irx, size_fileXio_irx, 0, NULL, NULL);
     SifExecModuleBuffer(&sio2man_irx, size_sio2man_irx, 0, NULL, NULL);
+	fileXioInit();
     SifExecModuleBuffer(&mcman_irx, size_mcman_irx, 0, NULL, NULL);
     SifExecModuleBuffer(&mcserv_irx, size_mcserv_irx, 0, NULL, NULL);
     initMC();
