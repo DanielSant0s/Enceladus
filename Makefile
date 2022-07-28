@@ -71,7 +71,8 @@ LUA_LIBS =	src/luaplayer.o src/luasound.o src/luacontrols.o \
 			src/luatimer.o src/luaScreen.o src/luagraphics.o \
 			src/luasystem.o src/luaRender.o
 
-IOP_MODULES = src/sio2man.o src/mcman.o src/mcserv.o src/padman.o src/libsd.o \
+IOP_MODULES = src/iomanx.o src/filexio.o \
+			  src/sio2man.o src/mcman.o src/mcserv.o src/padman.o src/libsd.o \
 			  src/usbd.o src/audsrv.o src/bdm.o src/bdmfs_vfat.o \
 			  src/usbmass_bd.o src/cdfs.o src/ds34bt.o src/ds34usb.o
 
@@ -105,6 +106,14 @@ EMBED/%.s: EMBED/%.png
 
 
 #-------------------- Embedded IOP Modules ------------------------#
+src/iomanx.s: $(PS2SDK)/iop/irx/iomanX.irx
+	echo "Embedding iomanX Driver..."
+	$(BIN2S) $< $@ iomanX_irx
+
+src/filexio.s: $(PS2SDK)/iop/irx/fileXio.irx
+	echo "Embedding fileXio Driver..."
+	$(BIN2S) $< $@ fileXio_irx
+
 src/sio2man.s: $(PS2SDK)/iop/irx/sio2man.irx
 	echo "Embedding SIO2MAN Driver..."
 	$(BIN2S) $< $@ sio2man_irx
@@ -190,6 +199,12 @@ clean:
 	rm -f $(EE_OBJS)
 	
 		
+	echo "Cleaning iomanX Driver..."
+	rm -f src/iomanx.s
+
+	echo "Cleaning fileXio Driver..."
+	rm -f src/filexio.s
+	
 	echo "Cleaning SIO2MAN Driver..."
 	rm -f src/sio2man.s
 
