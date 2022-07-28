@@ -12,6 +12,8 @@
 #include <audsrv.h>
 #include <sys/stat.h>
 
+#include <dirent.h>
+
 #include <sbv_patches.h>
 #include <smem.h>
 
@@ -154,10 +156,19 @@ int main(int argc, char * argv[])
     sbv_patch_disable_prefix_check(); 
     sbv_patch_fileio(); 
 
-	SifExecModuleBuffer(&iomanX_irx, size_iomanX_irx, 0, NULL, NULL);
-    SifExecModuleBuffer(&fileXio_irx, size_fileXio_irx, 0, NULL, NULL);
-    SifExecModuleBuffer(&sio2man_irx, size_sio2man_irx, 0, NULL, NULL);
-	fileXioInit();
+	DIR *directorytoverify;
+	directorytoverify = opendir("host:.");
+	if(directorytoverify==NULL){
+		SifExecModuleBuffer(&iomanX_irx, size_iomanX_irx, 0, NULL, NULL);
+		SifExecModuleBuffer(&fileXio_irx, size_fileXio_irx, 0, NULL, NULL);
+	}
+	SifExecModuleBuffer(&sio2man_irx, size_sio2man_irx, 0, NULL, NULL);
+	if(directorytoverify==NULL){
+		fileXioInit();
+	}
+	if(directorytoverify!=NULL){
+		closedir(directorytoverify);
+	}
     SifExecModuleBuffer(&mcman_irx, size_mcman_irx, 0, NULL, NULL);
     SifExecModuleBuffer(&mcserv_irx, size_mcserv_irx, 0, NULL, NULL);
     initMC();
