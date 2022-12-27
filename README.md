@@ -261,7 +261,6 @@ Asynchronous functions:
 
 * Sound.setFormat(bitrate, freq, channels)
 * Sound.setVolume(volume)
-* Sound.initADPCM()
 * Sound.setADPCMVolume(channel, volume)
 * audio = Sound.loadADPCM(path)
 * Sound.playADPCM(channel, audio)
