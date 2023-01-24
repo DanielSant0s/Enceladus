@@ -22,7 +22,7 @@ jobs:
 
     - name: Workaround permission issue
       run: |
-        git config --global --add safe.directory /__w/Enceladus/Enceladus
+        git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
     - uses: actions/checkout@v2
     - run: |
