@@ -12,6 +12,8 @@
 #include <audsrv.h>
 #include <sys/stat.h>
 
+#include <dirent.h>
+
 #include <sbv_patches.h>
 #include <smem.h>
 
@@ -20,6 +22,10 @@
 #include "include/luaplayer.h"
 #include "include/pad.h"
 
+#define NEWLIB_PORT_AWARE
+#include <fileXio_rpc.h>
+#include <fileio.h>
+
 extern "C"{
 #include <libds34bt.h>
 #include <libds34usb.h>
@@ -27,6 +33,12 @@ extern "C"{
 
 extern char bootString[];
 extern unsigned int size_bootString;
+
+extern unsigned char iomanX_irx[];
+extern unsigned int size_iomanX_irx;
+
+extern unsigned char fileXio_irx[];
+extern unsigned int size_fileXio_irx;
 
 extern unsigned char sio2man_irx;
 extern unsigned int size_sio2man_irx;
@@ -52,8 +64,8 @@ extern unsigned int size_usbd_irx;
 extern unsigned char bdm_irx;
 extern unsigned int size_bdm_irx;
 
-extern unsigned char bdmfs_vfat_irx;
-extern unsigned int size_bdmfs_vfat_irx;
+extern unsigned char bdmfs_fatfs_irx;
+extern unsigned int size_bdmfs_fatfs_irx;
 
 extern unsigned char usbmass_bd_irx;
 extern unsigned int size_usbmass_bd_irx;
@@ -144,8 +156,20 @@ int main(int argc, char * argv[])
     sbv_patch_disable_prefix_check(); 
     sbv_patch_fileio(); 
 
+	DIR *directorytoverify;
+	directorytoverify = opendir("host:.");
+	if (directorytoverify==NULL) {
+		SifExecModuleBuffer(&iomanX_irx, size_iomanX_irx, 0, NULL, NULL);
+		SifExecModuleBuffer(&fileXio_irx, size_fileXio_irx, 0, NULL, NULL);
+	}
+	if (directorytoverify==NULL) {
+		fileXioInit();
+	}
+	if (directorytoverify!=NULL) {
+		closedir(directorytoverify);
+	}
     printf("Loading mc drivers\n");
-    SifExecModuleBuffer(&sio2man_irx, size_sio2man_irx, 0, NULL, NULL);
+	  SifExecModuleBuffer(&sio2man_irx, size_sio2man_irx, 0, NULL, NULL);
     SifExecModuleBuffer(&mcman_irx, size_mcman_irx, 0, NULL, NULL);
     SifExecModuleBuffer(&mcserv_irx, size_mcserv_irx, 0, NULL, NULL);
     printf("Initialize mc\n");
@@ -166,7 +190,7 @@ int main(int argc, char * argv[])
     ds34bt_init();
 
     SifExecModuleBuffer(&bdm_irx, size_bdm_irx, 0, NULL, NULL);
-    SifExecModuleBuffer(&bdmfs_vfat_irx, size_bdmfs_vfat_irx, 0, NULL, NULL);
+    SifExecModuleBuffer(&bdmfs_fatfs_irx, size_bdmfs_fatfs_irx, 0, NULL, NULL);
     SifExecModuleBuffer(&usbmass_bd_irx, size_usbmass_bd_irx, 0, NULL, NULL);
 
     SifExecModuleBuffer(&cdfs_irx, size_cdfs_irx, 0, NULL, NULL);
@@ -228,22 +252,18 @@ int main(int argc, char * argv[])
             errMsg = runScript(argv[1], false);
         }   
 
-        gsKit_clear_screens();
-
-		loadFontM();
+        init_scr();
 
         if (errMsg != NULL)
         {
         	while (!isButtonPressed(PAD_START)) {
-				clearScreen(GS_SETREG_RGBAQ(0x20,0x60,0xB0,0x80,0x00));
-				printFontMText("Enceladus ERROR!", 15.0f, 15.0f, 0.9f, 0x80808080);
-				printFontMText(errMsg, 15.0f, 80.0f, 0.6f, 0x80808080);
-		   		printFontMText("\nPress [start] to restart\n", 15.0f, 400.0f, 0.6f, 0x80808080);
-				flipScreen();
+				scr_clear();
+				scr_setXY(5, 2);
+				scr_printf("Enceladus ERROR!\n");
+				scr_printf(errMsg);
+				scr_printf("\nPress [start] to restart\n");
 			}
         }
-
-        unloadFontM();
 
     }
 
