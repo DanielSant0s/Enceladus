@@ -64,8 +64,8 @@ extern unsigned int size_usbd_irx;
 extern unsigned char bdm_irx;
 extern unsigned int size_bdm_irx;
 
-extern unsigned char bdmfs_vfat_irx;
-extern unsigned int size_bdmfs_vfat_irx;
+extern unsigned char bdmfs_fatfs_irx;
+extern unsigned int size_bdmfs_fatfs_irx;
 
 extern unsigned char usbmass_bd_irx;
 extern unsigned int size_usbmass_bd_irx;
@@ -190,7 +190,7 @@ int main(int argc, char * argv[])
     ds34bt_init();
 
     SifExecModuleBuffer(&bdm_irx, size_bdm_irx, 0, NULL, NULL);
-    SifExecModuleBuffer(&bdmfs_vfat_irx, size_bdmfs_vfat_irx, 0, NULL, NULL);
+    SifExecModuleBuffer(&bdmfs_fatfs_irx, size_bdmfs_fatfs_irx, 0, NULL, NULL);
     SifExecModuleBuffer(&usbmass_bd_irx, size_usbmass_bd_irx, 0, NULL, NULL);
 
     SifExecModuleBuffer(&cdfs_irx, size_cdfs_irx, 0, NULL, NULL);
