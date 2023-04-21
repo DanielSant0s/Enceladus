@@ -63,22 +63,27 @@ BIN2S = $(PS2SDK)/bin/bin2s
 #-------------------------- App Content ---------------------------#
 EXT_LIBS = modules/ds34usb/ee/libds34usb.a modules/ds34bt/ee/libds34bt.a
 
-APP_CORE = src/main.o src/system.o src/pad.o src/graphics.o src/render.o \
-		   src/calc_3d.o src/gsKit3d_sup.o src/atlas.o src/fntsys.o src/md5.o \
-		   src/sound.o
+APP_CORE = main.o system.o pad.o graphics.o render.o \
+		   calc_3d.o gsKit3d_sup.o atlas.o fntsys.o md5.o \
+		   sound.o
 
-LUA_LIBS =	src/luaplayer.o src/luasound.o src/luacontrols.o \
-			src/luatimer.o src/luaScreen.o src/luagraphics.o \
-			src/luasystem.o src/luaRender.o
+LUA_LIBS =	luaplayer.o luasound.o luacontrols.o \
+			luatimer.o luaScreen.o luagraphics.o \
+			luasystem.o luaRender.o
 
-IOP_MODULES = src/iomanx.o src/filexio.o \
-			  src/sio2man.o src/mcman.o src/mcserv.o src/padman.o src/libsd.o \
-			  src/usbd.o src/audsrv.o src/bdm.o src/bdmfs_fatfs.o \
-			  src/usbmass_bd.o src/cdfs.o src/ds34bt.o src/ds34usb.o
+IOP_MODULES = iomanx.o filexio.o \
+			  sio2man.o mcman.o mcserv.o padman.o libsd.o \
+			  usbd.o audsrv.o bdm.o bdmfs_fatfs.o \
+			  usbmass_bd.o cdfs.o ds34bt.o ds34usb.o
 
-EMBEDDED_RSC = src/boot.o
+EMBEDDED_RSC = boot.o
 
 EE_OBJS = $(IOP_MODULES) $(EMBEDDED_RSC) $(APP_CORE) $(LUA_LIBS)
+
+EE_OBJS_DIR = obj/
+EE_SRC_DIR = src/
+EE_ASM_DIR = asm/
+EE_OBJS := $(EE_OBJS:%=$(EE_OBJS_DIR)%) # remap all EE_OBJ to obj subdir
 
 #------------------------------------------------------------------#
 all: $(EXT_LIBS) $(EE_BIN)
@@ -94,7 +99,7 @@ all: $(EXT_LIBS) $(EE_BIN)
 	mv $(EE_BIN_PKD) bin/
 #--------------------- Embedded ressources ------------------------#
 
-src/boot.s: etc/boot.lua
+$(EE_ASM_DIR)boot.s: etc/boot.lua | $(EE_ASM_DIR)
 	echo "Embedding boot script..."
 	$(BIN2S) $< $@ bootString
 
@@ -106,147 +111,104 @@ EMBED/%.s: EMBED/%.png
 
 
 #-------------------- Embedded IOP Modules ------------------------#
-src/iomanx.s: $(PS2SDK)/iop/irx/iomanX.irx
+$(EE_ASM_DIR)iomanx.s: $(PS2SDK)/iop/irx/iomanX.irx | $(EE_ASM_DIR)
 	echo "Embedding iomanX Driver..."
 	$(BIN2S) $< $@ iomanX_irx
 
-src/filexio.s: $(PS2SDK)/iop/irx/fileXio.irx
+$(EE_ASM_DIR)filexio.s: $(PS2SDK)/iop/irx/fileXio.irx | $(EE_ASM_DIR)
 	echo "Embedding fileXio Driver..."
 	$(BIN2S) $< $@ fileXio_irx
 
-src/sio2man.s: $(PS2SDK)/iop/irx/sio2man.irx
+$(EE_ASM_DIR)sio2man.s: $(PS2SDK)/iop/irx/sio2man.irx | $(EE_ASM_DIR)
 	echo "Embedding SIO2MAN Driver..."
 	$(BIN2S) $< $@ sio2man_irx
 	
-src/mcman.s: $(PS2SDK)/iop/irx/mcman.irx
+$(EE_ASM_DIR)mcman.s: $(PS2SDK)/iop/irx/mcman.irx | $(EE_ASM_DIR)
 	echo "Embedding MCMAN Driver..."
 	$(BIN2S) $< $@ mcman_irx
 
-src/mcserv.s: $(PS2SDK)/iop/irx/mcserv.irx
+$(EE_ASM_DIR)mcserv.s: $(PS2SDK)/iop/irx/mcserv.irx | $(EE_ASM_DIR)
 	echo "Embedding MCSERV Driver..."
 	$(BIN2S) $< $@ mcserv_irx
 
-src/padman.s: $(PS2SDK)/iop/irx/padman.irx
+$(EE_ASM_DIR)padman.s: $(PS2SDK)/iop/irx/padman.irx | $(EE_ASM_DIR)
 	echo "Embedding PADMAN Driver..."
 	$(BIN2S) $< $@ padman_irx
 	
-src/libsd.s: $(PS2SDK)/iop/irx/libsd.irx
+$(EE_ASM_DIR)libsd.s: $(PS2SDK)/iop/irx/libsd.irx | $(EE_ASM_DIR)
 	echo "Embedding LIBSD Driver..."
 	$(BIN2S) $< $@ libsd_irx
 
-src/usbd.s: $(PS2SDK)/iop/irx/usbd.irx
+$(EE_ASM_DIR)usbd.s: $(PS2SDK)/iop/irx/usbd.irx | $(EE_ASM_DIR)
 	echo "Embedding USB Driver..."
 	$(BIN2S) $< $@ usbd_irx
 
-src/audsrv.s: $(PS2SDK)/iop/irx/audsrv.irx
+$(EE_ASM_DIR)audsrv.s: $(PS2SDK)/iop/irx/audsrv.irx | $(EE_ASM_DIR)
 	echo "Embedding AUDSRV Driver..."
 	$(BIN2S) $< $@ audsrv_irx
 
-src/bdm.s: $(PS2SDK)/iop/irx/bdm.irx
+$(EE_ASM_DIR)bdm.s: $(PS2SDK)/iop/irx/bdm.irx | $(EE_ASM_DIR)
 	echo "Embedding Block Device Manager(BDM)..."
 	$(BIN2S) $< $@ bdm_irx
 
-src/bdmfs_fatfs.s: $(PS2SDK)/iop/irx/bdmfs_fatfs.irx
+$(EE_ASM_DIR)bdmfs_fatfs.s: $(PS2SDK)/iop/irx/bdmfs_fatfs.irx | $(EE_ASM_DIR)
 	echo "Embedding BDM FATFS Driver..."
 	$(BIN2S) $< $@ bdmfs_fatfs_irx
 
-src/usbmass_bd.s: $(PS2SDK)/iop/irx/usbmass_bd.irx
+$(EE_ASM_DIR)usbmass_bd.s: $(PS2SDK)/iop/irx/usbmass_bd.irx | $(EE_ASM_DIR)
 	echo "Embedding BD USB Mass Driver..."
 	$(BIN2S) $< $@ usbmass_bd_irx
 
-src/cdfs.s: $(PS2SDK)/iop/irx/cdfs.irx
-	echo "Embedding CDFS Driver..."
+$(EE_ASM_DIR)cdfs.s: $(PS2SDK)/iop/irx/cdfs.irx | $(EE_ASM_DIR)
 	$(BIN2S) $< $@ cdfs_irx
 
 modules/ds34bt/ee/libds34bt.a: modules/ds34bt/ee
-	echo "Building DS3/4 Bluetooth Library..."
 	$(MAKE) -C $<
 
 modules/ds34bt/iop/ds34bt.irx: modules/ds34bt/iop
-	echo "Building DS3/4 Bluetooth Driver..."
 	$(MAKE) -C $<
 
-src/ds34bt.s: modules/ds34bt/iop/ds34bt.irx
-	echo "Embedding DS3/4 Bluetooth Driver..."
+$(EE_ASM_DIR)ds34bt.s: modules/ds34bt/iop/ds34bt.irx | $(EE_ASM_DIR)
 	$(BIN2S) $< $@ ds34bt_irx
 
 modules/ds34usb/ee/libds34usb.a: modules/ds34usb/ee
-	echo "Building DS3/4 USB Library..."
 	$(MAKE) -C $<
 
 modules/ds34usb/iop/ds34usb.irx: modules/ds34usb/iop
-	echo "Building DS3/4 USB Driver..."
 	$(MAKE) -C $<
 
-src/ds34usb.s: modules/ds34usb/iop/ds34usb.irx
-	echo "Embedding DS3/4 USB Driver..."
+$(EE_ASM_DIR)ds34usb.s: modules/ds34usb/iop/ds34usb.irx | $(EE_ASM_DIR)
 	$(BIN2S) $< $@ ds34usb_irx
 	
 #------------------------------------------------------------------#
+
+$(EE_OBJS_DIR):
+	@mkdir -p $@
+
+$(EE_ASM_DIR):
+	@mkdir -p $@
 
 debug: $(EE_BIN)
 	echo "Building $(EE_BIN) with debug symbols..."
 
 clean:
 
-	echo "\nCleaning $(EE_BIN)..."
+	@echo "\nCleaning $(EE_BIN)..."
 	rm -f bin/$(EE_BIN)
 
-	echo "\nCleaning $(EE_BIN_PKD)..."
+	@echo "\nCleaning $(EE_BIN_PKD)..."
 	rm -f bin/$(EE_BIN_PKD)
 
-	echo "\nCleaning objects..."
-	rm -f $(EE_OBJS)
+	@echo "Cleaning obj dir"
+	@rm -rf $(EE_OBJS_DIR)
+	@echo "Cleaning asm dir"
+	@rm -rf $(EE_ASM_DIR)
 	
-		
-	echo "Cleaning iomanX Driver..."
-	rm -f src/iomanx.s
-
-	echo "Cleaning fileXio Driver..."
-	rm -f src/filexio.s
-	
-	echo "Cleaning SIO2MAN Driver..."
-	rm -f src/sio2man.s
-
-	echo "Cleaning MCMAN Driver..."
-	rm -f src/mcman.s
-
-	echo "Cleaning MCSERV Driver..."
-	rm -f src/mcserv.s
-
-	echo "Cleaning PADMAN Driver..."
-	rm -f src/padman.s
-
-	echo "Cleaning LIBSD Driver..."
-	rm -f src/libsd.s
-
-	echo "Cleaning Block Device Manager(BDM)..."
-	rm -f src/bdm.s
-	
-	echo "Cleaning USB Driver..."
-	rm -f src/usbd.s
-	
-	echo "Embedding AUDSRV Driver..."
-	rm -f src/audsrv.s
-	
-	echo "Cleaning BDM VFAT Driver..."
-	rm -f src/bdmfs_vfat.s
-	
-	echo "Embedding BD USB Mass Driver..."
-	rm -f src/usbmass_bd.s
-	
-	echo "Cleaning CDFS Driver..."
-	rm -f src/cdfs.s
-
-	echo "Cleaning DS3/4 Drivers..."
-	rm -f src/ds34bt.s
-	rm -f src/ds34usb.s
 	$(MAKE) -C modules/ds34usb clean
 	$(MAKE) -C modules/ds34bt clean
 	
 	
 	echo "Cleaning embedded Resources..."
-	rm -f src/boot.s
 	rm -f $(EMBEDDED_RSC)
 
 rebuild: clean all
@@ -256,6 +218,18 @@ run:
        
 reset:
 	ps2client -h $(PS2LINK_IP) reset   
+
+$(EE_OBJS_DIR)%.o: $(EE_SRC_DIR)%.c | $(EE_OBJS_DIR)
+	@echo "  - $@"
+	@$(EE_CC) $(EE_CFLAGS) $(EE_INCS) -c $< -o $@
+
+$(EE_OBJS_DIR)%.o: $(EE_ASM_DIR)%.s | $(EE_OBJS_DIR)
+	@echo "  - $@"
+	@$(EE_AS) $(EE_ASFLAGS) $< -o $@
+
+$(EE_OBJS_DIR)%.o: $(EE_SRC_DIR)%.cpp | $(EE_OBJS_DIR)
+	@echo "  - $@"
+	$(EE_CXX) $(EE_CXXFLAGS) $(EE_INCS) -c $< -o $@
 
 include $(PS2SDK)/samples/Makefile.pref
 include $(PS2SDK)/samples/Makefile.eeglobal
