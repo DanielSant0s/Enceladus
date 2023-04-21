@@ -73,7 +73,7 @@ LUA_LIBS =	luaplayer.o luasound.o luacontrols.o \
 
 IOP_MODULES = iomanx.o filexio.o \
 			  sio2man.o mcman.o mcserv.o padman.o libsd.o \
-			  usbd.o audsrv.o bdm.o bdmfs_vfat.o \
+			  usbd.o audsrv.o bdm.o bdmfs_fatfs.o \
 			  usbmass_bd.o cdfs.o ds34bt.o ds34usb.o
 
 EMBEDDED_RSC = boot.o
@@ -151,9 +151,9 @@ $(EE_ASM_DIR)bdm.s: $(PS2SDK)/iop/irx/bdm.irx | $(EE_ASM_DIR)
 	echo "Embedding Block Device Manager(BDM)..."
 	$(BIN2S) $< $@ bdm_irx
 
-$(EE_ASM_DIR)bdmfs_vfat.s: $(PS2SDK)/iop/irx/bdmfs_vfat.irx | $(EE_ASM_DIR)
-	echo "Embedding BDM VFAT Driver..."
-	$(BIN2S) $< $@ bdmfs_vfat_irx
+$(EE_ASM_DIR)bdmfs_fatfs.s: $(PS2SDK)/iop/irx/bdmfs_fatfs.irx | $(EE_ASM_DIR)
+	echo "Embedding BDM FATFS Driver..."
+	$(BIN2S) $< $@ bdmfs_fatfs_irx
 
 $(EE_ASM_DIR)usbmass_bd.s: $(PS2SDK)/iop/irx/usbmass_bd.irx | $(EE_ASM_DIR)
 	echo "Embedding BD USB Mass Driver..."
