@@ -14,7 +14,7 @@ static int lua_clear(lua_State *L){
 	if (argc != 0 && argc != 1) return luaL_error(L, "wrong number of arguments.");
 	Color color; 
 	if (argc == 1) color = luaL_checkinteger(L, 1);
-	else color = GS_SETREG_RGBAQ(0x00, 0x00, 0x00, 0x80, 0x00);
+	else color = 0xFF000000;
 	clearScreen(color);
 	return 0;
 }
@@ -69,7 +69,7 @@ static int lua_setvmode(lua_State *L) {
 	s16 interlace = (s16)luaL_checkinteger(L, 5);
 	s16 field = (s16)luaL_checkinteger(L, 6);
 	bool zbuffering = false;
-	int psmz = GS_PSMZ_16S;
+	int psmz = 16;
 	if(argc == 8){
 		zbuffering = lua_toboolean(L, 7);
 		psmz = luaL_checkinteger(L, 8);
@@ -83,7 +83,7 @@ static int lua_getvmode(lua_State *L) {
 	int argc = lua_gettop(L);
 	if (argc != 0) return luaL_error(L, "wrong number of arguments");
 
-	GSGLOBAL *gsGlobal = getGSGLOBAL();
+	/*GSGLOBAL *gsGlobal = getGSGLOBAL();
 
 	lua_newtable(L);
     lua_pushstring(L, "mode");
@@ -128,7 +128,7 @@ static int lua_getvmode(lua_State *L) {
 
 	lua_pushstring(L, "zColorMode");
     lua_pushinteger(L, gsGlobal->PSMZ);
-    lua_settable(L, -3);
+    lua_settable(L, -3);*/
 
 	return 1;
 }
@@ -223,7 +223,7 @@ void luaScreen_init(lua_State *L) {
 	luaL_setfuncs(L, Color_functions, 0);
 	lua_setglobal(L, "Color");
 
-	lua_pushinteger(L, GS_MODE_NTSC);
+	/*lua_pushinteger(L, GS_MODE_NTSC);
 	lua_setglobal (L, "NTSC");
 
 	lua_pushinteger(L, GS_MODE_DTV_480P);
@@ -275,6 +275,6 @@ void luaScreen_init(lua_State *L) {
 	lua_setglobal (L, "Z16");
 
 	lua_pushinteger(L, GS_PSMZ_16S);
-	lua_setglobal (L, "Z16S");
+	lua_setglobal (L, "Z16S");*/
 
 }

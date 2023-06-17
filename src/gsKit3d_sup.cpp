@@ -1,5 +1,5 @@
 #include "include/render.h"
-
+/*
 #define GIF_TAG_TRIANGLE_GORAUD_TEXTURED_ST_REGS(ctx) \
     ((u64)(GS_TEX0_1 + ctx) << 0 ) | \
     ((u64)(GS_PRIM)         << 4 ) | \
@@ -225,3 +225,4 @@ void gsKit_prim_triangle_goraud_texture_3d_st_fog(
     *p_data++ = GS_SETREG_XYZF2( ix3, iy3, iz3, fog3 );
 }
 
+*/

@@ -10,6 +10,8 @@
 
 #include "include/system.h"
 
+#include <cstring>
+
 #define MAX_DIR_FILES 512
 
 static int lua_getCurrentDirectory(lua_State *L)

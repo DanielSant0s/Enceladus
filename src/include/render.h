@@ -1,6 +1,6 @@
 #include "graphics.h"
 
-
+/*
 typedef union TexCoord { 
     struct {
         float s, t;
@@ -53,3 +53,5 @@ extern void gsKit_prim_triangle_goraud_texture_3d_st_fog(
     u64 color1, u64 color2, u64 color3,
     u8 fog1, u8 fog2, u8 fog3
 );
+
+*/

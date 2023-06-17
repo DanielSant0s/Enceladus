@@ -6,7 +6,7 @@
 
 #include "include/render.h"
 #include "include/luaplayer.h"
-
+/*
 static int lua_initrender(lua_State *L) {
 	int argc = lua_gettop(L);
   	if (argc != 1) return luaL_error(L, "wrong number of arguments.");
@@ -178,24 +178,24 @@ static const luaL_Reg Camera_functions[] = {
   {"rotation", 	lua_camrotation},
   {0, 0}
 };
-
+*/
 void luaRender_init(lua_State *L) {
-    lua_newtable(L);
-	luaL_setfuncs(L, Render_functions, 0);
-	lua_setglobal(L, "Render");
+    //lua_newtable(L);
+	//luaL_setfuncs(L, Render_functions, 0);
+	//lua_setglobal(L, "Render");
 
-	lua_newtable(L);
-	luaL_setfuncs(L, Lights_functions, 0);
-	lua_setglobal(L, "Lights");
-
-	lua_newtable(L);
-	luaL_setfuncs(L, Camera_functions, 0);
-	lua_setglobal(L, "Camera");
-
-	lua_pushinteger(L, LIGHT_AMBIENT);
-	lua_setglobal (L, "AMBIENT");
-
-	lua_pushinteger(L, LIGHT_DIRECTIONAL);
-	lua_setglobal (L, "DIRECTIONAL");
+	//lua_newtable(L);
+	//luaL_setfuncs(L, Lights_functions, 0);
+	//lua_setglobal(L, "Lights");
+//
+	//lua_newtable(L);
+	//luaL_setfuncs(L, Camera_functions, 0);
+	//lua_setglobal(L, "Camera");
+//
+	//lua_pushinteger(L, LIGHT_AMBIENT);
+	//lua_setglobal (L, "AMBIENT");
+//
+	//lua_pushinteger(L, LIGHT_DIRECTIONAL);
+	//lua_setglobal (L, "DIRECTIONAL");
 
 }

@@ -1,5 +1,5 @@
 #include "include/render.h"
-
+/*
 int clip_bounding_box(MATRIX local_clip, VECTOR *bounding_box)
 {
     int ret;
@@ -342,3 +342,5 @@ int draw_convert_xyz(xyz_t *output, float x, float y, int z, int count, vertex_f
 	return 0;
 
 }
+
+*/

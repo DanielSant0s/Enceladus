@@ -3,7 +3,7 @@
   Licenced under Academic Free License version 3.0
   Review OpenUsbLd README & LICENSE files for further details.
 */
-
+/*
 #include <stdio.h>
 #include <malloc.h>
 #include "include/atlas.h"
@@ -181,3 +181,5 @@ struct atlas_allocation_t *atlasPlace(atlas_t *atlas, size_t width, size_t heigh
 
     return al;
 }
+
+*/

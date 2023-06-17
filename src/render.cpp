@@ -6,7 +6,7 @@
 #include <fcntl.h>
 
 #include "include/render.h"
-
+/*
 MATRIX view_screen;
 
 VECTOR camera_position = { 0.00f, 0.00f, 0.00f, 1.00f };
@@ -584,4 +584,6 @@ void drawOBJ(model* m, float pos_x, float pos_y, float pos_z, float rot_x, float
 	free(xyz); free(rgba); free(tex);
 
 }
+
+*/
 
