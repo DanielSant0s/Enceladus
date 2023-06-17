@@ -11,5 +11,9 @@ while true do
 
     Graphics.drawRect(400, 300, 100, 100, Color.new(0, 0, 255))
 
+    Graphics.drawPixel(500, 420, Color.new(255, 128, 0))
+
+    Graphics.drawLine(0, 200, 300, 70, Color.new(255, 255, 255));
+
     Screen.flip()
 end

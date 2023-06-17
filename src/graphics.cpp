@@ -199,12 +199,29 @@ void drawImageRotate(void* source, float x, float y, float width, float height, 
 
 void drawPixel(float x, float y, Color color)
 {
+    glColor3f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f); //blue color
 
+    glBegin(GL_POINTS);//start drawing triangles
+	
+    glVertex2f(x,  y);//triangle one first vertex
+
+    glEnd();//end drawing of triangles
+
+	glFlush();
 }
 
 void drawLine(float x, float y, float x2, float y2, Color color)
 {
+    glColor3f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f); //blue color
 
+    glBegin(GL_LINES);//start drawing triangles
+	
+    glVertex2f(x,  y);//triangle one first vertex
+    glVertex2f(x2,  y2);//triangle one first vertex
+
+    glEnd();//end drawing of triangles
+
+	glFlush();
 }
 
 
@@ -222,7 +239,6 @@ void drawRect(float x, float y, int width, int height, Color color)
     glEnd();//end drawing of triangles
 
 	glFlush();
-
 }
 
 void drawRectCentered(float x, float y, int width, int height, Color color)
