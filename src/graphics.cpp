@@ -128,90 +128,42 @@ gl_texture_t* loadpng(FILE* file) {
         png_get_PLTE(png, info, &palette, &num_pallete);
         png_get_tRNS(png, info, &trans, &num_trans, NULL);
 
-		if (bit_depth == 4) {
+		tex->format = GL_COLOR_INDEX;
+        tex->internalFormat = 1;
 
-			/*int row_bytes = png_get_rowbytes(png, info);
-			tex->PSM = GS_PSM_T4;
-			tex->Mem = (u32*)memalign(128, gsKit_texture_size_ee(tex->Width, tex->Height, tex->PSM));
+        tex->clut_size = (bit_depth == 4? 16 : 256);
+        tex->clut = (u32*)memalign(16, tex->clut_size*sizeof(int));
+        memset(tex->clut, 0, tex->clut_size*sizeof(int));
 
-			row_pointers = (png_byte**)calloc(height, sizeof(png_bytep));
+    	struct png_clut *clut = (struct png_clut *)tex->clut;
 
-			for(row = 0; row < height; row++) row_pointers[row] = (png_bytep)malloc(row_bytes);
+    	int i, j, k = 0;
 
-			png_read_image(png, row_pointers);
+    	for (i = num_pallete; i < tex->clut_size; i++) {
+    	    memset(&clut[i], 0, sizeof(clut[i]));
+    	}
 
-            tex->Clut = (u32*)memalign(128, gsKit_texture_size_ee(8, 2, GS_PSM_CT32));
-            memset(tex->Clut, 0, gsKit_texture_size_ee(8, 2, GS_PSM_CT32));
+    	for (i = 0; i < num_pallete; i++) {
+    	    clut[i].r = palette[i].red;
+    	    clut[i].g = palette[i].green;
+    	    clut[i].b = palette[i].blue;
+    	    clut[i].a = 0xFF;
+    	}
 
-            unsigned char *pixel = (unsigned char *)tex->Mem;
-    		struct png_clut *clut = (struct png_clut *)tex->Clut;
+    	for (i = 0; i < num_trans; i++)
+    	    clut[i].a = trans[i];
 
-    		int i, j, k = 0;
-
-    		for (i = num_pallete; i < 16; i++) {
-    		    memset(&clut[i], 0, sizeof(clut[i]));
-    		}
-
-    		for (i = 0; i < num_pallete; i++) {
-    		    clut[i].r = palette[i].red;
-    		    clut[i].g = palette[i].green;
-    		    clut[i].b = palette[i].blue;
-    		    clut[i].a = 0x80;
-    		}
-
-    		for (i = 0; i < num_trans; i++)
-    		    clut[i].a = trans[i] >> 1;
-
-    		for (i = 0; i < tex->Height; i++) {
-    		    for (j = 0; j < tex->Width / 2; j++)
-    		        memcpy(&pixel[k++], &row_pointers[i][1 * j], 1);
-    		}
-
-    		int byte;
-    		unsigned char *tmpdst = (unsigned char *)tex->Mem;
-    		unsigned char *tmpsrc = (unsigned char *)pixel;
-
-    		for (byte = 0; byte < gsKit_texture_size_ee(tex->Width, tex->Height, tex->PSM); byte++) tmpdst[byte] = (tmpsrc[byte] << 4) | (tmpsrc[byte] >> 4);
-
-			for(row = 0; row < height; row++) free(row_pointers[row]);
-
-			free(row_pointers);*/
-
-        } else if (bit_depth == 8) {
-			int row_bytes = png_get_rowbytes(png, info);
-			tex->format = GL_COLOR_INDEX;
-            tex->internalFormat = 1;
-
-            tex->clut = (u32*)memalign(16, 256*4);
-            memset(tex->clut, 0, 256*4);
-
-    		struct png_clut *clut = (struct png_clut *)tex->clut;
-
-    		int i, j, k = 0;
-
-    		for (i = num_pallete; i < 256; i++) {
-    		    memset(&clut[i], 0, sizeof(clut[i]));
-    		}
-
-    		for (i = 0; i < num_pallete; i++) {
-    		    clut[i].r = palette[i].red;
-    		    clut[i].g = palette[i].green;
-    		    clut[i].b = palette[i].blue;
-    		    clut[i].a = 0xFF;
-    		}
-
-    		for (i = 0; i < num_trans; i++)
-    		    clut[i].a = trans[i];
-
-    		// rotate clut
-    		for (i = 0; i < num_pallete; i++) {
-    		    if ((i & 0x18) == 8) {
-    		        struct png_clut tmp = clut[i];
-    		        clut[i] = clut[i + 8];
-    		        clut[i + 8] = tmp;
-    		    }
-    		}
+        if(bit_depth == 8) {
+    	    // rotate clut
+    	    for (i = 0; i < num_pallete; i++) {
+    	        if ((i & 0x18) == 8) {
+    	            struct png_clut tmp = clut[i];
+    	            clut[i] = clut[i + 8];
+    	            clut[i + 8] = tmp;
+    	        }
+    	    }
         }
+
 	}
       break;
 
@@ -420,7 +372,7 @@ void drawImage(gl_texture_t* source, float x, float y, float width, float height
     glEnable(GL_TEXTURE_2D);
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
     if(source->clut) {
-        glColorTable(GL_COLOR_TABLE, GL_RGBA, 256, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, source->clut);
+        glColorTable(GL_COLOR_TABLE, GL_RGBA, source->clut_size, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, source->clut);
     }
 
     glDisable(GL_LIGHTING);
