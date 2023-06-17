@@ -227,13 +227,15 @@ void drawLine(float x, float y, float x2, float y2, Color color)
 
 void drawRect(float x, float y, int width, int height, Color color)
 {
-    glColor3f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f); //blue color
-
     glBegin(GL_QUADS);//start drawing triangles
 	
+    glColor3f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f); //blue color
     glVertex2f(x,  y);//triangle one first vertex
+    glColor3f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f); //blue color
     glVertex2f(x+width, y);//triangle one third vertex
+    glColor3f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f); //blue color
     glVertex2f(x+width, y+height);//triangle one third vertex
+    glColor3f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f); //blue color
     glVertex2f(x, y+height);//triangle one second vertex
 
     glEnd();//end drawing of triangles
@@ -293,13 +295,15 @@ void drawTriangle_gouraud(float x, float y, float x2, float y2, float x3, float 
 
 void drawQuad(float x, float y, float x2, float y2, float x3, float y3, float x4, float y4, Color color)
 {
-    glColor3f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f); //blue color
-
     glBegin(GL_QUADS);//start drawing triangles
 	
+    glColor3f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f); //blue color
     glVertex2f(x,  y);//triangle one first vertex
+    glColor3f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f); //blue color
     glVertex2f(x2, y2);//triangle one third vertex
+    glColor3f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f); //blue color
     glVertex2f(x4, y4);//triangle one second vertex
+    glColor3f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f); //blue color
     glVertex2f(x3, y3);//triangle one third vertex
 
     glEnd();//end drawing of triangles

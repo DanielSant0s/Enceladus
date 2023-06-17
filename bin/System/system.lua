@@ -17,5 +17,7 @@ while true do
 
     Graphics.drawQuad(70, 70, 90, 85, 70, 105, 90, 120, Color.new(0, 0, 128))
 
+    Graphics.drawQuad(110, 70, 180, 85, 60, 130, 42, 215, Color.new(255, 0, 0), Color.new(64, 0, 128), Color.new(0, 128, 32), Color.new(255, 255, 0))
+
     Screen.flip()
 end
