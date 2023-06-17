@@ -43,6 +43,18 @@ static float fps = 0.0f;
 static int frames = 0;
 static int frame_interval = -1;
 
+struct gl_texture_t
+{
+  GLsizei width;
+  GLsizei height;
+
+  GLenum format;
+  GLint internalFormat;
+  GLuint id;
+
+  GLubyte *texels;
+};
+
 unsigned int loadraw(FILE* File)
 {
     unsigned int tex_id;
@@ -61,13 +73,127 @@ unsigned int loadraw(FILE* File)
 
 }
 
-//2D drawing functions
-unsigned int loadpng(FILE* File, bool delayed)
-{
-	unsigned int tex = (unsigned int)malloc(sizeof(unsigned int));
-	return tex;
+unsigned int loadpng(FILE* file) {
+    gl_texture_t* tex = (gl_texture_t*)malloc(sizeof(gl_texture_t));
+    GLenum textureFormat; // formato de cor da textura
+    u32 sig_read = 0;
+    // Cria a estrutura png_struct para leitura do arquivo PNG
+    png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, (png_voidp)NULL, NULL, NULL);
+    if (!png) {
+        printf("Erro ao criar a estrutura png_struct.\n");
+        fclose(file);
+        return -1;
+    }
+    
+    // Cria a estrutura png_info para obter informações da imagem PNG
+    png_infop info = png_create_info_struct(png);
+    if (!info) {
+        printf("Erro ao criar a estrutura png_info.\n");
+        png_destroy_read_struct(&png, (png_infopp)NULL, (png_infopp)NULL);
+        fclose(file);
+        return -1;
+    }
+    
+    // Configura o tratamento de erros da libpng
+    if (setjmp(png_jmpbuf(png))) {
+        printf("Erro durante o processamento do arquivo PNG.\n");
+        png_destroy_read_struct(&png, &info, (png_infopp)NULL);
+        fclose(file);
+        return -1;
+    }
+    
+    // Inicia a leitura do arquivo PNG
+    png_init_io(png, file);
 
+    // Informa que já foram lidos os primeiros 8 bytes do cabeçalho PNG
+    png_set_sig_bytes(png, sig_read);
+    
+    // Obtém as informações da imagem PNG
+    png_read_info(png, info);
+    
+    // Obtém as dimensões da imagem
+    tex->width = png_get_image_width(png, info);
+    tex->height = png_get_image_height(png, info);
+    
+    // Obtém o tipo de cor da imagem
+    int colorType = png_get_color_type(png, info);
+    
+    // Verifica se a imagem é RGBA e converte para RGB, se necessário
+    switch (colorType)
+    {
+    case PNG_COLOR_TYPE_GRAY:
+      tex->format = GL_LUMINANCE;
+      tex->internalFormat = 1;
+      break;
+
+    case PNG_COLOR_TYPE_GRAY_ALPHA:
+      tex->format = GL_LUMINANCE_ALPHA;
+      tex->internalFormat = 2;
+      break;
+
+    case PNG_COLOR_TYPE_RGB:
+      tex->format = GL_RGB;
+      tex->internalFormat = 3;
+      break;
+
+    case PNG_COLOR_TYPE_RGB_ALPHA:
+      tex->format = GL_RGBA;
+      tex->internalFormat = 4;
+      break;
+
+    default:
+      /* Badness */
+      break;
+    }
+    
+    // Atualiza as informações da imagem
+    png_read_update_info(png, info);
+    
+    // Obtém o tamanho dos dados da imagem
+    size_t rowBytes = png_get_rowbytes(png, info);
+    
+    // Aloca memória para armazenar os dados da imagem
+    tex->texels = (GLubyte *)malloc (sizeof (GLubyte) * tex->width * tex->height * tex->internalFormat);
+
+    /* Setup a pointer array.  Each one points at the begening of a row. */
+    png_bytep *row_pointers = (png_bytep *)malloc (sizeof (png_bytep) * tex->height);
+
+    for (int i = 0; i < tex->height; ++i) {
+        row_pointers[i] = (png_bytep)(tex->texels + ((i) * tex->width * tex->internalFormat));
+    }
+
+    // Lê os dados da imagem linha por linha
+    png_read_image(png, row_pointers);
+    
+    // Fecha o arquivo PNG
+    fclose(file);
+    
+    // Gera uma nova textura OpenGL
+    glGenTextures(1, &tex->id);
+    
+    // Vincula a textura
+    glBindTexture(GL_TEXTURE_2D, tex->id);
+    
+    // Define os parâmetros de filtragem da textura
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    
+    // Define os parâmetros de repetição da textura
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    
+    // Carrega os dados da imagem na textura
+    glTexImage2D(GL_TEXTURE_2D, 0, tex->format, tex->width, tex->height, 0, tex->format, GL_UNSIGNED_BYTE, tex->texels);
+    
+    // Libera a memória dos dados da imagem
+    free(row_pointers);
+    
+    // Libera as estruturas da libpng
+    png_destroy_read_struct(&png, &info, NULL);
+
+    return tex->id;
 }
+
 
 unsigned int loadbmp(FILE* File, bool delayed)
 {
@@ -123,7 +249,7 @@ unsigned int load_image(const char* path, bool delayed){
 	unsigned int image;
 	if (magic == 0x4D42) image =      loadbmp(file, delayed);
 	else if (magic == 0xD8FF) image = loadjpeg(file, false, delayed);
-	else if (magic == 0x5089) image = loadpng(file, delayed);
+	else if (magic == 0x5089) image = loadpng(file);
     else image = loadraw(file);
 	if (image == -1) printf("Failed to load image %s.", path);
 
@@ -139,7 +265,7 @@ void clearScreen(Color color)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     //glLoadIdentity();//load identity matrix
-	glClearColor(R(color)/255, G(color)/255, B(color)/255, A(color)/255);
+	glClearColor(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f, A(color)/255.0f);
 
 	//glTranslatef(0.0f,0.0f,-4.0f);//move forward 4 units
 
@@ -210,7 +336,10 @@ void drawImage(unsigned int source, float x, float y, float width, float height,
 {
     glBindTexture(GL_TEXTURE_2D, source);
     glEnable(GL_TEXTURE_2D);
-    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+    glDisable(GL_LIGHTING);
+    glEnable(GL_BLEND);
 
     glColor3f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f); //blue colors
 
@@ -231,6 +360,9 @@ void drawImage(unsigned int source, float x, float y, float width, float height,
     glEnd();//end drawing of triangles
 
     glDisable(GL_TEXTURE_2D);
+
+    glDisable(GL_BLEND);
+    glEnable(GL_LIGHTING);
 }
 
 
@@ -527,8 +659,8 @@ void InitGL(GLvoid) // Create Some Everyday Functions
 {
     glShadeModel(GL_SMOOTH);              // Enable Smooth Shading
     glClearColor(0.0f, 0.0f, 0.0f, 0.5f); // Black Background
-    glClearDepth(1.0f);                   // Depth Buffer Setup
-    glEnable(GL_DEPTH_TEST);              // Enables Depth Testing
+    //glClearDepth(1.0f);                   // Depth Buffer Setup
+    //glEnable(GL_DEPTH_TEST);              // Enables Depth Testing
     glDepthFunc(GL_LEQUAL);               // The Type Of Depth Testing To Do
     
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
@@ -538,8 +670,6 @@ void InitGL(GLvoid) // Create Some Everyday Functions
     glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
-
-    glEnable(GL_BLEND);
 }
 
 void initGraphics()
