@@ -274,7 +274,7 @@ static int lua_drawimg_scale(lua_State *L) {
 	float width = luaL_checknumber(L, 4);
 	float height = luaL_checknumber(L, 5);
 	Color color = 0x80808080;
-	if (argc == 6) color = (Color)luaL_checknumber(L, 6);
+	if (argc == 6) color = (Color)luaL_checkinteger(L, 6);
 	float startx = 0.0f;
 	float starty = 0.0f;
 	float endx = 0;

@@ -212,18 +212,19 @@ void drawImage(unsigned int source, float x, float y, float width, float height,
     glEnable(GL_TEXTURE_2D);
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
-    printf("IMAGE %d\n", source);
-
-    //glColor3f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f); //blue color
+    glColor3f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f); //blue colors
 
     glBegin(GL_QUADS);//start drawing triangles
 	
     glTexCoord2f(0.0f, 0.0f);  // canto inferior esquerdo
     glVertex2f(x,  y);//triangle one first vertex
+
     glTexCoord2f(1.0f, 0.0f);  // canto inferior direito
     glVertex2f(x+width, y);//triangle one third vertex
+
     glTexCoord2f(1.0f, 1.0f);  // canto superior direito
     glVertex2f(x+width, y+height);//triangle one third vertex
+
     glTexCoord2f(0.0f, 1.0f);  // canto superior esquerdo
     glVertex2f(x, y+height);//triangle one second vertex
 
@@ -537,6 +538,8 @@ void InitGL(GLvoid) // Create Some Everyday Functions
     glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
+
+    glEnable(GL_BLEND);
 }
 
 void initGraphics()
