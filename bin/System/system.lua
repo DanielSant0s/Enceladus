@@ -2,8 +2,8 @@
 
 -- dofile("pads/pads.lua")
 
-local img = Graphics.loadImage("car.bin");
 local vw = Graphics.loadImage("vw.png");
+local vw8bit = Graphics.loadImage("vw8bit.png");
 
 while true do
     Screen.clear(Color.new(32, 32, 32))
@@ -26,8 +26,8 @@ while true do
 
     Graphics.drawCircle(400, 29, 50, Color.new(255, 0, 0), 0)
 
-    Graphics.drawScaleImage(img, 0, 0, 128, 128, Color.new(255, 255, 255));
     Graphics.drawScaleImage(vw, 0, 128, 128, 128, Color.new(255, 255, 255));
+    Graphics.drawScaleImage(vw8bit, 0, 256, 128, 128, Color.new(255, 255, 255));
 
     Screen.flip()
 end

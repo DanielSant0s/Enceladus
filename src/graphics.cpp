@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <malloc.h>
+#include <string.h>
 #include <math.h>
 #include <fcntl.h>
 
@@ -43,18 +44,6 @@ static float fps = 0.0f;
 static int frames = 0;
 static int frame_interval = -1;
 
-struct gl_texture_t
-{
-  GLsizei width;
-  GLsizei height;
-
-  GLenum format;
-  GLint internalFormat;
-  GLuint id;
-
-  GLubyte *texels;
-};
-
 unsigned int loadraw(FILE* File)
 {
     unsigned int tex_id;
@@ -73,16 +62,18 @@ unsigned int loadraw(FILE* File)
 
 }
 
-unsigned int loadpng(FILE* file) {
+gl_texture_t* loadpng(FILE* file) {
     gl_texture_t* tex = (gl_texture_t*)malloc(sizeof(gl_texture_t));
+    tex->clut = NULL;
     GLenum textureFormat; // formato de cor da textura
     u32 sig_read = 0;
+    int interlace_type, bit_depth, colorType;
     // Cria a estrutura png_struct para leitura do arquivo PNG
     png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, (png_voidp)NULL, NULL, NULL);
     if (!png) {
         printf("Erro ao criar a estrutura png_struct.\n");
         fclose(file);
-        return -1;
+        return NULL;
     }
     
     // Cria a estrutura png_info para obter informações da imagem PNG
@@ -91,7 +82,7 @@ unsigned int loadpng(FILE* file) {
         printf("Erro ao criar a estrutura png_info.\n");
         png_destroy_read_struct(&png, (png_infopp)NULL, (png_infopp)NULL);
         fclose(file);
-        return -1;
+        return NULL;
     }
     
     // Configura o tratamento de erros da libpng
@@ -99,7 +90,7 @@ unsigned int loadpng(FILE* file) {
         printf("Erro durante o processamento do arquivo PNG.\n");
         png_destroy_read_struct(&png, &info, (png_infopp)NULL);
         fclose(file);
-        return -1;
+        return NULL;
     }
     
     // Inicia a leitura do arquivo PNG
@@ -114,9 +105,8 @@ unsigned int loadpng(FILE* file) {
     // Obtém as dimensões da imagem
     tex->width = png_get_image_width(png, info);
     tex->height = png_get_image_height(png, info);
-    
-    // Obtém o tipo de cor da imagem
-    int colorType = png_get_color_type(png, info);
+
+    png_get_IHDR(png, info, &tex->width, &tex->height, &bit_depth, &colorType, &interlace_type, NULL, NULL);
     
     // Verifica se a imagem é RGBA e converte para RGB, se necessário
     switch (colorType)
@@ -124,6 +114,105 @@ unsigned int loadpng(FILE* file) {
     case PNG_COLOR_TYPE_GRAY:
       tex->format = GL_LUMINANCE;
       tex->internalFormat = 1;
+      break;
+
+    case PNG_COLOR_TYPE_PALETTE:
+    {
+		struct png_clut { u8 r, g, b, a; };
+
+		png_colorp palette = NULL;
+		int num_pallete = 0;
+		png_bytep trans = NULL;
+		int num_trans = 0;
+
+        png_get_PLTE(png, info, &palette, &num_pallete);
+        png_get_tRNS(png, info, &trans, &num_trans, NULL);
+
+		if (bit_depth == 4) {
+
+			/*int row_bytes = png_get_rowbytes(png, info);
+			tex->PSM = GS_PSM_T4;
+			tex->Mem = (u32*)memalign(128, gsKit_texture_size_ee(tex->Width, tex->Height, tex->PSM));
+
+			row_pointers = (png_byte**)calloc(height, sizeof(png_bytep));
+
+			for(row = 0; row < height; row++) row_pointers[row] = (png_bytep)malloc(row_bytes);
+
+			png_read_image(png, row_pointers);
+
+            tex->Clut = (u32*)memalign(128, gsKit_texture_size_ee(8, 2, GS_PSM_CT32));
+            memset(tex->Clut, 0, gsKit_texture_size_ee(8, 2, GS_PSM_CT32));
+
+            unsigned char *pixel = (unsigned char *)tex->Mem;
+    		struct png_clut *clut = (struct png_clut *)tex->Clut;
+
+    		int i, j, k = 0;
+
+    		for (i = num_pallete; i < 16; i++) {
+    		    memset(&clut[i], 0, sizeof(clut[i]));
+    		}
+
+    		for (i = 0; i < num_pallete; i++) {
+    		    clut[i].r = palette[i].red;
+    		    clut[i].g = palette[i].green;
+    		    clut[i].b = palette[i].blue;
+    		    clut[i].a = 0x80;
+    		}
+
+    		for (i = 0; i < num_trans; i++)
+    		    clut[i].a = trans[i] >> 1;
+
+    		for (i = 0; i < tex->Height; i++) {
+    		    for (j = 0; j < tex->Width / 2; j++)
+    		        memcpy(&pixel[k++], &row_pointers[i][1 * j], 1);
+    		}
+
+    		int byte;
+    		unsigned char *tmpdst = (unsigned char *)tex->Mem;
+    		unsigned char *tmpsrc = (unsigned char *)pixel;
+
+    		for (byte = 0; byte < gsKit_texture_size_ee(tex->Width, tex->Height, tex->PSM); byte++) tmpdst[byte] = (tmpsrc[byte] << 4) | (tmpsrc[byte] >> 4);
+
+			for(row = 0; row < height; row++) free(row_pointers[row]);
+
+			free(row_pointers);*/
+
+        } else if (bit_depth == 8) {
+			int row_bytes = png_get_rowbytes(png, info);
+			tex->format = GL_COLOR_INDEX;
+            tex->internalFormat = 1;
+
+            tex->clut = (u32*)memalign(16, 256*4);
+            memset(tex->clut, 0, 256*4);
+
+    		struct png_clut *clut = (struct png_clut *)tex->clut;
+
+    		int i, j, k = 0;
+
+    		for (i = num_pallete; i < 256; i++) {
+    		    memset(&clut[i], 0, sizeof(clut[i]));
+    		}
+
+    		for (i = 0; i < num_pallete; i++) {
+    		    clut[i].r = palette[i].red;
+    		    clut[i].g = palette[i].green;
+    		    clut[i].b = palette[i].blue;
+    		    clut[i].a = 0xFF;
+    		}
+
+    		for (i = 0; i < num_trans; i++)
+    		    clut[i].a = trans[i];
+
+    		// rotate clut
+    		for (i = 0; i < num_pallete; i++) {
+    		    if ((i & 0x18) == 8) {
+    		        struct png_clut tmp = clut[i];
+    		        clut[i] = clut[i + 8];
+    		        clut[i + 8] = tmp;
+    		    }
+    		}
+        }
+	}
       break;
 
     case PNG_COLOR_TYPE_GRAY_ALPHA:
@@ -175,12 +264,12 @@ unsigned int loadpng(FILE* file) {
     glBindTexture(GL_TEXTURE_2D, tex->id);
     
     // Define os parâmetros de filtragem da textura
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     
     // Define os parâmetros de repetição da textura
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     
     // Carrega os dados da imagem na textura
     glTexImage2D(GL_TEXTURE_2D, 0, tex->format, tex->width, tex->height, 0, tex->format, GL_UNSIGNED_BYTE, tex->texels);
@@ -191,15 +280,13 @@ unsigned int loadpng(FILE* file) {
     // Libera as estruturas da libpng
     png_destroy_read_struct(&png, &info, NULL);
 
-    return tex->id;
+    return tex;
 }
 
 
-unsigned int loadbmp(FILE* File, bool delayed)
+gl_texture_t* loadbmp(FILE* File, bool delayed)
 {
-    unsigned int tex = (unsigned int)malloc(sizeof(void));
-
-	return tex;
+	return NULL;
 }
 
 struct my_error_mgr {
@@ -231,27 +318,22 @@ static void  _ps2_load_JPEG_generic(void *Texture, struct jpeg_decompress_struct
 
 }
 
-unsigned int loadjpeg(FILE* fp, bool scale_down, bool delayed)
+gl_texture_t* loadjpeg(FILE* fp, bool scale_down, bool delayed)
 {
-
-	
-    unsigned int tex = (unsigned int)malloc(sizeof(void));
-
-	return tex;
+	return NULL;
 
 }
 
-unsigned int load_image(const char* path, bool delayed){
+gl_texture_t* load_image(const char* path, bool delayed){
 	FILE* file = fopen(path, "rb");
 	uint16_t magic;
 	fread(&magic, 1, 2, file);
 	fseek(file, 0, SEEK_SET);
-	unsigned int image;
+	gl_texture_t* image = NULL;
 	if (magic == 0x4D42) image =      loadbmp(file, delayed);
 	else if (magic == 0xD8FF) image = loadjpeg(file, false, delayed);
 	else if (magic == 0x5089) image = loadpng(file);
-    else image = loadraw(file);
-	if (image == -1) printf("Failed to load image %s.", path);
+	if (image == NULL) printf("Failed to load image %s.", path);
 
 	return image;
 }
@@ -326,17 +408,20 @@ int getFreeVRAM(){
 }
 
 
-void drawImageCentered(unsigned int source, float x, float y, float width, float height, float startx, float starty, float endx, float endy, Color color)
+void drawImageCentered(gl_texture_t* source, float x, float y, float width, float height, float startx, float starty, float endx, float endy, Color color)
 {
 
 
 }
 
-void drawImage(unsigned int source, float x, float y, float width, float height, float startx, float starty, float endx, float endy, Color color)
+void drawImage(gl_texture_t* source, float x, float y, float width, float height, float startx, float starty, float endx, float endy, Color color)
 {
-    glBindTexture(GL_TEXTURE_2D, source);
+    glBindTexture(GL_TEXTURE_2D, source->id);
     glEnable(GL_TEXTURE_2D);
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+    if(source->clut) {
+        glColorTable(GL_COLOR_TABLE, GL_RGBA, 256, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, source->clut);
+    }
 
     glDisable(GL_LIGHTING);
     glEnable(GL_BLEND);
@@ -366,7 +451,7 @@ void drawImage(unsigned int source, float x, float y, float width, float height,
 }
 
 
-void drawImageRotate(unsigned int source, float x, float y, float width, float height, float startx, float starty, float endx, float endy, float angle, Color color){
+void drawImageRotate(gl_texture_t* source, float x, float y, float width, float height, float startx, float starty, float endx, float endy, float angle, Color color){
 
 }
 
