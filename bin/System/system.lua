@@ -2,6 +2,8 @@
 
 -- dofile("pads/pads.lua")
 
+local img = Graphics.loadImage("car.bin");
+
 while true do
     Screen.clear(Color.new(32, 32, 32))
 
@@ -22,6 +24,8 @@ while true do
     Graphics.drawCircle(400, 29, 130, Color.new(255, 255, 255))
 
     Graphics.drawCircle(400, 29, 50, Color.new(255, 0, 0), 0)
+
+    Graphics.drawScaleImage(img, 0, 0, 128, 128, Color.new(255, 255, 255));
 
     Screen.flip()
 end

@@ -78,10 +78,10 @@ extern float FPSCounter(int interval);
 
 extern void setVideoMode(s16 mode, int width, int height, int psm, s16 interlace, s16 field, bool zbuffering, int psmz);
 
-extern void* load_image(const char* path, bool delayed);
+extern unsigned int load_image(const char* path, bool delayed);
 
-extern void drawImage(void* source, float x, float y, float width, float height, float startx, float starty, float endx, float endy, Color color);
-extern void drawImageRotate(void* source, float x, float y, float width, float height, float startx, float starty, float endx, float endy, float angle, Color color);
+extern void drawImage(unsigned int source, float x, float y, float width, float height, float startx, float starty, float endx, float endy, Color color);
+extern void drawImageRotate(unsigned int source, float x, float y, float width, float height, float startx, float starty, float endx, float endy, float angle, Color color);
 
 extern void drawPixel(float x, float y, Color color);
 extern void drawLine(float x, float y, float x2, float y2, Color color);

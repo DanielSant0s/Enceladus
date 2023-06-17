@@ -23,7 +23,7 @@ static int imgThread(void* data)
 {
 	char* text = (char*)data;
 	bool delayed = asyncDelayed;
-	void* image = load_image(text, delayed);
+	unsigned int image = load_image(text, delayed);
 	if (image == NULL) 
 	{
 		imgThreadResult = 1;
@@ -218,7 +218,7 @@ static int lua_loadimg(lua_State *L) {
 	const char* text = luaL_checkstring(L, 1);
 	bool delayed = true;
 	if (argc == 2) delayed = lua_toboolean(L, 2);
-	void* image = load_image(text, delayed);
+	unsigned int image = load_image(text, delayed);
 
 	lua_pushinteger(L, (uint32_t)(image));
 	return 1;
@@ -227,7 +227,7 @@ static int lua_loadimg(lua_State *L) {
 static int lua_drawimg(lua_State *L) {
 	int argc = lua_gettop(L);
 	if (argc != 3 && argc != 4) return luaL_error(L, "wrong number of arguments");
-    void* source = (void*)(luaL_checkinteger(L, 1));
+    unsigned int source = (unsigned int)(luaL_checkinteger(L, 1));
 	float x = luaL_checknumber(L, 2);
 	float y = luaL_checknumber(L, 3);
 	Color color = 0x80808080;
@@ -247,7 +247,7 @@ static int lua_drawimg(lua_State *L) {
 static int lua_drawimg_rotate(lua_State *L) {
 	int argc = lua_gettop(L);
 	if (argc != 4 && argc != 5) return luaL_error(L, "wrong number of arguments");
-    void* source = (void*)(luaL_checkinteger(L, 1));
+    unsigned int source = (unsigned int)(luaL_checkinteger(L, 1));
 	float x = luaL_checknumber(L, 2);
 	float y = luaL_checknumber(L, 3);
 	float radius = luaL_checknumber(L, 4);
@@ -268,7 +268,7 @@ static int lua_drawimg_rotate(lua_State *L) {
 static int lua_drawimg_scale(lua_State *L) {
 	int argc = lua_gettop(L);
 	if (argc != 5 && argc != 6) return luaL_error(L, "wrong number of arguments");
-    void* source = (void*)(luaL_checkinteger(L, 1));
+    unsigned int source = (unsigned int)(luaL_checkinteger(L, 1));
 	float x = luaL_checknumber(L, 2);
 	float y = luaL_checknumber(L, 3);
 	float width = luaL_checknumber(L, 4);
@@ -289,7 +289,7 @@ static int lua_drawimg_scale(lua_State *L) {
 static int lua_drawimg_part(lua_State *L) {
 	int argc = lua_gettop(L);
 	if (argc != 7 && argc != 8) return luaL_error(L, "wrong number of arguments");
-    void* source = (void*)(luaL_checkinteger(L, 1));
+    unsigned int source = (unsigned int)(luaL_checkinteger(L, 1));
 	float x = luaL_checknumber(L, 2);
 	float y = luaL_checknumber(L, 3);
 	float startx = (float)luaL_checknumber(L, 4);
@@ -309,7 +309,7 @@ static int lua_drawimg_part(lua_State *L) {
 static int lua_drawimg_full(lua_State *L) {
 	int argc = lua_gettop(L);
 	if (argc != 10 && argc != 11) return luaL_error(L, "wrong number of arguments");
-    void* source = (void*)(luaL_checkinteger(L, 1));
+    unsigned int source = (unsigned int)(luaL_checkinteger(L, 1));
 	float x = luaL_checknumber(L, 2);
 	float y = luaL_checknumber(L, 3);
 	float startx = (float)luaL_checknumber(L, 4);
@@ -330,7 +330,7 @@ static int lua_drawimg_full(lua_State *L) {
 static int lua_width(lua_State *L) {
 	int argc = lua_gettop(L);
 	if (argc != 1) return luaL_error(L, "wrong number of arguments");
-    void* source = (void*)(luaL_checkinteger(L, 1));
+    unsigned int source = (unsigned int)(luaL_checkinteger(L, 1));
 	lua_pushinteger(L, (uint32_t)(0));
 	return 1;
 }
@@ -339,7 +339,7 @@ static int lua_width(lua_State *L) {
 static int lua_height(lua_State *L) {
 	int argc = lua_gettop(L);
 	if (argc != 1) return luaL_error(L, "wrong number of arguments");
-    void* source = (void*)(luaL_checkinteger(L, 1));
+    unsigned int source = (unsigned int)(luaL_checkinteger(L, 1));
 	lua_pushinteger(L, (uint32_t)(0));
 	return 1;
 }
@@ -347,7 +347,7 @@ static int lua_height(lua_State *L) {
 static int lua_filters(lua_State *L) {
 	int argc = lua_gettop(L);
 	if (argc != 2) return luaL_error(L, "wrong number of arguments");
-    void* source = (void*)(luaL_checkinteger(L, 1));
+    unsigned int source = (unsigned int)(luaL_checkinteger(L, 1));
 	
 	return 0;
 }

@@ -43,17 +43,35 @@ static float fps = 0.0f;
 static int frames = 0;
 static int frame_interval = -1;
 
-//2D drawing functions
-void* loadpng(FILE* File, bool delayed)
+unsigned int loadraw(FILE* File)
 {
-	void* tex = (void*)malloc(sizeof(void*));
+    unsigned int tex_id;
+
+    int image_size = 128 * 128 * 4;
+    void* texels = memalign(16, image_size);
+	fread(texels, 1, image_size, File);
+
+    glGenTextures(1, &tex_id);
+    glBindTexture(GL_TEXTURE_2D, tex_id);
+    glTexImage2D(GL_TEXTURE_2D, 0, 3,
+        128, 128, 0,
+        GL_RGBA, GL_UNSIGNED_BYTE, texels);
+
+	return tex_id;
+
+}
+
+//2D drawing functions
+unsigned int loadpng(FILE* File, bool delayed)
+{
+	unsigned int tex = (unsigned int)malloc(sizeof(unsigned int));
 	return tex;
 
 }
 
-void* loadbmp(FILE* File, bool delayed)
+unsigned int loadbmp(FILE* File, bool delayed)
 {
-    void* tex = (void*)malloc(sizeof(void));
+    unsigned int tex = (unsigned int)malloc(sizeof(void));
 
 	return tex;
 }
@@ -87,26 +105,27 @@ static void  _ps2_load_JPEG_generic(void *Texture, struct jpeg_decompress_struct
 
 }
 
-void* loadjpeg(FILE* fp, bool scale_down, bool delayed)
+unsigned int loadjpeg(FILE* fp, bool scale_down, bool delayed)
 {
 
 	
-    void* tex = (void*)malloc(sizeof(void));
+    unsigned int tex = (unsigned int)malloc(sizeof(void));
 
 	return tex;
 
 }
 
-void* load_image(const char* path, bool delayed){
+unsigned int load_image(const char* path, bool delayed){
 	FILE* file = fopen(path, "rb");
 	uint16_t magic;
 	fread(&magic, 1, 2, file);
 	fseek(file, 0, SEEK_SET);
-	void* image = NULL;
+	unsigned int image;
 	if (magic == 0x4D42) image =      loadbmp(file, delayed);
 	else if (magic == 0xD8FF) image = loadjpeg(file, false, delayed);
 	else if (magic == 0x5089) image = loadpng(file, delayed);
-	if (image == NULL) printf("Failed to load image %s.", path);
+    else image = loadraw(file);
+	if (image == -1) printf("Failed to load image %s.", path);
 
 	return image;
 }
@@ -181,19 +200,40 @@ int getFreeVRAM(){
 }
 
 
-void drawImageCentered(void* source, float x, float y, float width, float height, float startx, float starty, float endx, float endy, Color color)
+void drawImageCentered(unsigned int source, float x, float y, float width, float height, float startx, float starty, float endx, float endy, Color color)
 {
 
 
 }
 
-void drawImage(void* source, float x, float y, float width, float height, float startx, float starty, float endx, float endy, Color color)
+void drawImage(unsigned int source, float x, float y, float width, float height, float startx, float starty, float endx, float endy, Color color)
 {
+    glBindTexture(GL_TEXTURE_2D, source);
+    glEnable(GL_TEXTURE_2D);
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
+    printf("IMAGE %d\n", source);
+
+    //glColor3f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f); //blue color
+
+    glBegin(GL_QUADS);//start drawing triangles
+	
+    glTexCoord2f(0.0f, 0.0f);  // canto inferior esquerdo
+    glVertex2f(x,  y);//triangle one first vertex
+    glTexCoord2f(1.0f, 0.0f);  // canto inferior direito
+    glVertex2f(x+width, y);//triangle one third vertex
+    glTexCoord2f(1.0f, 1.0f);  // canto superior direito
+    glVertex2f(x+width, y+height);//triangle one third vertex
+    glTexCoord2f(0.0f, 1.0f);  // canto superior esquerdo
+    glVertex2f(x, y+height);//triangle one second vertex
+
+    glEnd();//end drawing of triangles
+
+    glDisable(GL_TEXTURE_2D);
 }
 
 
-void drawImageRotate(void* source, float x, float y, float width, float height, float startx, float starty, float endx, float endy, float angle, Color color){
+void drawImageRotate(unsigned int source, float x, float y, float width, float height, float startx, float starty, float endx, float endy, float angle, Color color){
 
 }
 
@@ -246,18 +286,6 @@ void drawRect(float x, float y, int width, int height, Color color)
 void drawRectCentered(float x, float y, int width, int height, Color color)
 {
 
-}
-
-float mapRange(float value, float inputMin, float inputMax, float outputMin, float outputMax) {
-    return (value - inputMin) * (outputMax - outputMin) / (inputMax - inputMin) + outputMin;
-}
-
-float mapToWidth(float value) {
-    return mapRange(value, 0.0f, 640.0f, -1.0f, 1.0f);
-}
-
-float mapToHeight(float value) {
-    return mapRange(value, 0.0f, 448.0f, -1.0f, 1.0f);
 }
 
 void drawTriangle(float x, float y, float x2, float y2, float x3, float y3, Color color)
