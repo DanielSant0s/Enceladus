@@ -334,7 +334,22 @@ void drawQuad_gouraud(float x, float y, float x2, float y2, float x3, float y3, 
 
 void drawCircle(float x, float y, float radius, u64 color, u8 filled)
 {
+    glColor3f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f); //blue color
 
+    if(filled) {
+        glBegin(GL_TRIANGLE_FAN);
+        glVertex2f(x, y);  // centro do círculo
+    } else {
+        glBegin(GL_LINE_LOOP);
+    }
+
+    for (int i = 0; i <= 36; i++) {
+        float angle = 2.0f * M_PI * (float)i / (float)36;
+        float sx = radius * cosf(angle);
+        float sy = radius * sinf(angle);
+        glVertex2f(x + sx, y + sy);
+    }
+    glEnd();
 }
 
 void InvalidateTexture(void *txt)

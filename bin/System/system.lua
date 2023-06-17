@@ -19,5 +19,9 @@ while true do
 
     Graphics.drawQuad(110, 70, 180, 85, 60, 130, 42, 215, Color.new(255, 0, 0), Color.new(64, 0, 128), Color.new(0, 128, 32), Color.new(255, 255, 0))
 
+    Graphics.drawCircle(400, 29, 130, Color.new(255, 255, 255))
+
+    Graphics.drawCircle(400, 29, 50, Color.new(255, 0, 0), 0)
+
     Screen.flip()
 end
