@@ -3,7 +3,7 @@
 -- dofile("pads/pads.lua")
 
 while true do
-    Screen.clear(Color.new(255, 0, 0))
+    Screen.clear(Color.new(32, 32, 32))
 
     Graphics.drawTriangle(200, 150, 250, 200, 250, 300, Color.new(64, 0, 128), Color.new(0, 128, 32), Color.new(255, 255, 0))
 
@@ -14,6 +14,8 @@ while true do
     Graphics.drawPixel(500, 420, Color.new(255, 128, 0))
 
     Graphics.drawLine(0, 200, 300, 70, Color.new(255, 255, 255));
+
+    Graphics.drawQuad(70, 70, 90, 85, 70, 105, 90, 120, Color.new(0, 0, 128))
 
     Screen.flip()
 end
