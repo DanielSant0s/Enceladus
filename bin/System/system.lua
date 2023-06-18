@@ -1,6 +1,6 @@
 
 
--- dofile("pads/pads.lua")
+ dofile("pads/pads.lua")
 
 local vw = Graphics.loadImage("vw.png");
 local vw8bit = Graphics.loadImage("vw8bit.png");

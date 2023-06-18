@@ -1,8 +1,8 @@
 -- Font.fmLoad()
 
 local circle = Graphics.loadImage("pads/circle.png")
-local cross = Graphics.loadImage("pads/cross.png")
-local square = Graphics.loadImage("pads/square.png")
+--local cross = Graphics.loadImage("pads/cross.png")
+--local square = Graphics.loadImage("pads/square.png")
 --local triangle = Graphics.loadImage("pads/triangle.png")
 
 --local up = Graphics.loadImage("pads/up.png")
@@ -40,6 +40,8 @@ while true do
   pad = Pads.get()
   rx, ry = Pads.getRightStick()
   lx, ly = Pads.getLeftStick()
+
+  Graphics.drawScaleImage(circle, 0, 0, 32, 32, Color.new(255, 255, 255))
 
 --  if Pads.check(pad, PAD_SELECT) then
 --    Graphics.drawImage(pad_select, 260.0, 190.0)
@@ -102,12 +104,12 @@ while true do
   --  Graphics.drawImage(square, 485.0, 190.0, Color.new(128, 128, 128, 60))
   --end
 --
-  if Pads.check(pad, PAD_CIRCLE) then
-    pressure = Pads.getPressure(PAD_CIRCLE)
-    Graphics.drawImage(circle, 555.0, 190.0, Color.new(128, 128, 128,  pressure))
-  else
-    Graphics.drawImage(circle, 555.0, 190.0, Color.new(128, 128, 128, 60))
-  end
+  --if Pads.check(pad, PAD_CIRCLE) then
+  --  pressure = Pads.getPressure(PAD_CIRCLE)
+  --  Graphics.drawImage(circle, 555.0, 190.0, Color.new(128, 128, 128,  pressure))
+  --else
+  --  Graphics.drawImage(circle, 555.0, 190.0, Color.new(128, 128, 128, 60))
+  --end
 
 --  if Pads.check(pad, PAD_L1) then
 --    pressure = Pads.getPressure(PAD_L1)
@@ -137,11 +139,13 @@ while true do
 --    Graphics.drawImage(r2, 537.0, 100.0, Color.new(128, 128, 128, 60))
 --  end
 
-  Graphics.drawCircle(lx/4+257.0, ly/4+317.0, 8.0, Color.new(255, 0, 0, 255), 1)
-  Graphics.drawCircle(rx/4+417.0, ry/4+317.0, 8.0, Color.new(255, 0, 0, 255), 1)
+  --Graphics.drawRect(220.0, 280.0, 75, 75, Color.new(128, 128, 128, 32))
+  --Graphics.drawRect(380.0, 280.0, 75, 75, Color.new(128, 128, 128, 32))
+--
+  --Graphics.drawCircle(lx/4+257.0, ly/4+317.0, 8.0, Color.new(255, 0, 0, 255), 1)
+  --Graphics.drawCircle(rx/4+417.0, ry/4+317.0, 8.0, Color.new(255, 0, 0, 255), 1)
 
-  Graphics.drawRect(220.0, 280.0, 75, 75, Color.new(128, 128, 128, 32))
-  Graphics.drawRect(380.0, 280.0, 75, 75, Color.new(128, 128, 128, 32))
+
 
 --  if Pads.check(pad, PAD_L3) then
 --    Graphics.drawImage(l3, 242.0, 300.0)
@@ -155,13 +159,13 @@ while true do
 --    Graphics.drawImage(r3, 402.0, 300.0, Color.new(128, 128, 128, 60))
 --  end
 --
---  if Pads.check(pad, PAD_R2) and Pads.check(pad, PAD_L2) then
---    Pads.rumble(1 ,255)
---  end
---
---  if Pads.check(pad, PAD_R3) and Pads.check(pad, PAD_L3) then
---    Pads.rumble(0 ,0)
---  end
+  if Pads.check(pad, PAD_R2) and Pads.check(pad, PAD_L2) then
+    Pads.rumble(1 ,255)
+  end
+
+  if Pads.check(pad, PAD_R3) and Pads.check(pad, PAD_L3) then
+    Pads.rumble(0 ,0)
+  end
   
   Screen.flip()
   --Screen.waitVblankStart()

@@ -49,7 +49,7 @@ unsigned int loadraw(FILE* file)
     unsigned int tex_id;
 
     int image_size = 128 * 128 * 4;
-    void* texels = memalign(16, image_size);
+    void* texels = memalign(128, image_size);
 	fread(texels, 1, image_size, file);
 
     glGenTextures(1, &tex_id);
@@ -92,26 +92,18 @@ gl_texture_t* loadpng(FILE* file) {
         fclose(file);
         return NULL;
     }
-    
-    // Inicia a leitura do arquivo PNG
+
     png_init_io(png, file);
 
-    // Informa que já foram lidos os primeiros 8 bytes do cabeçalho PNG
     png_set_sig_bytes(png, sig_read);
-    
-    // Obtém as informações da imagem PNG
+
     png_read_info(png, info);
     
-    // Obtém as dimensões da imagem
-    tex->width = png_get_image_width(png, info);
-    tex->height = png_get_image_height(png, info);
-
     png_get_IHDR(png, info, &tex->width, &tex->height, &bit_depth, &colorType, &interlace_type, NULL, NULL);
 
     if (bit_depth == 16) png_set_strip_16(png);
-
-	if (colorType == PNG_COLOR_TYPE_GRAY && bit_depth < 4)
-		png_set_expand(png);
+	if (colorType == PNG_COLOR_TYPE_GRAY || bit_depth < 4) png_set_expand(png);
+	//if (png_get_valid(png, info, PNG_INFO_tRNS)) png_set_tRNS_to_alpha(png_ptr);
 
 	png_set_filler(png, 0xff, PNG_FILLER_AFTER);
 
@@ -141,7 +133,7 @@ gl_texture_t* loadpng(FILE* file) {
         tex->internalFormat = 1;
 
         tex->clut_size = (bit_depth == 4? 16 : 256);
-        tex->clut = (u32*)memalign(16, tex->clut_size*sizeof(int));
+        tex->clut = (u32*)memalign(128, tex->clut_size*sizeof(int));
         memset(tex->clut, 0, tex->clut_size*sizeof(int));
 
     	struct png_clut *clut = (struct png_clut *)tex->clut;
@@ -200,7 +192,7 @@ gl_texture_t* loadpng(FILE* file) {
     size_t rowBytes = png_get_rowbytes(png, info);
     
     // Aloca memória para armazenar os dados da imagem
-    tex->texels = (GLubyte *)malloc (sizeof (GLubyte) * tex->width * tex->height * tex->internalFormat);
+    tex->texels = (GLubyte *)memalign (128, sizeof (GLubyte) * tex->width * tex->height * tex->internalFormat);
 
     /* Setup a pointer array.  Each one points at the begening of a row. */
     png_bytep *row_pointers = (png_bytep *)malloc (sizeof (png_bytep) * tex->height);
@@ -212,7 +204,8 @@ gl_texture_t* loadpng(FILE* file) {
     // Lê os dados da imagem linha por linha
     png_read_image(png, row_pointers);
     
-    // Fecha o arquivo PNG
+    png_read_end(png, NULL);
+    png_destroy_read_struct(&png, &info, NULL);
     fclose(file);
     
     // Gera uma nova textura OpenGL
@@ -234,9 +227,6 @@ gl_texture_t* loadpng(FILE* file) {
     
     // Libera a memória dos dados da imagem
     free(row_pointers);
-    
-    // Libera as estruturas da libpng
-    png_destroy_read_struct(&png, &info, NULL);
 
     return tex;
 }
@@ -325,7 +315,7 @@ gl_texture_t* loadbmp(FILE* file)
         tex->internalFormat = 1;
         
         tex->clut_size = 16;
-		tex->clut = (u32*)memalign(16, tex->clut_size*sizeof(u32));
+		tex->clut = (u32*)memalign(128, tex->clut_size*sizeof(u32));
 
 		memset(tex->clut, 0, tex->clut_size*sizeof(u32));
 		fseek(file, 54, SEEK_SET);
@@ -362,7 +352,7 @@ gl_texture_t* loadbmp(FILE* file)
         tex->internalFormat = 1;
         
         tex->clut_size = 256;
-		tex->clut = (u32*)memalign(16, tex->clut_size*sizeof(u32));
+		tex->clut = (u32*)memalign(128, tex->clut_size*sizeof(u32));
 
 		memset(tex->clut, 0, tex->clut_size*sizeof(u32));
         
@@ -425,11 +415,11 @@ gl_texture_t* loadbmp(FILE* file)
 
 	u32 TextureSize = tex->width * tex->height * tex->internalFormat;
 
-	tex->texels = (u8*)memalign(16, TextureSize);
+	tex->texels = (u8*)memalign(128, TextureSize);
 
 	if(Bitmap.InfoHeader.BitCount == 24)
 	{
-		image = (u8*)memalign(16, FTexSize);
+		image = (u8*)memalign(128, FTexSize);
 		if (image == NULL) {
 			printf("BMP: Failed to allocate memory\n");
 			if (tex->texels) {
@@ -459,7 +449,7 @@ gl_texture_t* loadbmp(FILE* file)
 	}
 	else if(Bitmap.InfoHeader.BitCount == 16)
 	{
-		image = (u8*)memalign(16, FTexSize);
+		image = (u8*)memalign(128, FTexSize);
 		if (image == NULL) {
 			printf("BMP: Failed to allocate memory\n");
 			if (tex->texels) {
@@ -492,7 +482,7 @@ gl_texture_t* loadbmp(FILE* file)
 	else if(Bitmap.InfoHeader.BitCount == 8 || Bitmap.InfoHeader.BitCount == 4)
 	{
 		char *text = (char *)((u32)tex->texels);
-		image = (u8*)memalign(16, FTexSize);
+		image = (u8*)memalign(128, FTexSize);
 		if (image == NULL) {
 			printf("BMP: Failed to allocate memory\n");
 			if (tex->texels) {
@@ -619,7 +609,7 @@ static void  _ps2_load_JPEG_generic(gl_texture_t* tex, struct jpeg_decompress_st
 	#ifdef DEBUG
 	printf("Texture Size = %i\n",textureSize);
 	#endif
-	tex->texels = (u8*)memalign(16, textureSize);
+	tex->texels = (u8*)memalign(128, textureSize);
 
 	unsigned int row_stride = textureSize/tex->height;
 	unsigned char *row_pointer = (unsigned char *)tex->texels;
@@ -790,9 +780,10 @@ void drawImage(gl_texture_t* source, float x, float y, float width, float height
     }
 
     glDisable(GL_LIGHTING);
-    glEnable(GL_BLEND);
 
     glColor4f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f, A(color)/255.0f); //blue colors
+
+	printf("BREAKING NOW!!!\n");
 
     glBegin(GL_QUADS);
 	
@@ -810,9 +801,10 @@ void drawImage(gl_texture_t* source, float x, float y, float width, float height
 
     glEnd();
 
+	glFlush();
+
     glDisable(GL_TEXTURE_2D);
 
-    glDisable(GL_BLEND);
     glEnable(GL_LIGHTING);
 }
 
@@ -826,7 +818,6 @@ void drawImageRotate(gl_texture_t* source, float x, float y, float width, float 
     }
 
     glDisable(GL_LIGHTING);
-    glEnable(GL_BLEND);
 
     glColor4f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f, A(color)/255.0f); //blue colors
 
@@ -855,7 +846,6 @@ void drawImageRotate(gl_texture_t* source, float x, float y, float width, float 
 
     glDisable(GL_TEXTURE_2D);
 
-    glDisable(GL_BLEND);
     glEnable(GL_LIGHTING);
 }
 
@@ -1152,6 +1142,8 @@ void InitGL(GLvoid) // Create Some Everyday Functions
     glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
+
+	glEnable(GL_BLEND);
 }
 
 void initGraphics()

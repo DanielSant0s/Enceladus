@@ -58,7 +58,7 @@ static int lua_print(lua_State *L) {
 	float y = luaL_checknumber(L, 3);
     float scale =  luaL_checknumber(L, 4);
     const char* text = luaL_checkstring(L, 5);
-	Color color = 0x80808080;
+	Color color = 0xFFFFFFFF;
 	if (argc == 6) color = luaL_checkinteger(L, 6);
 	printFontText(font, text, x, y, scale, color);
 	return 0;
@@ -115,7 +115,7 @@ static int lua_ftprint(lua_State *L) {
 	int width = luaL_checkinteger(L, 5); 
 	int height = luaL_checkinteger(L, 6); 
     const char* text = luaL_checkstring(L, 7);
-	Color color = 0x80808080;
+	Color color = 0xFFFFFFFF;
 	if (argc == 8) color = luaL_checkinteger(L, 8);
 	fntRenderString(fontid, x, y, alignment, width, height, text, color);
 	return 0;
@@ -151,7 +151,7 @@ static int lua_fmprint(lua_State *L) {
 	float y = luaL_checknumber(L, 2);
     float scale =  luaL_checknumber(L, 3);
     const char* text = luaL_checkstring(L, 4);
-	Color color = 0x80808080;
+	Color color = 0xFFFFFFFF;
 	if (argc == 5) color =  luaL_checkinteger(L, 5);
 	printFontMText(text, x, y, scale, color);
 	return 0;
@@ -230,7 +230,7 @@ static int lua_drawimg(lua_State *L) {
     gl_texture_t* source = (gl_texture_t*)(luaL_checkinteger(L, 1));
 	float x = luaL_checknumber(L, 2);
 	float y = luaL_checknumber(L, 3);
-	Color color = 0x80808080;
+	Color color = 0xFFFFFFFF;
 	if (argc == 4) color = (Color)luaL_checknumber(L, 4);
 	float width = source->width;
 	float height = source->height;
@@ -251,7 +251,7 @@ static int lua_drawimg_rotate(lua_State *L) {
 	float x = luaL_checknumber(L, 2);
 	float y = luaL_checknumber(L, 3);
 	float radius = luaL_checknumber(L, 4);
-	Color color = 0x80808080;
+	Color color = 0xFFFFFFFF;
 	if (argc == 5) color = (Color)luaL_checknumber(L, 5);
 	float width = source->width;
 	float height = source->height;
@@ -273,7 +273,7 @@ static int lua_drawimg_scale(lua_State *L) {
 	float y = luaL_checknumber(L, 3);
 	float width = luaL_checknumber(L, 4);
 	float height = luaL_checknumber(L, 5);
-	Color color = 0x80808080;
+	Color color = 0xFFFFFFFF;
 	if (argc == 6) color = (Color)luaL_checkinteger(L, 6);
 	float startx = 0.0f;
 	float starty = 0.0f;
@@ -296,7 +296,7 @@ static int lua_drawimg_part(lua_State *L) {
 	float starty = (float)luaL_checknumber(L, 5);
 	float endx = (float)luaL_checknumber(L, 6);
 	float endy = (float)luaL_checknumber(L, 7);
-	Color color = 0x80808080;
+	Color color = 0xFFFFFFFF;
 	if (argc == 8) color = (Color)luaL_checknumber(L, 8);
 	
 	drawImage(source, x, y, source->width, source->height, startx/source->width, starty/source->height, endx/source->width, endy/source->height, color);
@@ -317,7 +317,7 @@ static int lua_drawimg_full(lua_State *L) {
 	float width = (float)luaL_checknumber(L, 8);
 	float height = (float)luaL_checknumber(L, 9);
 	float angle = (float)luaL_checknumber(L, 10);
-	Color color = 0x80808080;
+	Color color = 0xFFFFFFFF;
 	if (argc == 11) color = (Color)luaL_checknumber(L, 11);
 
 	drawImageRotate(source, x, y, width, height, startx/width, starty/height, endx/width, endy/height, angle, color);
