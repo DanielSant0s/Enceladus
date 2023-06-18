@@ -818,7 +818,45 @@ void drawImage(gl_texture_t* source, float x, float y, float width, float height
 
 
 void drawImageRotate(gl_texture_t* source, float x, float y, float width, float height, float startx, float starty, float endx, float endy, float angle, Color color){
+    glBindTexture(GL_TEXTURE_2D, source->id);
+    glEnable(GL_TEXTURE_2D);
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+    if(source->clut) {
+        glColorTable(GL_COLOR_TABLE, GL_RGBA, source->clut_size, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, source->clut);
+    }
 
+    glDisable(GL_LIGHTING);
+    glEnable(GL_BLEND);
+
+    glColor4f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f, A(color)/255.0f); //blue colors
+
+    glPushMatrix();
+    glTranslatef(x + width/2, y + height/2, 0.0f); // Translada para o centro do retângulo
+    glRotatef(angle, 0.0f, 0.0f, 1.0f); // Aplica a rotação no eixo Z
+    glTranslatef(-width/2, -height/2, 0.0f); // Translada de volta para a posição original
+
+    glBegin(GL_QUADS);
+	
+    glTexCoord2f(startx, starty);  // canto inferior esquerdo
+    glVertex2f(x,  y);
+
+    glTexCoord2f(endx, starty);  // canto inferior direito
+    glVertex2f(x+width, y);
+
+    glTexCoord2f(endx, endy);  // canto superior direito
+    glVertex2f(x+width, y+height);
+
+    glTexCoord2f(startx, endy);  // canto superior esquerdo
+    glVertex2f(x, y+height);
+
+    glEnd();
+
+    glPopMatrix();
+
+    glDisable(GL_TEXTURE_2D);
+
+    glDisable(GL_BLEND);
+    glEnable(GL_LIGHTING);
 }
 
 void drawPixel(float x, float y, Color color)
@@ -1118,7 +1156,7 @@ void InitGL(GLvoid) // Create Some Everyday Functions
 
 void initGraphics()
 {
-    glutInit();                        // Erm Just Write It =)
+    glutInit();
     InitGL();
 
     bool firstTime = true;
