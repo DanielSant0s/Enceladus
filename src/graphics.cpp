@@ -709,11 +709,6 @@ gl_texture_t* load_image(const char* path, bool delayed){
 	return image;
 }
 
-void gsKit_clear_screens()
-{
-
-}
-
 void clearScreen(Color color)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1151,5 +1146,5 @@ void flipScreen()
 }
 
 void graphicWaitVblankStart(){
-
+    pglWaitForVSync();
 }
