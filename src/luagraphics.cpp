@@ -232,12 +232,12 @@ static int lua_drawimg(lua_State *L) {
 	float y = luaL_checknumber(L, 3);
 	Color color = 0x80808080;
 	if (argc == 4) color = (Color)luaL_checknumber(L, 4);
-	float width = 0;
-	float height = 0;
+	float width = source->width;
+	float height = source->height;
 	float startx = 0.0f;
 	float starty = 0.0f;
-	float endx = 0;
-	float endy = 0;
+	float endx = 1.0f;
+	float endy = 1.0f;
 
 	drawImage(source, x, y, width, height, startx, starty, endx, endy, color);
 
@@ -253,12 +253,12 @@ static int lua_drawimg_rotate(lua_State *L) {
 	float radius = luaL_checknumber(L, 4);
 	Color color = 0x80808080;
 	if (argc == 5) color = (Color)luaL_checknumber(L, 5);
-	float width = 0;
-	float height = 0;
+	float width = source->width;
+	float height = source->height;
 	float startx = 0.0f;
 	float starty = 0.0f;
-	float endx = 0;
-	float endy = 0;
+	float endx = 1.0f;
+	float endy = 1.0f;
 
 	drawImageRotate(source, x, y, width, height, startx, starty, endx, endy, radius, color);
 
@@ -277,8 +277,8 @@ static int lua_drawimg_scale(lua_State *L) {
 	if (argc == 6) color = (Color)luaL_checkinteger(L, 6);
 	float startx = 0.0f;
 	float starty = 0.0f;
-	float endx = 0;
-	float endy = 0;
+	float endx = 1.0f;
+	float endy = 1.0f;
 
 	drawImage(source, x, y, width, height, startx, starty, endx, endy, color);
 
@@ -298,10 +298,8 @@ static int lua_drawimg_part(lua_State *L) {
 	float endy = (float)luaL_checknumber(L, 7);
 	Color color = 0x80808080;
 	if (argc == 8) color = (Color)luaL_checknumber(L, 8);
-	float width =0;
-	float height = 0;
 	
-	drawImage(source, x, y, width, height, startx, starty, endx, endy, color);
+	drawImage(source, x, y, source->width, source->height, startx/source->width, starty/source->height, endx/source->width, endy/source->height, color);
 
 	return 0;
 }
@@ -322,7 +320,7 @@ static int lua_drawimg_full(lua_State *L) {
 	Color color = 0x80808080;
 	if (argc == 11) color = (Color)luaL_checknumber(L, 11);
 
-	drawImageRotate(source, x, y, width, height, startx, starty, endx, endy, angle, color);
+	drawImageRotate(source, x, y, width, height, startx/width, starty/height, endx/width, endy/height, angle, color);
 
 	return 0;
 }

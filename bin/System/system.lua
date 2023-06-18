@@ -35,7 +35,7 @@ while true do
 
     Graphics.drawScaleImage(lily, 256, 256, 128, 128, Color.new(255, 255, 255));
 
-    Graphics.drawScaleImage(cake, 256, 100, 128, 128, Color.new(255, 255, 255));
+    Graphics.drawScaleImage(cake, 256, 100, 128, 128, Color.new(255, 255, 255, 128));
 
     Screen.flip()
 end

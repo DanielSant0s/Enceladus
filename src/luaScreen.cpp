@@ -154,7 +154,7 @@ static int lua_color(lua_State *L) {
 	int r = luaL_checkinteger(L, 1);
 	int g = luaL_checkinteger(L, 2);
 	int b = luaL_checkinteger(L, 3);
-	int a = 0x80;
+	int a = 0xFF;
 	if (argc==4) a = luaL_checkinteger(L, 4);
 	int color = r | (g << 8) | (b << 16) | (a << 24);
 	lua_pushinteger(L,color);

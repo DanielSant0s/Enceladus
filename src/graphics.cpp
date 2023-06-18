@@ -797,23 +797,23 @@ void drawImage(gl_texture_t* source, float x, float y, float width, float height
     glDisable(GL_LIGHTING);
     glEnable(GL_BLEND);
 
-    glColor3f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f); //blue colors
+    glColor4f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f, A(color)/255.0f); //blue colors
 
-    glBegin(GL_QUADS);//start drawing triangles
+    glBegin(GL_QUADS);
 	
-    glTexCoord2f(0.0f, 0.0f);  // canto inferior esquerdo
-    glVertex2f(x,  y);//triangle one first vertex
+    glTexCoord2f(startx, starty);  // canto inferior esquerdo
+    glVertex2f(x,  y);
 
-    glTexCoord2f(1.0f, 0.0f);  // canto inferior direito
-    glVertex2f(x+width, y);//triangle one third vertex
+    glTexCoord2f(endx, starty);  // canto inferior direito
+    glVertex2f(x+width, y);
 
-    glTexCoord2f(1.0f, 1.0f);  // canto superior direito
-    glVertex2f(x+width, y+height);//triangle one third vertex
+    glTexCoord2f(endx, endy);  // canto superior direito
+    glVertex2f(x+width, y+height);
 
-    glTexCoord2f(0.0f, 1.0f);  // canto superior esquerdo
-    glVertex2f(x, y+height);//triangle one second vertex
+    glTexCoord2f(startx, endy);  // canto superior esquerdo
+    glVertex2f(x, y+height);
 
-    glEnd();//end drawing of triangles
+    glEnd();
 
     glDisable(GL_TEXTURE_2D);
 
@@ -828,44 +828,44 @@ void drawImageRotate(gl_texture_t* source, float x, float y, float width, float 
 
 void drawPixel(float x, float y, Color color)
 {
-    glColor3f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f); //blue color
+    glColor4f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f, A(color)/255.0f);
 
-    glBegin(GL_POINTS);//start drawing triangles
+    glBegin(GL_POINTS);
 	
-    glVertex2f(x,  y);//triangle one first vertex
+    glVertex2f(x,  y);
 
-    glEnd();//end drawing of triangles
+    glEnd();
 
 }
 
 void drawLine(float x, float y, float x2, float y2, Color color)
 {
-    glColor3f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f); //blue color
+    glColor4f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f, A(color)/255.0f);
 
-    glBegin(GL_LINES);//start drawing triangles
+    glBegin(GL_LINES);
 	
-    glVertex2f(x,  y);//triangle one first vertex
-    glVertex2f(x2,  y2);//triangle one first vertex
+    glVertex2f(x,  y);
+    glVertex2f(x2,  y2);
 
-    glEnd();//end drawing of triangles
+    glEnd();
 
 }
 
 
 void drawRect(float x, float y, int width, int height, Color color)
 {
-    glBegin(GL_QUADS);//start drawing triangles
+    glBegin(GL_QUADS);
 	
-    glColor3f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f); //blue color
-    glVertex2f(x,  y);//triangle one first vertex
-    glColor3f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f); //blue color
-    glVertex2f(x+width, y);//triangle one third vertex
-    glColor3f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f); //blue color
-    glVertex2f(x+width, y+height);//triangle one third vertex
-    glColor3f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f); //blue color
-    glVertex2f(x, y+height);//triangle one second vertex
+    glColor4f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f, A(color)/255.0f);
+    glVertex2f(x,  y);
+    glColor4f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f, A(color)/255.0f);
+    glVertex2f(x+width, y);
+    glColor4f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f, A(color)/255.0f);
+    glVertex2f(x+width, y+height);
+    glColor4f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f, A(color)/255.0f);
+    glVertex2f(x, y+height);
 
-    glEnd();//end drawing of triangles
+    glEnd();
 
 }
 
@@ -876,13 +876,13 @@ void drawRectCentered(float x, float y, int width, int height, Color color)
 
 void drawTriangle(float x, float y, float x2, float y2, float x3, float y3, Color color)
 {
-	glColor3f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f); //blue color
+	glColor4f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f, A(color)/255.0f);
 
-    glBegin(GL_TRIANGLES);//start drawing triangles
-    glVertex2f(x,  y);//triangle one first vertex
-    glVertex2f(x2, y2);//triangle one second vertex
-    glVertex2f(x3, y3);//triangle one third vertex
-    glEnd();//end drawing of triangles
+    glBegin(GL_TRIANGLES);
+    glVertex2f(x,  y);
+    glVertex2f(x2, y2);
+    glVertex2f(x3, y3);
+    glEnd();
 
 
 }
@@ -890,61 +890,61 @@ void drawTriangle(float x, float y, float x2, float y2, float x3, float y3, Colo
 void drawTriangle_gouraud(float x, float y, float x2, float y2, float x3, float y3, Color color, Color color2, Color color3)
 {
 
-    glBegin(GL_TRIANGLES);//start drawing triangles
+    glBegin(GL_TRIANGLES);
 
-	glColor3f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f); //blue color
-    glVertex2f(x ,  y);//triangle one first vertex
+	glColor4f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f, A(color)/255.0f);
+    glVertex2f(x ,  y);
 
-	glColor3f(R(color2)/255.0f, G(color2)/255.0f, B(color2)/255.0f); //blue color
-    glVertex2f(x2, y2);//triangle one second vertex
+	glColor4f(R(color2)/255.0f, G(color2)/255.0f, B(color2)/255.0f, A(color2)/255.0f);
+    glVertex2f(x2, y2);
 
-	glColor3f(R(color3)/255.0f, G(color3)/255.0f, B(color3)/255.0f); //blue color
-    glVertex2f(x3, y3);//triangle one third vertex
+	glColor4f(R(color3)/255.0f, G(color3)/255.0f, B(color3)/255.0f, A(color3)/255.0f);
+    glVertex2f(x3, y3);
 
-    glEnd();//end drawing of triangles
+    glEnd();
 
 }
 
 void drawQuad(float x, float y, float x2, float y2, float x3, float y3, float x4, float y4, Color color)
 {
-    glBegin(GL_QUADS);//start drawing triangles
+    glBegin(GL_QUADS);
 	
-    glColor3f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f); //blue color
-    glVertex2f(x,  y);//triangle one first vertex
-    glColor3f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f); //blue color
-    glVertex2f(x2, y2);//triangle one third vertex
-    glColor3f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f); //blue color
-    glVertex2f(x4, y4);//triangle one second vertex
-    glColor3f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f); //blue color
-    glVertex2f(x3, y3);//triangle one third vertex
+    glColor4f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f, A(color)/255.0f);
+    glVertex2f(x,  y);
+    glColor4f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f, A(color)/255.0f);
+    glVertex2f(x2, y2);
+    glColor4f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f, A(color)/255.0f);
+    glVertex2f(x4, y4);
+    glColor4f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f, A(color)/255.0f);
+    glVertex2f(x3, y3);
 
-    glEnd();//end drawing of triangles
+    glEnd();
 
 }
 
 void drawQuad_gouraud(float x, float y, float x2, float y2, float x3, float y3, float x4, float y4, Color color, Color color2, Color color3, Color color4)
 {
-    glBegin(GL_QUADS);//start drawing triangles
+    glBegin(GL_QUADS);
 	
-    glColor3f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f); //blue color
-    glVertex2f(x,  y);//triangle one first vertex
+    glColor4f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f, A(color)/255.0f);
+    glVertex2f(x,  y);
 
-    glColor3f(R(color2)/255.0f, G(color2)/255.0f, B(color2)/255.0f); //blue color
-    glVertex2f(x2, y2);//triangle one third vertex
+    glColor4f(R(color2)/255.0f, G(color2)/255.0f, B(color2)/255.0f, A(color2)/255.0f);
+    glVertex2f(x2, y2);
 
-    glColor3f(R(color4)/255.0f, G(color4)/255.0f, B(color4)/255.0f); //blue color
-    glVertex2f(x4, y4);//triangle one second vertex
+    glColor4f(R(color4)/255.0f, G(color4)/255.0f, B(color4)/255.0f, A(color4)/255.0f);
+    glVertex2f(x4, y4);
 
-    glColor3f(R(color3)/255.0f, G(color3)/255.0f, B(color3)/255.0f); //blue color
-    glVertex2f(x3, y3);//triangle one third vertex
+    glColor4f(R(color3)/255.0f, G(color3)/255.0f, B(color3)/255.0f, A(color3)/255.0f);
+    glVertex2f(x3, y3);
 
-    glEnd();//end drawing of triangles
+    glEnd();
 
 }
 
 void drawCircle(float x, float y, float radius, u64 color, u8 filled)
 {
-    glColor3f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f); //blue color
+    glColor4f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f, A(color)/255.0f);
 
     if(filled) {
         glBegin(GL_TRIANGLE_FAN);
