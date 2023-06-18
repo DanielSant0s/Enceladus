@@ -590,14 +590,101 @@ my_error_exit(j_common_ptr cinfo)
 
 // Following official documentation max width or height of the texture is 1024
 #define MAX_TEXTURE 1024
-static void  _ps2_load_JPEG_generic(void *Texture, struct jpeg_decompress_struct *cinfo, struct my_error_mgr *jerr, bool scale_down)
+static void  _ps2_load_JPEG_generic(gl_texture_t* tex, struct jpeg_decompress_struct *cinfo, struct my_error_mgr *jerr, bool scale_down)
 {
+	int textureSize = 0;
+	if (scale_down) {
+		unsigned int longer = cinfo->image_width > cinfo->image_height ? cinfo->image_width : cinfo->image_height;
+		float downScale = (float)longer / (float)MAX_TEXTURE;
+		cinfo->scale_denom = ceilf(downScale);
+	}
 
+	jpeg_start_decompress(cinfo);
+
+	tex->width =  cinfo->output_width;
+	tex->height = cinfo->output_height;
+    tex->format = cinfo->out_color_components == 3 ? GL_RGB : GL_RGBA;
+	tex->internalFormat = cinfo->out_color_components;
+	tex->clut_size = 0;
+	tex->clut = NULL;
+
+	textureSize = cinfo->output_width*cinfo->output_height*cinfo->out_color_components;
+	#ifdef DEBUG
+	printf("Texture Size = %i\n",textureSize);
+	#endif
+	tex->texels = (u8*)memalign(16, textureSize);
+
+	unsigned int row_stride = textureSize/tex->height;
+	unsigned char *row_pointer = (unsigned char *)tex->texels;
+	while (cinfo->output_scanline < cinfo->output_height) {
+		jpeg_read_scanlines(cinfo, (JSAMPARRAY)&row_pointer, 1);
+		row_pointer += row_stride;
+	}
+
+	jpeg_finish_decompress(cinfo);
 }
 
-gl_texture_t* loadjpeg(FILE* fp, bool scale_down, bool delayed)
+gl_texture_t* loadjpeg(FILE* fp, bool scale_down)
 {
-	return NULL;
+    gl_texture_t* tex = (gl_texture_t*)malloc(sizeof(gl_texture_t));
+
+	struct jpeg_decompress_struct cinfo;
+	struct my_error_mgr jerr;
+
+	if (tex == NULL) {
+		printf("jpeg: error Texture is NULL\n");
+		return NULL;
+	}
+
+	if (fp == NULL)
+	{
+		printf("jpeg: Failed to load file\n");
+		return NULL;
+	}
+
+	/* We set up the normal JPEG error routines, then override error_exit. */
+	cinfo.err = jpeg_std_error(&jerr.pub);
+	jerr.pub.error_exit = my_error_exit;
+	/* Establish the setjmp return context for my_error_exit to use. */
+	if (setjmp(jerr.setjmp_buffer)) {
+		/* If we get here, the JPEG code has signaled an error.
+		* We need to clean up the JPEG object, close the input file, and return.
+		*/
+		jpeg_destroy_decompress(&cinfo);
+		fclose(fp);
+		if (tex->texels)
+			free(tex->texels);
+		printf("jpeg: error during processing file\n");
+		return NULL;
+	}
+	jpeg_create_decompress(&cinfo);
+	jpeg_stdio_src(&cinfo, fp);
+	jpeg_read_header(&cinfo, TRUE);
+
+	_ps2_load_JPEG_generic(tex, &cinfo, &jerr, scale_down);
+	
+	jpeg_destroy_decompress(&cinfo);
+	fclose(fp);
+
+    // Gera uma nova textura OpenGL
+    glGenTextures(1, &tex->id);
+    
+    // Vincula a textura
+    glBindTexture(GL_TEXTURE_2D, tex->id);
+    
+    // Define os parâmetros de filtragem da textura
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    
+    // Define os parâmetros de repetição da textura
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    
+    // Carrega os dados da imagem na textura
+    glTexImage2D(GL_TEXTURE_2D, 0, tex->format, tex->width, tex->height, 0, tex->format, GL_UNSIGNED_BYTE, tex->texels);
+
+	return tex;
+
 
 }
 
@@ -608,7 +695,7 @@ gl_texture_t* load_image(const char* path, bool delayed){
 	fseek(file, 0, SEEK_SET);
 	gl_texture_t* image = NULL;
 	if (magic == 0x4D42) image =      loadbmp(file);
-	else if (magic == 0xD8FF) image = loadjpeg(file, false, delayed);
+	else if (magic == 0xD8FF) image = loadjpeg(file, false);
 	else if (magic == 0x5089) image = loadpng(file);
 	if (image == NULL) printf("Failed to load image %s.", path);
 
@@ -742,7 +829,6 @@ void drawPixel(float x, float y, Color color)
 
     glEnd();//end drawing of triangles
 
-	glFlush();
 }
 
 void drawLine(float x, float y, float x2, float y2, Color color)
@@ -756,7 +842,6 @@ void drawLine(float x, float y, float x2, float y2, Color color)
 
     glEnd();//end drawing of triangles
 
-	glFlush();
 }
 
 
@@ -775,7 +860,6 @@ void drawRect(float x, float y, int width, int height, Color color)
 
     glEnd();//end drawing of triangles
 
-	glFlush();
 }
 
 void drawRectCentered(float x, float y, int width, int height, Color color)
@@ -793,7 +877,6 @@ void drawTriangle(float x, float y, float x2, float y2, float x3, float y3, Colo
     glVertex2f(x3, y3);//triangle one third vertex
     glEnd();//end drawing of triangles
 
-	glFlush();
 
 }
 
@@ -813,7 +896,6 @@ void drawTriangle_gouraud(float x, float y, float x2, float y2, float x3, float 
 
     glEnd();//end drawing of triangles
 
-	glFlush();
 }
 
 void drawQuad(float x, float y, float x2, float y2, float x3, float y3, float x4, float y4, Color color)
@@ -831,7 +913,6 @@ void drawQuad(float x, float y, float x2, float y2, float x3, float y3, float x4
 
     glEnd();//end drawing of triangles
 
-	glFlush();
 }
 
 void drawQuad_gouraud(float x, float y, float x2, float y2, float x3, float y3, float x4, float y4, Color color, Color color2, Color color3, Color color4)
@@ -852,7 +933,6 @@ void drawQuad_gouraud(float x, float y, float x2, float y2, float x3, float y3, 
 
     glEnd();//end drawing of triangles
 
-	glFlush();
 }
 
 void drawCircle(float x, float y, float radius, u64 color, u8 filled)

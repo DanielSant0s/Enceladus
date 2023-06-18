@@ -6,6 +6,7 @@ local vw = Graphics.loadImage("vw.png");
 local vw8bit = Graphics.loadImage("vw8bit.png");
 local vw4bit = Graphics.loadImage("vw4bit.png");
 local lily = Graphics.loadImage("lily.bmp");
+local cake = Graphics.loadImage("cake.jpg");
 
 while true do
     Screen.clear(Color.new(32, 32, 32))
@@ -33,6 +34,8 @@ while true do
     Graphics.drawScaleImage(vw4bit, 128, 256, 128, 128, Color.new(255, 255, 255));
 
     Graphics.drawScaleImage(lily, 256, 256, 128, 128, Color.new(255, 255, 255));
+
+    Graphics.drawScaleImage(cake, 256, 100, 128, 128, Color.new(255, 255, 255));
 
     Screen.flip()
 end
