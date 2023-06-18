@@ -107,14 +107,23 @@ gl_texture_t* loadpng(FILE* file) {
     tex->height = png_get_image_height(png, info);
 
     png_get_IHDR(png, info, &tex->width, &tex->height, &bit_depth, &colorType, &interlace_type, NULL, NULL);
+
+    if (bit_depth == 16) png_set_strip_16(png);
+
+	if (colorType == PNG_COLOR_TYPE_GRAY && bit_depth < 4)
+		png_set_expand(png);
+
+	png_set_filler(png, 0xff, PNG_FILLER_AFTER);
+
+	png_read_update_info(png, info);
     
     // Verifica se a imagem é RGBA e converte para RGB, se necessário
     switch (colorType)
     {
-    case PNG_COLOR_TYPE_GRAY:
+    /*case PNG_COLOR_TYPE_GRAY:
       tex->format = GL_LUMINANCE;
       tex->internalFormat = 1;
-      break;
+      break;*/
 
     case PNG_COLOR_TYPE_PALETTE:
     {
@@ -167,10 +176,10 @@ gl_texture_t* loadpng(FILE* file) {
 	}
       break;
 
-    case PNG_COLOR_TYPE_GRAY_ALPHA:
+    /*case PNG_COLOR_TYPE_GRAY_ALPHA:
       tex->format = GL_LUMINANCE_ALPHA;
       tex->internalFormat = 2;
-      break;
+      break;*/
 
     case PNG_COLOR_TYPE_RGB:
       tex->format = GL_RGB;
@@ -187,9 +196,6 @@ gl_texture_t* loadpng(FILE* file) {
       break;
     }
     
-    // Atualiza as informações da imagem
-    png_read_update_info(png, info);
-    
     // Obtém o tamanho dos dados da imagem
     size_t rowBytes = png_get_rowbytes(png, info);
     
@@ -200,7 +206,7 @@ gl_texture_t* loadpng(FILE* file) {
     png_bytep *row_pointers = (png_bytep *)malloc (sizeof (png_bytep) * tex->height);
 
     for (int i = 0; i < tex->height; ++i) {
-        row_pointers[i] = (png_bytep)(tex->texels + ((i) * tex->width * tex->internalFormat));
+        row_pointers[i] = (png_bytep)(tex->texels + (i * tex->width * tex->internalFormat));
     }
 
     // Lê os dados da imagem linha por linha
@@ -400,9 +406,10 @@ gl_texture_t* loadbmp(FILE* file)
 	}
 	else if(Bitmap.InfoHeader.BitCount == 16)
 	{
-		//tex->PSM = GS_PSM_CT16;
-		//tex->VramClut = 0;
-		//tex->clut = NULL;
+		tex->format = GL_RGB5_A1;
+        tex->internalFormat = 2;
+		tex->clut_size = 0;
+		tex->clut = NULL;
 	}
 	else if(Bitmap.InfoHeader.BitCount == 24)
 	{
@@ -452,7 +459,7 @@ gl_texture_t* loadbmp(FILE* file)
 	}
 	else if(Bitmap.InfoHeader.BitCount == 16)
 	{
-		/*image = (u8*)memalign(128, FTexSize);
+		image = (u8*)memalign(16, FTexSize);
 		if (image == NULL) {
 			printf("BMP: Failed to allocate memory\n");
 			if (tex->texels) {
@@ -480,7 +487,7 @@ gl_texture_t* loadbmp(FILE* file)
 			}
 		}
 		free(image);
-		image = NULL;*/
+		image = NULL;
 	}
 	else if(Bitmap.InfoHeader.BitCount == 8 || Bitmap.InfoHeader.BitCount == 4)
 	{
