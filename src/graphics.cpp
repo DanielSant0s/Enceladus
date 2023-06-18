@@ -44,13 +44,13 @@ static float fps = 0.0f;
 static int frames = 0;
 static int frame_interval = -1;
 
-unsigned int loadraw(FILE* File)
+unsigned int loadraw(FILE* file)
 {
     unsigned int tex_id;
 
     int image_size = 128 * 128 * 4;
     void* texels = memalign(16, image_size);
-	fread(texels, 1, image_size, File);
+	fread(texels, 1, image_size, file);
 
     glGenTextures(1, &tex_id);
     glBindTexture(GL_TEXTURE_2D, tex_id);
@@ -236,9 +236,334 @@ gl_texture_t* loadpng(FILE* file) {
 }
 
 
-gl_texture_t* loadbmp(FILE* File, bool delayed)
+struct gsBitMapFileHeader
 {
-	return NULL;
+	u16	Type;
+	u32	Size;
+	u16 Reserved1;
+	u16 Reserved2;
+	u32 Offset;
+} __attribute__ ((packed));
+typedef struct gsBitMapFileHeader GSBMFHDR;
+
+struct gsBitMapInfoHeader
+{
+	u32	Size;
+	u32	Width;
+	u32	Height;
+	u16	Planes;
+	u16 BitCount;
+	u32 Compression;
+	u32 SizeImage;
+	u32 XPelsPerMeter;
+	u32 YPelsPerMeter;
+	u32 ColorUsed;
+	u32 ColorImportant;
+} __attribute__ ((packed));
+typedef struct gsBitMapInfoHeader GSBMIHDR;
+
+struct gsBitMapClut
+{
+	u8 Blue;
+	u8 Green;
+	u8 Red;
+	u8 Alpha;
+} __attribute__ ((packed));
+typedef struct gsBitMapClut GSBMCLUT;
+
+struct gsBitmap
+{
+	GSBMFHDR FileHeader;
+	GSBMIHDR InfoHeader;
+	char *Texture;
+	GSBMCLUT *Clut;
+};
+typedef struct gsBitmap GSBITMAP;
+
+gl_texture_t* loadbmp(FILE* file)
+{
+    GSBITMAP Bitmap;
+	int x, y;
+	int cy;
+	u32 FTexSize;
+	u8  *image;
+	u8  *p;
+
+    gl_texture_t* tex = (gl_texture_t*)malloc(sizeof(gl_texture_t));
+
+	if (file == NULL)
+	{
+		printf("BMP: Failed to load bitmap\n");
+		return NULL;
+	}
+	if (fread(&Bitmap.FileHeader, sizeof(Bitmap.FileHeader), 1, file) <= 0)
+	{
+		printf("BMP: Could not load bitmap\n");
+		fclose(file);
+		return NULL;
+	}
+
+	if (fread(&Bitmap.InfoHeader, sizeof(Bitmap.InfoHeader), 1, file) <= 0)
+	{
+		printf("BMP: Could not load bitmap\n");
+		fclose(file);
+		return NULL;
+	}
+
+	tex->width = Bitmap.InfoHeader.Width;
+	tex->height = Bitmap.InfoHeader.Height;
+
+	if(Bitmap.InfoHeader.BitCount == 4)
+	{
+		tex->format = GL_COLOR_INDEX;
+        tex->internalFormat = 1;
+        
+        tex->clut_size = 16;
+		tex->clut = (u32*)memalign(16, tex->clut_size*sizeof(u32));
+
+		memset(tex->clut, 0, tex->clut_size*sizeof(u32));
+		fseek(file, 54, SEEK_SET);
+		if (fread(tex->clut, Bitmap.InfoHeader.ColorUsed*sizeof(u32), 1, file) <= 0)
+		{
+			if (tex->clut) {
+				free(tex->clut);
+				tex->clut = NULL;
+			}
+			printf("BMP: Could not load bitmap\n");
+			fclose(file);
+			return NULL;
+		}
+
+		GSBMCLUT *clut = (GSBMCLUT *)tex->clut;
+		int i;
+		for (i = Bitmap.InfoHeader.ColorUsed; i < tex->clut_size; i++)
+		{
+			memset(&clut[i], 0, sizeof(clut[i]));
+		}
+
+		for (i = 0; i < tex->clut_size; i++)
+		{
+			u8 tmp = clut[i].Blue;
+			clut[i].Blue = clut[i].Red;
+			clut[i].Red = tmp;
+			clut[i].Alpha = 0xFF;
+		}
+
+	}
+	else if(Bitmap.InfoHeader.BitCount == 8)
+	{
+		tex->format = GL_COLOR_INDEX;
+        tex->internalFormat = 1;
+        
+        tex->clut_size = 256;
+		tex->clut = (u32*)memalign(16, tex->clut_size*sizeof(u32));
+
+		memset(tex->clut, 0, tex->clut_size*sizeof(u32));
+        
+		fseek(file, 54, SEEK_SET);
+		if (fread(tex->clut, Bitmap.InfoHeader.ColorUsed*sizeof(u32), 1, file) <= 0)
+		{
+			if (tex->clut) {
+				free(tex->clut);
+				tex->clut = NULL;
+			}
+			printf("BMP: Could not load bitmap\n");
+			fclose(file);
+			return NULL;
+		}
+
+		GSBMCLUT *clut = (GSBMCLUT *)tex->clut;
+		int i;
+		for (i = Bitmap.InfoHeader.ColorUsed; i < tex->clut_size; i++)
+		{
+			memset(&clut[i], 0, sizeof(clut[i]));
+		}
+
+		for (i = 0; i < tex->clut_size; i++)
+		{
+			u8 tmp = clut[i].Blue;
+			clut[i].Blue = clut[i].Red;
+			clut[i].Red = tmp;
+			clut[i].Alpha = 0xFF;
+		}
+
+		// rotate clut
+		for (i = 0; i < tex->clut_size; i++)
+		{
+			if ((i&0x18) == 8)
+			{
+				GSBMCLUT tmp = clut[i];
+				clut[i] = clut[i+8];
+				clut[i+8] = tmp;
+			}
+		}
+	}
+	else if(Bitmap.InfoHeader.BitCount == 16)
+	{
+		//tex->PSM = GS_PSM_CT16;
+		//tex->VramClut = 0;
+		//tex->clut = NULL;
+	}
+	else if(Bitmap.InfoHeader.BitCount == 24)
+	{
+		tex->format = GL_RGB;
+        tex->internalFormat = 3;
+	}
+
+	fseek(file, 0, SEEK_END);
+	FTexSize = ftell(file);
+	FTexSize -= Bitmap.FileHeader.Offset;
+
+	fseek(file, Bitmap.FileHeader.Offset, SEEK_SET);
+
+	u32 TextureSize = tex->width * tex->height * tex->internalFormat;
+
+	tex->texels = (u8*)memalign(16, TextureSize);
+
+	if(Bitmap.InfoHeader.BitCount == 24)
+	{
+		image = (u8*)memalign(16, FTexSize);
+		if (image == NULL) {
+			printf("BMP: Failed to allocate memory\n");
+			if (tex->texels) {
+				free(tex->texels);
+				tex->texels = NULL;
+			}
+			if (tex->clut) {
+				free(tex->clut);
+				tex->clut = NULL;
+			}
+			fclose(file);
+			return NULL;
+		}
+
+		fread(image, FTexSize, 1, file);
+		p = (u8*)((u32)tex->texels);
+		for (y = tex->height - 1, cy = 0; y >= 0; y--, cy++) {
+			for (x = 0; x < tex->width; x++) {
+				p[(y * tex->width + x) * 3 + 2] = image[(cy * tex->width + x) * 3 + 0];
+				p[(y * tex->width + x) * 3 + 1] = image[(cy * tex->width + x) * 3 + 1];
+				p[(y * tex->width + x) * 3 + 0] = image[(cy * tex->width + x) * 3 + 2];
+			}
+		}
+
+		free(image);
+		image = NULL;
+	}
+	else if(Bitmap.InfoHeader.BitCount == 16)
+	{
+		/*image = (u8*)memalign(128, FTexSize);
+		if (image == NULL) {
+			printf("BMP: Failed to allocate memory\n");
+			if (tex->texels) {
+				free(tex->texels);
+				tex->texels = NULL;
+			}
+			if (tex->clut) {
+				free(tex->clut);
+				tex->clut = NULL;
+			}
+			fclose(file);
+			return NULL;
+		}
+
+		fread(image, FTexSize, 1, file);
+
+		p = (u8*)((u32*)tex->texels);
+		for (y = tex->height - 1, cy = 0; y >= 0; y--, cy++) {
+			for (x = 0; x < tex->width; x++) {
+				u16 value;
+				value = *(u16*)&image[(cy * tex->width + x) * 2];
+				value = (value & 0x8000) | value << 10 | (value & 0x3E0) | (value & 0x7C00) >> 10;	//ARGB -> ABGR
+
+				*(u16*)&p[(y * tex->width + x) * 2] = value;
+			}
+		}
+		free(image);
+		image = NULL;*/
+	}
+	else if(Bitmap.InfoHeader.BitCount == 8 || Bitmap.InfoHeader.BitCount == 4)
+	{
+		char *text = (char *)((u32)tex->texels);
+		image = (u8*)memalign(16, FTexSize);
+		if (image == NULL) {
+			printf("BMP: Failed to allocate memory\n");
+			if (tex->texels) {
+				free(tex->texels);
+				tex->texels = NULL;
+			}
+			if (tex->clut) {
+				free(tex->clut);
+				tex->clut = NULL;
+			}
+			fclose(file);
+			return NULL;
+		}
+
+		if (fread(image, FTexSize, 1, file) != 1)
+		{
+			if (tex->texels) {
+				free(tex->texels);
+				tex->texels = NULL;
+			}
+			if (tex->clut) {
+				free(tex->clut);
+				tex->clut = NULL;
+			}
+			printf("BMP: Read failed!, Size %d\n", FTexSize);
+			free(image);
+			image = NULL;
+			fclose(file);
+			return NULL;
+		}
+		for (y = tex->height - 1; y >= 0; y--)
+		{
+			if(Bitmap.InfoHeader.BitCount == 8)
+				memcpy(&text[y * tex->width], &image[(tex->height - y - 1) * tex->width], tex->width);
+			else
+				memcpy(&text[y * (tex->width / 2)], &image[(tex->height - y - 1) * (tex->width / 2)], tex->width / 2);
+		}
+		free(image);
+		image = NULL;
+
+		if(Bitmap.InfoHeader.BitCount == 4)
+		{
+			int byte;
+			u8 *tmpdst = (u8 *)((u32)tex->texels);
+			u8 *tmpsrc = (u8 *)text;
+
+			for(byte = 0; byte < FTexSize; byte++)
+			{
+				tmpdst[byte] = (tmpsrc[byte] << 4) | (tmpsrc[byte] >> 4);
+			}
+		}
+	}
+	else
+	{
+		printf("BMP: Unknown bit depth format %d\n", Bitmap.InfoHeader.BitCount);
+	}
+
+	fclose(file);
+
+    // Gera uma nova textura OpenGL
+    glGenTextures(1, &tex->id);
+    
+    // Vincula a textura
+    glBindTexture(GL_TEXTURE_2D, tex->id);
+    
+    // Define os parâmetros de filtragem da textura
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    
+    // Define os parâmetros de repetição da textura
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    
+    // Carrega os dados da imagem na textura
+    glTexImage2D(GL_TEXTURE_2D, 0, tex->format, tex->width, tex->height, 0, tex->format, GL_UNSIGNED_BYTE, tex->texels);
+
+    // Retorna a textura carregada
+    return tex;
 }
 
 struct my_error_mgr {
@@ -282,7 +607,7 @@ gl_texture_t* load_image(const char* path, bool delayed){
 	fread(&magic, 1, 2, file);
 	fseek(file, 0, SEEK_SET);
 	gl_texture_t* image = NULL;
-	if (magic == 0x4D42) image =      loadbmp(file, delayed);
+	if (magic == 0x4D42) image =      loadbmp(file);
 	else if (magic == 0xD8FF) image = loadjpeg(file, false, delayed);
 	else if (magic == 0x5089) image = loadpng(file);
 	if (image == NULL) printf("Failed to load image %s.", path);
