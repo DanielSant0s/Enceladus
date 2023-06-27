@@ -70,7 +70,7 @@ static int lua_fontunload(lua_State *L){
 	void* font = (void*)luaL_checkinteger(L, 1);
 	unloadFont(font);
 	return 0;
-}
+}*/
 
 static int lua_ftinit(lua_State *L){
 	if (lua_gettop(L) != 0) return luaL_error(L, "wrong number of arguments"); 
@@ -136,7 +136,7 @@ static int lua_ftend(lua_State *L) {
 	fntEnd();
 	return 0;
 }
-
+/*
 static int lua_fmload(lua_State *L) {
 	int argc = lua_gettop(L);
 	if (argc != 0) return luaL_error(L, "wrong number of arguments");
@@ -164,6 +164,7 @@ static int lua_fmunload(lua_State *L) {
 	return 0;
 }
 
+*/
 
 static const luaL_Reg Font_functions[] = {
 	//FreeType functions
@@ -175,17 +176,16 @@ static const luaL_Reg Font_functions[] = {
 	{"ftUnload",           		lua_ftunload},
 	{"ftEnd",           	       lua_ftend},
 	//gsFont functions
-  	{"load",	                lua_fontload},
-  	{"print",                      lua_print},
-    {"unload",                lua_fontunload},
+  	//{"load",	                lua_fontload},
+  	//{"print",                      lua_print},
+    //{"unload",                lua_fontunload},
 	//gsFontM functions
-  	{"fmLoad",            		  lua_fmload}, 
-	{"fmPrint",           		 lua_fmprint}, 
-	{"fmUnload",         	    lua_fmunload}, 
+  	//{"fmLoad",            		  lua_fmload}, 
+	//{"fmPrint",           		 lua_fmprint}, 
+	//{"fmUnload",         	    lua_fmunload}, 
   {0, 0}
 };
 
-*/
 static int lua_loadimgasync(lua_State *L){
 	int argc = lua_gettop(L);
 	if (argc != 1) return luaL_error(L, "wrong number of arguments");
@@ -528,9 +528,9 @@ void luaGraphics_init(lua_State *L) {
 	luaL_setfuncs(L, Graphics_functions, 0);
 	lua_setglobal(L, "Graphics");
 
-	//lua_newtable(L);
-	//luaL_setfuncs(L, Font_functions, 0);
-	//lua_setglobal(L, "Font");
+	lua_newtable(L);
+	luaL_setfuncs(L, Font_functions, 0);
+	lua_setglobal(L, "Font");
 
 
 }

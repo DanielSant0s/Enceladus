@@ -3,9 +3,10 @@
   Licenced under Academic Free License version 3.0
   Review OpenUsbLd README & LICENSE files for further details.
 */
-/*
+
 #include <stdio.h>
 #include <malloc.h>
+#include <cstring>
 #include "include/atlas.h"
 #include "include/graphics.h"
 
@@ -87,23 +88,19 @@ atlas_t *atlasNew(size_t width, size_t height, u8 psm)
 
     atlas->allocation = allocNew(0, 0, width, height);
 
-    atlas->surface.Width = width;
-    atlas->surface.Height = height;
+    atlas->surface.width = width;
+    atlas->surface.height = height;
 
-    atlas->surface.Filter = GS_FILTER_NEAREST;
-
-    size_t txtsize = gsKit_texture_size(width, height, psm);
-    atlas->surface.PSM = psm;
-    atlas->surface.Mem = (u32 *)memalign(128, txtsize);
-    atlas->surface.Vram = 0;
+    size_t txtsize = width* height;
+    atlas->surface.internalFormat = psm;
+    atlas->surface.texels = (u8 *)memalign(128, txtsize);
 
     // defaults to no clut
-    atlas->surface.ClutPSM = 0;
-    atlas->surface.Clut = NULL;
-    atlas->surface.VramClut = 0;
+    atlas->surface.clut_size = 0;
+    atlas->surface.clut = NULL;
 
     // zero out the atlas surface
-    memset(atlas->surface.Mem, 0x0, txtsize);
+    memset(atlas->surface.texels, 0x0, txtsize);
 
     return atlas;
 }
@@ -116,42 +113,24 @@ void atlasFree(atlas_t *atlas)
     allocFree(atlas->allocation);
     atlas->allocation = NULL;
 
-    UnloadTexture(&atlas->surface);
-    free(atlas->surface.Mem);
-    atlas->surface.Mem = NULL;
+    //UnloadTexture(&atlas->surface);
+    //free(atlas->surface.Mem);
+    //atlas->surface.Mem = NULL;
 
     free(atlas);
-}
-
-static size_t pixelSize(u8 psm)
-{
-    switch (psm) {
-        case GS_PSM_CT32:
-            return 4;
-        case GS_PSM_CT24:
-            return 4;
-        case GS_PSM_CT16:
-            return 2;
-        case GS_PSM_CT16S:
-            return 2;
-        case GS_PSM_T8:
-            return 1;
-        default:
-            return 0;
-    }
 }
 
 // copies the data into atlas
 static void atlasCopyData(atlas_t *atlas, struct atlas_allocation_t *al, size_t width, size_t height, const void *surface)
 {
     int y;
-    size_t ps = pixelSize(atlas->surface.PSM);
+    size_t ps = atlas->surface.internalFormat;
 
     if (!ps)
         return;
 
     const char *src = (const char *)surface;
-    char *data = (char *)atlas->surface.Mem;
+    char *data = (char *)atlas->surface.texels;
 
     // advance the pointer to the atlas position start (first pixel)
     data += ps * (al->y * atlas->allocation->w + al->x);
@@ -177,9 +156,25 @@ struct atlas_allocation_t *atlasPlace(atlas_t *atlas, size_t width, size_t heigh
 
     atlasCopyData(atlas, al, width, height, surface);
 
-    InvalidateTexture(&atlas->surface);
+        // Gera uma nova textura OpenGL
+    glGenTextures(1, &atlas->surface.id);
+    
+    // Vincula a textura
+    glBindTexture(GL_TEXTURE_2D, atlas->surface.id);
+    
+    // Define os par�metros de filtragem da textura
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    
+    // Define os par�metros de repeti��o da textura
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    
+    // Carrega os dados da imagem na textura
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_COLOR_INDEX, atlas->surface.width, atlas->surface.height, 0, GL_COLOR_INDEX, GL_UNSIGNED_BYTE, atlas->surface.texels);
+
+
+    //InvalidateTexture(&atlas->surface);
 
     return al;
 }
-
-*/

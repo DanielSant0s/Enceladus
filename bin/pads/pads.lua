@@ -1,4 +1,6 @@
--- Font.fmLoad()
+Font.ftInit()
+
+local minecraft = Font.ftLoad("minecraft.ttf")
 
 local circle = Graphics.loadImage("pads/circle.png")
 local cross = Graphics.loadImage("pads/cross.png")
@@ -32,10 +34,10 @@ local pressure = nil
 while true do
   Screen.clear()
 
-  -- Font.fmPrint(150, 25, 0.6, "\nEnceladus project: Controls demo\n")
-  -- Font.fmPrint(100, 370, 0.4, "\nTips:\n")
-  -- Font.fmPrint(100, 390, 0.4, "\nPress R2+L2 to start rumble and R3+L3 to stop it.\n")
-  -- Font.fmPrint(100, 405, 0.4, "\nButtons transparency varies with the pressure applied to them\n")
+  Font.ftPrint(minecraft, 150, 25,  0, 640, 448, "\nEnceladus project: Controls demo\n")
+  Font.ftPrint(minecraft, 100, 370, 0, 640, 448, "\nTips:\n")
+  Font.ftPrint(minecraft, 100, 390, 0, 640, 448, "\nPress R2+L2 to start rumble and R3+L3 to stop it.\n")
+  Font.ftPrint(minecraft, 100, 405, 0, 640, 448, "\nButtons transparency varies with the pressure applied to them\n")
 
   pad = Pads.get()
   rx, ry = Pads.getRightStick()

@@ -1,7 +1,7 @@
 #ifndef __ATLAS_H
 #define __ATLAS_H
-/*
-#include <gsToolkit.h>
+
+#include "graphics.h"
 
 struct atlas_allocation_t
 {
@@ -15,7 +15,7 @@ typedef struct
 {
     struct atlas_allocation_t *allocation;
 
-    GSTEXTURE surface;
+    gl_texture_t surface;
 } atlas_t;
 
 //  allocates a new atlas. Further settings should be set manually
@@ -31,6 +31,6 @@ void atlasFree(atlas_t *atlas);
 // 
 struct atlas_allocation_t *atlasPlace(atlas_t *atlas, size_t width,
                                       size_t height, const void *surface);
-*/
+
 
 #endif

@@ -1,7 +1,7 @@
 #ifndef __FNTSYS_H
 #define __FNTSYS_H
 
-#include <gsToolkit.h>
+#include "graphics.h"
 
 /// default (built-in) font id
 #define FNT_DEFAULT (0)
@@ -30,7 +30,7 @@ void fntRelease(int id);
 void fntUpdateAspectRatio();
 
 /** Renders a text with specified window dimensions */
-int fntRenderString(int id, int x, int y, short aligned, size_t width, size_t height, const char *string, u64 colour);
+int fntRenderString(int id, int x, int y, short aligned, size_t width, size_t height, const char *string, u32 colour);
 
 /** replaces spaces with newlines so that the text fits into the specified width.
  * @note A destrutive operation - modifies the given string!

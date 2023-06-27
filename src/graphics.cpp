@@ -12,24 +12,6 @@
 
 #include "include/graphics.h"
 
-/* ps2sdk */
-#include "graph.h"
-
-/* GL */
-#include "GL/ps2gl.h"
-
-/* ps2stuff */
-#include "ps2s/core.h"
-#include "ps2s/displayenv.h"
-#include "ps2s/drawenv.h"
-#include "ps2s/gs.h"
-#include "ps2s/timer.h"
-
-/* ps2gl */
-#include "ps2gl/debug.h"
-#include "ps2gl/displaycontext.h"
-#include "ps2gl/drawcontext.h"
-#include "ps2gl/glcontext.h"
 
 #define DEG2RAD(x) ((x)*0.01745329251)
 
@@ -1016,7 +998,35 @@ void setVideoMode(s16 mode, int width, int height, int psm, s16 interlace, s16 f
 
 void fntDrawQuad(rm_quad_t *q)
 {
+    glBindTexture(GL_TEXTURE_2D, q->txt->id);
+    glEnable(GL_TEXTURE_2D);
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
+    glColorTable(GL_COLOR_TABLE, GL_RGBA, 256, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, q->txt->clut);
+
+    //glDisable(GL_LIGHTING);
+
+    glColor4f(R(q->color)/255.0f, G(q->color)/255.0f, B(q->color)/255.0f, A(q->color)/255.0f); //blue colors
+
+    glBegin(GL_QUADS);
+	
+    glTexCoord2f(q->ul.u, q->ul.v);  // canto inferior esquerdo
+    glVertex2f(q->ul.x-0.5f,  q->ul.y-0.5f);
+
+    glTexCoord2f(q->br.u, q->ul.v);  // canto inferior direito
+    glVertex2f( q->br.x-0.5f, q->ul.y-0.5f);
+
+    glTexCoord2f(q->br.u, q->br.v);  // canto superior direito
+    glVertex2f( q->br.x-0.5f, q->br.y-0.5f);
+
+    glTexCoord2f(q->ul.u, q->br.v);  // canto superior esquerdo
+    glVertex2f(q->ul.x-0.5f, q->br.y-0.5f);
+
+    glEnd();
+
+	glFlush();
+
+    glDisable(GL_TEXTURE_2D);
 }
 
 

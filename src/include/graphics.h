@@ -5,13 +5,45 @@
 #include <math3d.h>
 
 
+/* ps2sdk */
+#include "graph.h"
+
+/* GL */
+#include "GL/ps2gl.h"
+
+/* ps2stuff */
+#include "ps2s/core.h"
+#include "ps2s/displayenv.h"
+#include "ps2s/drawenv.h"
+#include "ps2s/gs.h"
+#include "ps2s/timer.h"
+
+/* ps2gl */
+#include "ps2gl/debug.h"
+#include "ps2gl/displaycontext.h"
+#include "ps2gl/drawcontext.h"
+#include "ps2gl/glcontext.h"
+
+struct gl_texture_t
+{
+  u32 width;
+  u32 height;
+
+  u32 format;
+  s32 internalFormat;
+  u32 id;
+
+  u8 clut_size;
+  u32* clut;
+  u8 *texels;
+};
+
 /// GSKit CLUT base struct. This should've been in gsKit from the start :)
 typedef struct
 {
-    u8 PSM;       ///< Pixel Storage Method (Color Format)
-    u8 ClutPSM;   ///< CLUT Pixel Storage Method (Color Format)
-    u32 *Clut;    ///< EE CLUT Memory Pointer
-    u32 VramClut; ///< GS VRAM CLUT Memory Pointer
+    u8 internalFormat;       ///< Pixel Storage Method (Color Format)
+    u8 clut_size;   ///< CLUT Pixel Storage Method (Color Format)
+    u32 *clut;    ///< EE CLUT Memory Pointer
 } GSCLUT;
 
 typedef struct
@@ -25,7 +57,7 @@ typedef struct
     rm_tx_coord_t ul;
     rm_tx_coord_t br;
     u64 color;
-    void* *txt;
+    gl_texture_t* txt;
 } rm_quad_t;
 
 
@@ -49,20 +81,6 @@ struct model{
 };
 
 */
-
-struct gl_texture_t
-{
-  u32 width;
-  u32 height;
-
-  u32 format;
-  s32 internalFormat;
-  u32 id;
-
-  u8 clut_size;
-  u32* clut;
-  u8 *texels;
-};
 
 typedef u32 Color;
 #define A(color) ((u8)(color >> 24 & 0xFF))
