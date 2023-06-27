@@ -234,7 +234,7 @@ static void fntPrepareCLUT()
     for (i = 0; i < 256; ++i) {
         u8 alpha = (i * 128) / 255;
 
-        *clut = 0xFF << 24 | 0xFF << 16 | 0xFF << 8 | alpha;
+        *clut = i << 24 | 0xFF << 16 | 0xFF << 8 | 0xFF;
         clut++;
     }
 }
@@ -423,6 +423,8 @@ static int fntGlyphAtlasPlace(font_t *font, fnt_glyph_cache_entry_t *glyph)
             return 1;
         }
     }
+
+
 
     printf("FNTSYS No atlas free\n");
     return 0;

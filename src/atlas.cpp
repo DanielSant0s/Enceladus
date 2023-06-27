@@ -91,9 +91,26 @@ atlas_t *atlasNew(size_t width, size_t height, u8 psm)
     atlas->surface.width = width;
     atlas->surface.height = height;
 
-    size_t txtsize = width* height;
+    size_t txtsize = width * height;
     atlas->surface.internalFormat = psm;
     atlas->surface.texels = (u8 *)memalign(128, txtsize);
+
+        // Gera uma nova textura OpenGL
+    glGenTextures(1, &atlas->surface.id);
+    
+    // Vincula a textura
+    glBindTexture(GL_TEXTURE_2D, atlas->surface.id);
+    
+    // Define os par�metros de filtragem da textura
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    
+    // Define os par�metros de repeti��o da textura
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    
+    // Carrega os dados da imagem na textura
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_COLOR_INDEX, atlas->surface.width, atlas->surface.height, 0, GL_COLOR_INDEX, GL_UNSIGNED_BYTE, atlas->surface.texels);
 
     // defaults to no clut
     atlas->surface.clut_size = 0;
@@ -156,19 +173,7 @@ struct atlas_allocation_t *atlasPlace(atlas_t *atlas, size_t width, size_t heigh
 
     atlasCopyData(atlas, al, width, height, surface);
 
-        // Gera uma nova textura OpenGL
-    glGenTextures(1, &atlas->surface.id);
-    
-    // Vincula a textura
     glBindTexture(GL_TEXTURE_2D, atlas->surface.id);
-    
-    // Define os par�metros de filtragem da textura
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    
-    // Define os par�metros de repeti��o da textura
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     
     // Carrega os dados da imagem na textura
     glTexImage2D(GL_TEXTURE_2D, 0, GL_COLOR_INDEX, atlas->surface.width, atlas->surface.height, 0, GL_COLOR_INDEX, GL_UNSIGNED_BYTE, atlas->surface.texels);

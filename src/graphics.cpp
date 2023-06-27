@@ -1009,18 +1009,18 @@ void fntDrawQuad(rm_quad_t *q)
     glColor4f(R(q->color)/255.0f, G(q->color)/255.0f, B(q->color)/255.0f, A(q->color)/255.0f); //blue colors
 
     glBegin(GL_QUADS);
-	
-    glTexCoord2f(q->ul.u, q->ul.v);  // canto inferior esquerdo
-    glVertex2f(q->ul.x-0.5f,  q->ul.y-0.5f);
 
-    glTexCoord2f(q->br.u, q->ul.v);  // canto inferior direito
-    glVertex2f( q->br.x-0.5f, q->ul.y-0.5f);
+    glTexCoord2f(q->ul.u/q->txt->width, q->ul.v/q->txt->height);  // canto inferior esquerdo
+    glVertex2f(q->ul.x,  q->ul.y);
 
-    glTexCoord2f(q->br.u, q->br.v);  // canto superior direito
-    glVertex2f( q->br.x-0.5f, q->br.y-0.5f);
+    glTexCoord2f(q->br.u/q->txt->width, q->ul.v/q->txt->height);  // canto inferior direito
+    glVertex2f( q->br.x, q->ul.y);
 
-    glTexCoord2f(q->ul.u, q->br.v);  // canto superior esquerdo
-    glVertex2f(q->ul.x-0.5f, q->br.y-0.5f);
+    glTexCoord2f(q->br.u/q->txt->width, q->br.v/q->txt->height);  // canto superior direito
+    glVertex2f( q->br.x, q->br.y);
+
+    glTexCoord2f(q->ul.u/q->txt->width, q->br.v/q->txt->height);  // canto superior esquerdo
+    glVertex2f(q->ul.x, q->br.y);
 
     glEnd();
 
