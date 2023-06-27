@@ -784,7 +784,7 @@ void drawImage(gl_texture_t* source, float x, float y, float width, float height
 {
     glBindTexture(GL_TEXTURE_2D, source->id);
     glEnable(GL_TEXTURE_2D);
-    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     if(source->clut) {
         glColorTable(GL_COLOR_TABLE, GL_RGBA, source->clut_size, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, source->clut);
     }
