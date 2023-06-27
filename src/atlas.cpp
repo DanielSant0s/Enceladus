@@ -130,9 +130,7 @@ void atlasFree(atlas_t *atlas)
     allocFree(atlas->allocation);
     atlas->allocation = NULL;
 
-    //UnloadTexture(&atlas->surface);
-    //free(atlas->surface.Mem);
-    //atlas->surface.Mem = NULL;
+    UnloadTexture(&atlas->surface);
 
     free(atlas);
 }

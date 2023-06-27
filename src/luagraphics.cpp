@@ -464,6 +464,9 @@ static int lua_free(lua_State *L) {
 #ifndef SKIP_ERROR_HANDLING
 	if (argc != 1) return luaL_error(L, "wrong number of arguments");
 #endif
+
+	gl_texture_t* source = (gl_texture_t*)(luaL_checkinteger(L, 1));
+	UnloadTexture(source);
 	
 
 	return 0;

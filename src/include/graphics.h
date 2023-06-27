@@ -124,9 +124,9 @@ extern void drawTriangle_gouraud(float x, float y, float x2, float y2, float x3,
 extern void drawQuad(float x, float y, float x2, float y2, float x3, float y3, float x4, float y4, Color color);
 extern void drawQuad_gouraud(float x, float y, float x2, float y2, float x3, float y3, float x4, float y4, Color color, Color color2, Color color3, Color color4);
 
-extern void InvalidateTexture(void* *txt);
+extern void InvalidateTexture(gl_texture_t *txt);
 
-extern void UnloadTexture(void* *txt);
+extern void UnloadTexture(gl_texture_t *txt);
 
 extern void fntDrawQuad(rm_quad_t *q);
 

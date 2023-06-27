@@ -975,14 +975,16 @@ void drawCircle(float x, float y, float radius, u64 color, u8 filled)
     glEnd();
 }
 
-void InvalidateTexture(void *txt)
+void InvalidateTexture(gl_texture_t *txt)
 {
 
 }
 
-void UnloadTexture(void *txt)
+void UnloadTexture(gl_texture_t *txt)
 {
-	
+	glDeleteTextures(1, &(txt->id));
+	if(txt->clut) free(txt->clut);
+	free(txt->texels);
 }
 
 int GetInterlacedFrameMode()
