@@ -73,13 +73,11 @@ static int lua_fontunload(lua_State *L){
 }*/
 
 static int lua_ftinit(lua_State *L){
-	if (lua_gettop(L) != 0) return luaL_error(L, "wrong number of arguments"); 
 	fntInit();
 	return 0;
 }
 
 static int lua_ftload(lua_State *L){
-	if (lua_gettop(L) != 1) return luaL_error(L, "wrong number of arguments"); 
 	const char* fontpath = luaL_checkstring(L, 1);
 	int fntHandle = fntLoadFile(fontpath);
     lua_pushinteger(L, fntHandle);
@@ -87,7 +85,6 @@ static int lua_ftload(lua_State *L){
 }
 
 static int lua_ftSetPixelSize(lua_State *L) {
-	if (lua_gettop(L) != 3) return luaL_error(L, "wrong number of arguments"); 
 	int fontid = luaL_checkinteger(L, 1);
 	int width = luaL_checknumber(L, 2); 
 	int height = luaL_checknumber(L, 3); 
@@ -97,7 +94,6 @@ static int lua_ftSetPixelSize(lua_State *L) {
 
 
 static int lua_ftSetCharSize(lua_State *L) {
-	if (lua_gettop(L) != 3) return luaL_error(L, "wrong number of arguments"); 
 	int fontid = luaL_checkinteger(L, 1);
 	int width = luaL_checkinteger(L, 2); 
 	int height = luaL_checkinteger(L, 3); 
@@ -106,8 +102,6 @@ static int lua_ftSetCharSize(lua_State *L) {
 }
 
 static int lua_ftprint(lua_State *L) {
-	int argc = lua_gettop(L);
-	if (argc != 7 && argc != 8) return luaL_error(L, "wrong number of arguments");
 	int fontid = luaL_checkinteger(L, 1);
     int x = luaL_checkinteger(L, 2);
 	int y = luaL_checkinteger(L, 3);
@@ -116,14 +110,12 @@ static int lua_ftprint(lua_State *L) {
 	int height = luaL_checkinteger(L, 6); 
     const char* text = luaL_checkstring(L, 7);
 	Color color = 0xFFFFFFFF;
-	if (argc == 8) color = luaL_checkinteger(L, 8);
+	if (lua_gettop(L) == 8) color = luaL_checkinteger(L, 8);
 	fntRenderString(fontid, x, y, alignment, width, height, text, color);
 	return 0;
 }
 
 static int lua_ftunload(lua_State *L){
-	int argc = lua_gettop(L); 
-	if (argc != 1) return luaL_error(L, "wrong number of arguments"); 
 	int fontid = luaL_checkinteger(L, 1);
 	fntRelease(fontid);
 	return 0;
@@ -131,8 +123,6 @@ static int lua_ftunload(lua_State *L){
 
 
 static int lua_ftend(lua_State *L) {
-	int argc = lua_gettop(L);
-	if (argc != 0) return luaL_error(L, "wrong number of arguments");
 	fntEnd();
 	return 0;
 }
@@ -214,7 +204,6 @@ static int lua_loadimgasync(lua_State *L){
 
 static int lua_loadimg(lua_State *L) {
 	int argc = lua_gettop(L);
-	if (argc != 1 && argc != 2) return luaL_error(L, "wrong number of arguments");
 	const char* text = luaL_checkstring(L, 1);
 	bool delayed = true;
 	if (argc == 2) delayed = lua_toboolean(L, 2);
@@ -226,7 +215,6 @@ static int lua_loadimg(lua_State *L) {
 
 static int lua_drawimg(lua_State *L) {
 	int argc = lua_gettop(L);
-	if (argc != 3 && argc != 4) return luaL_error(L, "wrong number of arguments");
     gl_texture_t* source = (gl_texture_t*)(luaL_checkinteger(L, 1));
 	float x = luaL_checknumber(L, 2);
 	float y = luaL_checknumber(L, 3);
@@ -246,7 +234,6 @@ static int lua_drawimg(lua_State *L) {
 
 static int lua_drawimg_rotate(lua_State *L) {
 	int argc = lua_gettop(L);
-	if (argc != 4 && argc != 5) return luaL_error(L, "wrong number of arguments");
     gl_texture_t* source = (gl_texture_t*)(luaL_checkinteger(L, 1));
 	float x = luaL_checknumber(L, 2);
 	float y = luaL_checknumber(L, 3);
@@ -267,7 +254,6 @@ static int lua_drawimg_rotate(lua_State *L) {
 
 static int lua_drawimg_scale(lua_State *L) {
 	int argc = lua_gettop(L);
-	if (argc != 5 && argc != 6) return luaL_error(L, "wrong number of arguments");
     gl_texture_t* source = (gl_texture_t*)(luaL_checkinteger(L, 1));
 	float x = luaL_checknumber(L, 2);
 	float y = luaL_checknumber(L, 3);
@@ -288,7 +274,6 @@ static int lua_drawimg_scale(lua_State *L) {
 
 static int lua_drawimg_part(lua_State *L) {
 	int argc = lua_gettop(L);
-	if (argc != 7 && argc != 8) return luaL_error(L, "wrong number of arguments");
     gl_texture_t* source = (gl_texture_t*)(luaL_checkinteger(L, 1));
 	float x = luaL_checknumber(L, 2);
 	float y = luaL_checknumber(L, 3);
@@ -306,7 +291,6 @@ static int lua_drawimg_part(lua_State *L) {
 
 static int lua_drawimg_full(lua_State *L) {
 	int argc = lua_gettop(L);
-	if (argc != 10 && argc != 11) return luaL_error(L, "wrong number of arguments");
     gl_texture_t* source = (gl_texture_t*)(luaL_checkinteger(L, 1));
 	float x = luaL_checknumber(L, 2);
 	float y = luaL_checknumber(L, 3);
@@ -326,8 +310,6 @@ static int lua_drawimg_full(lua_State *L) {
 }
 
 static int lua_width(lua_State *L) {
-	int argc = lua_gettop(L);
-	if (argc != 1) return luaL_error(L, "wrong number of arguments");
     gl_texture_t* source = (gl_texture_t*)(luaL_checkinteger(L, 1));
 	lua_pushinteger(L, (uint32_t)(0));
 	return 1;
@@ -335,16 +317,12 @@ static int lua_width(lua_State *L) {
 
 
 static int lua_height(lua_State *L) {
-	int argc = lua_gettop(L);
-	if (argc != 1) return luaL_error(L, "wrong number of arguments");
     gl_texture_t* source = (gl_texture_t*)(luaL_checkinteger(L, 1));
 	lua_pushinteger(L, (uint32_t)(0));
 	return 1;
 }
 
 static int lua_filters(lua_State *L) {
-	int argc = lua_gettop(L);
-	if (argc != 2) return luaL_error(L, "wrong number of arguments");
     gl_texture_t* source = (gl_texture_t*)(luaL_checkinteger(L, 1));
 	
 	return 0;
@@ -352,8 +330,6 @@ static int lua_filters(lua_State *L) {
 
 
 static int lua_rect(lua_State *L) {
-	int argc = lua_gettop(L);
-	if (argc != 5) return luaL_error(L, "wrong number of arguments");
 	float x = luaL_checknumber(L, 1);
 	float y = luaL_checknumber(L, 2);
     float width = luaL_checknumber(L, 3);
@@ -367,8 +343,6 @@ static int lua_rect(lua_State *L) {
 
 
 static int lua_line(lua_State *L) {
-	int argc = lua_gettop(L);
-	if (argc != 5) return luaL_error(L, "wrong number of arguments");
 	float x = luaL_checknumber(L, 1);
 	float y = luaL_checknumber(L, 2);
     float x2 = luaL_checknumber(L, 3);
@@ -381,8 +355,6 @@ static int lua_line(lua_State *L) {
 }
 
 static int lua_pixel(lua_State *L) {
-	int argc = lua_gettop(L);
-	if (argc != 3) return luaL_error(L, "wrong number of arguments");
 	float x = luaL_checknumber(L, 1);
 	float y = luaL_checknumber(L, 2);
     Color color =  luaL_checkinteger(L, 3);
@@ -394,8 +366,6 @@ static int lua_pixel(lua_State *L) {
 static int lua_triangle(lua_State *L) {
 	int argc = lua_gettop(L);
 
-	if (argc != 7 && argc != 9) return luaL_error(L, "wrong number of arguments");
-
 	float x = luaL_checknumber(L, 1);
 	float y = luaL_checknumber(L, 2);
     float x2 = luaL_checknumber(L, 3);
@@ -404,20 +374,18 @@ static int lua_triangle(lua_State *L) {
     float y3 = luaL_checknumber(L, 6);
     Color color =  luaL_checkinteger(L, 7);
 
-	if (argc == 7) drawTriangle(x, y, x2, y2, x3, y3, color);
-
 	if (argc == 9) {
 		Color color2 =  luaL_checkinteger(L, 8);
 		Color color3 =  luaL_checkinteger(L, 9);
 		drawTriangle_gouraud(x, y, x2, y2, x3, y3, color, color2, color3);
+	} else {
+		drawTriangle(x, y, x2, y2, x3, y3, color);
 	}
 	return 0;
 }
 
 static int lua_quad(lua_State *L) {
 	int argc = lua_gettop(L);
-
-	if (argc != 9 && argc != 12) return luaL_error(L, "wrong number of arguments");
 
 	float x = luaL_checknumber(L, 1);
 	float y = luaL_checknumber(L, 2);
@@ -429,21 +397,20 @@ static int lua_quad(lua_State *L) {
     float y4 = luaL_checknumber(L, 8);
     Color color =  luaL_checkinteger(L, 9);
 
-	if (argc == 9) drawQuad(x, y, x2, y2, x3, y3, x4, y4, color);
-
 	if (argc == 12) {
 		Color color2 = luaL_checkinteger(L, 10);
 		Color color3 = luaL_checkinteger(L, 11);
 		Color color4 = luaL_checkinteger(L, 12);
 		drawQuad_gouraud(x, y, x2, y2, x3, y3, x4, y4, color, color2, color3, color4);
+	} else {
+		drawQuad(x, y, x2, y2, x3, y3, x4, y4, color);
 	}
+
 	return 0;
 }
 
 static int lua_circle(lua_State *L) {
 	int argc = lua_gettop(L);
-
-	if (argc != 4 && argc != 5) return luaL_error(L, "wrong number of arguments");
 
 	float x = luaL_checknumber(L, 1);
 	float y = luaL_checknumber(L, 2);
@@ -461,9 +428,6 @@ static int lua_circle(lua_State *L) {
 
 static int lua_free(lua_State *L) {
 	int argc = lua_gettop(L);
-#ifndef SKIP_ERROR_HANDLING
-	if (argc != 1) return luaL_error(L, "wrong number of arguments");
-#endif
 
 	gl_texture_t* source = (gl_texture_t*)(luaL_checkinteger(L, 1));
 	UnloadTexture(source);

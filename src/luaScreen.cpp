@@ -79,6 +79,11 @@ static int lua_setvmode(lua_State *L) {
 	return 0;
 }
 
+static int lua_setvsync(lua_State *L) {
+	setVSync(luaL_checknumber(L, 1));
+	return 0;
+}
+
 static int lua_getvmode(lua_State *L) {
 	int argc = lua_gettop(L);
 	if (argc != 0) return luaL_error(L, "wrong number of arguments");
@@ -139,6 +144,7 @@ static const luaL_Reg Screen_functions[] = {
 	{"flip",              	lua_flip},
 	{"getFreeVRAM",  lua_getFreeVRAM},
 	{"getFPS",            lua_getFPS},
+	{"setVSync",        lua_setvsync},
   //{"getPixel",        	lua_getP},
 	{"waitVblankStart",	  lua_vblank},
 	{"getMode",			lua_getvmode},

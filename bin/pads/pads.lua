@@ -1,5 +1,7 @@
 Font.ftInit()
 
+Screen.setVSync(0);
+
 local minecraft = Font.ftLoad("minecraft.ttf")
 
 local circle = Graphics.loadImage("pads/circle.png")
@@ -33,6 +35,8 @@ local pressure = nil
 
 while true do
   Screen.clear()
+
+  Font.ftPrint(minecraft, 0, 0,  0, 0, 0, Screen.getFPS(360) .. " FPS")
 
   Font.ftPrint(minecraft, 150, 25,  0, 640, 448, "\nEnceladus project: Controls demo\n")
   Font.ftPrint(minecraft, 100, 370, 0, 640, 448, "\nTips:\n")

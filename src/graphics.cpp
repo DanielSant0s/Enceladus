@@ -19,7 +19,6 @@ void *gsGlobal = NULL;
 void *gsFontM = NULL;
 
 static bool vsync = true;
-static int vsync_sema_id = 0;
 static clock_t curtime = 0;
 static float fps = 0.0f;
 
@@ -992,6 +991,8 @@ int GetInterlacedFrameMode()
     return 1;
 }
 
+void setVSync(bool vsync_flag){ vsync = vsync_flag; }
+
 void *getGSGLOBAL(){return gsGlobal;}
 
 void setVideoMode(s16 mode, int width, int height, int psm, s16 interlace, s16 field, bool zbuffering, int psmz) {
@@ -1189,9 +1190,19 @@ void flipScreen()
     else
         firstTime = false;
 
-    pglWaitForVSync();
+	if(vsync) pglWaitForVSync();
     pglSwapBuffers();
     pglRenderGeometry();
+
+	if (frames > frame_interval && frame_interval != -1) {
+		clock_t prevtime = curtime;
+		curtime = clock();
+
+		fps = ((float)(frame_interval)) / (((float)(curtime - prevtime)) / ((float)CLOCKS_PER_SEC));
+
+		frames = 0;
+	}
+	frames++;
 
 	pglBeginGeometry();
 }
