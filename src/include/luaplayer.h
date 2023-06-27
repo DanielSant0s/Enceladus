@@ -9,6 +9,8 @@ extern "C" {
 #include "lauxlib.h"
 }
 
+#include <cstdint>
+
 extern char boot_path[255];
 
 #ifdef DEBUG

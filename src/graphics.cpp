@@ -64,7 +64,7 @@ unsigned int loadraw(FILE* file)
 
 gl_texture_t* loadpng(FILE* file) {
     gl_texture_t* tex = (gl_texture_t*)malloc(sizeof(gl_texture_t));
-    tex->clut = NULL;
+
     GLenum textureFormat; // formato de cor da textura
     u32 sig_read = 0;
     int interlace_type, bit_depth, colorType;
@@ -76,12 +76,13 @@ gl_texture_t* loadpng(FILE* file) {
         return NULL;
     }
     
-    // Cria a estrutura png_info para obter informações da imagem PNG
+    // Cria a estrutura png_info para obter informaï¿½ï¿½es da imagem PNG
     png_infop info = png_create_info_struct(png);
+
     if (!info) {
         printf("Erro ao criar a estrutura png_info.\n");
+		fclose(file);
         png_destroy_read_struct(&png, (png_infopp)NULL, (png_infopp)NULL);
-        fclose(file);
         return NULL;
     }
     
@@ -99,17 +100,21 @@ gl_texture_t* loadpng(FILE* file) {
 
     png_read_info(png, info);
     
-    png_get_IHDR(png, info, &tex->width, &tex->height, &bit_depth, &colorType, &interlace_type, NULL, NULL);
+    png_get_IHDR(png, info, &(tex->width), &(tex->height), &bit_depth, &colorType, &interlace_type, NULL, NULL);
 
     if (bit_depth == 16) png_set_strip_16(png);
 	if (colorType == PNG_COLOR_TYPE_GRAY || bit_depth < 4) png_set_expand(png);
-	//if (png_get_valid(png, info, PNG_INFO_tRNS)) png_set_tRNS_to_alpha(png_ptr);
+	if (png_get_valid(png, info, PNG_INFO_tRNS)) png_set_tRNS_to_alpha(png);
 
 	png_set_filler(png, 0xff, PNG_FILLER_AFTER);
 
 	png_read_update_info(png, info);
+
+	tex->clut = NULL;
+
+	colorType = png_get_color_type(png, info);
     
-    // Verifica se a imagem é RGBA e converte para RGB, se necessário
+    // Verifica se a imagem ï¿½ RGBA e converte para RGB, se necessï¿½rio
     switch (colorType)
     {
     /*case PNG_COLOR_TYPE_GRAY:
@@ -188,11 +193,11 @@ gl_texture_t* loadpng(FILE* file) {
       break;
     }
     
-    // Obtém o tamanho dos dados da imagem
+    // Obtï¿½m o tamanho dos dados da imagem
     size_t rowBytes = png_get_rowbytes(png, info);
     
-    // Aloca memória para armazenar os dados da imagem
-    tex->texels = (GLubyte *)memalign (128, sizeof (GLubyte) * tex->width * tex->height * tex->internalFormat);
+    // Aloca memï¿½ria para armazenar os dados da imagem
+    tex->texels = (GLubyte *)memalign (16, sizeof (GLubyte) * tex->width * tex->height * tex->internalFormat);
 
     /* Setup a pointer array.  Each one points at the begening of a row. */
     png_bytep *row_pointers = (png_bytep *)malloc (sizeof (png_bytep) * tex->height);
@@ -201,10 +206,13 @@ gl_texture_t* loadpng(FILE* file) {
         row_pointers[i] = (png_bytep)(tex->texels + (i * tex->width * tex->internalFormat));
     }
 
-    // Lê os dados da imagem linha por linha
+    // Lï¿½ os dados da imagem linha por linha
     png_read_image(png, row_pointers);
-    
     png_read_end(png, NULL);
+
+	// Libera a memï¿½ria dos dados da imagem
+    free(row_pointers);
+
     png_destroy_read_struct(&png, &info, NULL);
     fclose(file);
     
@@ -214,19 +222,16 @@ gl_texture_t* loadpng(FILE* file) {
     // Vincula a textura
     glBindTexture(GL_TEXTURE_2D, tex->id);
     
-    // Define os parâmetros de filtragem da textura
+    // Define os parï¿½metros de filtragem da textura
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     
-    // Define os parâmetros de repetição da textura
+    // Define os parï¿½metros de repetiï¿½ï¿½o da textura
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     
     // Carrega os dados da imagem na textura
     glTexImage2D(GL_TEXTURE_2D, 0, tex->format, tex->width, tex->height, 0, tex->format, GL_UNSIGNED_BYTE, tex->texels);
-    
-    // Libera a memória dos dados da imagem
-    free(row_pointers);
 
     return tex;
 }
@@ -548,11 +553,11 @@ gl_texture_t* loadbmp(FILE* file)
     // Vincula a textura
     glBindTexture(GL_TEXTURE_2D, tex->id);
     
-    // Define os parâmetros de filtragem da textura
+    // Define os parï¿½metros de filtragem da textura
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     
-    // Define os parâmetros de repetição da textura
+    // Define os parï¿½metros de repetiï¿½ï¿½o da textura
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     
@@ -669,11 +674,11 @@ gl_texture_t* loadjpeg(FILE* fp, bool scale_down)
     // Vincula a textura
     glBindTexture(GL_TEXTURE_2D, tex->id);
     
-    // Define os parâmetros de filtragem da textura
+    // Define os parï¿½metros de filtragem da textura
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     
-    // Define os parâmetros de repetição da textura
+    // Define os parï¿½metros de repetiï¿½ï¿½o da textura
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     
@@ -691,10 +696,15 @@ gl_texture_t* load_image(const char* path, bool delayed){
 	fread(&magic, 1, 2, file);
 	fseek(file, 0, SEEK_SET);
 	gl_texture_t* image = NULL;
-	if (magic == 0x4D42) image =      loadbmp(file);
-	else if (magic == 0xD8FF) image = loadjpeg(file, false);
-	else if (magic == 0x5089) image = loadpng(file);
-	if (image == NULL) printf("Failed to load image %s.", path);
+	if (magic == 0x4D42) {
+		image = loadbmp(file);
+	} else if (magic == 0xD8FF) {
+		image = loadjpeg(file, false);
+	} else if (magic == 0x5089) {
+		image = loadpng(file);
+	}
+
+	if (image == NULL) printf("Failed to load image %s.\n", path);
 
 	return image;
 }
@@ -779,11 +789,9 @@ void drawImage(gl_texture_t* source, float x, float y, float width, float height
         glColorTable(GL_COLOR_TABLE, GL_RGBA, source->clut_size, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, source->clut);
     }
 
-    glDisable(GL_LIGHTING);
+    //glDisable(GL_LIGHTING);
 
     glColor4f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f, A(color)/255.0f); //blue colors
-
-	printf("BREAKING NOW!!!\n");
 
     glBegin(GL_QUADS);
 	
@@ -805,7 +813,7 @@ void drawImage(gl_texture_t* source, float x, float y, float width, float height
 
     glDisable(GL_TEXTURE_2D);
 
-    glEnable(GL_LIGHTING);
+    //glEnable(GL_LIGHTING);
 }
 
 
@@ -822,9 +830,9 @@ void drawImageRotate(gl_texture_t* source, float x, float y, float width, float 
     glColor4f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f, A(color)/255.0f); //blue colors
 
     glPushMatrix();
-    glTranslatef(x + width/2, y + height/2, 0.0f); // Translada para o centro do retângulo
-    glRotatef(angle, 0.0f, 0.0f, 1.0f); // Aplica a rotação no eixo Z
-    glTranslatef(-width/2, -height/2, 0.0f); // Translada de volta para a posição original
+    glTranslatef(x + width/2, y + height/2, 0.0f); // Translada para o centro do retï¿½ngulo
+    glRotatef(angle, 0.0f, 0.0f, 1.0f); // Aplica a rotaï¿½ï¿½o no eixo Z
+    glTranslatef(-width/2, -height/2, 0.0f); // Translada de volta para a posiï¿½ï¿½o original
 
     glBegin(GL_QUADS);
 	
@@ -971,7 +979,7 @@ void drawCircle(float x, float y, float radius, u64 color, u8 filled)
 
     if(filled) {
         glBegin(GL_TRIANGLE_FAN);
-        glVertex2f(x, y);  // centro do círculo
+        glVertex2f(x, y);  // centro do cï¿½rculo
     } else {
         glBegin(GL_LINE_LOOP);
     }
@@ -1130,8 +1138,8 @@ void reshape(int width, int height) // Create The Reshape Function (the viewport
 void InitGL(GLvoid) // Create Some Everyday Functions
 {
     glShadeModel(GL_SMOOTH);              // Enable Smooth Shading
-    glClearColor(0.0f, 0.0f, 0.0f, 0.5f); // Black Background
-    //glClearDepth(1.0f);                   // Depth Buffer Setup
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Black Background
+    glClearDepth(1.0f);                   // Depth Buffer Setup
     //glEnable(GL_DEPTH_TEST);              // Enables Depth Testing
     glDepthFunc(GL_LEQUAL);               // The Type Of Depth Testing To Do
     
@@ -1144,6 +1152,7 @@ void InitGL(GLvoid) // Create Some Everyday Functions
     glEnable(GL_LIGHT0);
 
 	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void initGraphics()
