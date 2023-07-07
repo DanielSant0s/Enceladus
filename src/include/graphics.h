@@ -98,7 +98,7 @@ struct model {
 	float* texcoords;
 	float* normals;
     float* colours;
-    float* bounding_box;
+    float bounding_box[24];
 
     gl_texture_t* texture;
 
@@ -171,7 +171,7 @@ extern void printFontMText(const char* text, float x, float y, float scale, Colo
 
 extern void unloadFontM();
 
-extern void init3D(float aspect);
+extern void init3D();
 
 extern void setCameraPosition(float x, float y, float z);
 

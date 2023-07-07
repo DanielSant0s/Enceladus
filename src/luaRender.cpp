@@ -7,14 +7,6 @@
 #include "include/render.h"
 #include "include/luaplayer.h"
 
-static int lua_initrender(lua_State *L) {
-	int argc = lua_gettop(L);
-  	if (argc != 1) return luaL_error(L, "wrong number of arguments.");
-	float aspect = luaL_checknumber(L, 1);
-  	init3D(aspect);
-	return 0;
-}
-
 static int lua_setview(lua_State *L) {
   	viewport_3d(luaL_checknumber(L, 1), luaL_checknumber(L, 2), luaL_checknumber(L, 3), luaL_checknumber(L, 4));
 	return 0;
@@ -91,7 +83,6 @@ static int lua_drawbbox(lua_State *L){
 
 //Register our Render Functions
 static const luaL_Reg Render_functions[] = {
-    {"init",           		    lua_initrender},
 	{"setView",           		   lua_setview},
   	{"loadOBJ",           		   lua_loadobj},
     {"drawOBJ",           		   lua_drawobj},

@@ -2,7 +2,6 @@
 
 --Screen.setVSync(0)
 
-Render.init(4/3) 
 Render.setView(40.0, 4/3, 1.0, 4000.0)
 
 local models = {Render.loadOBJ("mesh/earth.obj"), Render.loadOBJ("mesh/moon.obj"), Render.loadOBJ("mesh/Car.obj")}

@@ -38,37 +38,6 @@ void viewport_3d(float fov, float aspect, float nearClip, float farClip) {
     glLoadIdentity();
 }
 
-GLfloat ambient[] = { 0.2, 0.2, 0.2, 1.0 };
-
-void init3D(float aspect)
-{
-	//create_view_screen(view_screen, aspect, -0.20f, 0.20f, -0.20f, 0.20f, 1.00f, 2000.00f);
-	glEnable(GL_DEPTH_TEST);
-    glEnable(GL_RESCALE_NORMAL);
-
-    // lighting
-
-    GLfloat l1_position[] = { 0.0, -20.0, -80.0, 1.0 };
-    // GLfloat l1_position[] = {0, -1, 1, 0.0};
-    GLfloat l1_diffuse[] = { .6f, .6f, .6f, 0.0f };
-
-    GLfloat black[] = { 0, 0, 0, 0 };
-
-    glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT1);
-
-    glLightfv(GL_LIGHT1, GL_AMBIENT, black);
-    glLightfv(GL_LIGHT1, GL_DIFFUSE, l1_diffuse);
-    glLightfv(GL_LIGHT1, GL_SPECULAR, black);
-    glLightfv(GL_LIGHT1, GL_POSITION, l1_position);
-
-    glLightf(GL_LIGHT1, GL_CONSTANT_ATTENUATION, 0.0f);
-    glLightf(GL_LIGHT1, GL_LINEAR_ATTENUATION, 0.005f);
-    glLightf(GL_LIGHT1, GL_QUADRATIC_ATTENUATION, 0.0f);
-
-}
-
-
 void setCameraPosition(float x, float y, float z){
 	camera_pos[0] = x;
 	camera_pos[1] = y;
@@ -183,65 +152,51 @@ model* loadOBJ(const char* path, gl_texture_t* text){
 		}
 	}
 
-	/*
 	//calculate bounding box
 	float lowX, lowY, lowZ, hiX, hiY, hiZ;
-    lowX = hiX = res_m->positions[res_m->idxList[0]][0];
-    lowY = hiY = res_m->positions[res_m->idxList[0]][1];
-    lowZ = hiZ = res_m->positions[res_m->idxList[0]][2];
-    for (int i = 0; i < res_m->facesCount; i++)
-    {
-        if (lowX > res_m->positions[res_m->idxList[i]][0]) lowX = res_m->positions[res_m->idxList[i]][0];
-        if (hiX < res_m->positions[res_m->idxList[i]][0]) hiX = res_m->positions[res_m->idxList[i]][0];
-        if (lowY > res_m->positions[res_m->idxList[i]][1]) lowY = res_m->positions[res_m->idxList[i]][1];
-        if (hiY < res_m->positions[res_m->idxList[i]][1]) hiY = res_m->positions[res_m->idxList[i]][1];
-        if (lowZ > res_m->positions[res_m->idxList[i]][2]) lowZ = res_m->positions[res_m->idxList[i]][2];
-        if (hiZ < res_m->positions[res_m->idxList[i]][2]) hiZ = res_m->positions[res_m->idxList[i]][2];
+    lowX = hiX = res_m->positions[0];
+    lowY = hiY = res_m->positions[1];
+    lowZ = hiZ = res_m->positions[2];
+    for (int i = 0; i < res_m->indexCount; i++) {
+        if (lowX > res_m->positions[i * 3 + 0]) lowX = res_m->positions[i * 3 + 0];
+        if (hiX <  res_m->positions[i * 3 + 0]) hiX =  res_m->positions[i * 3 + 0];
+        if (lowY > res_m->positions[i * 3 + 1]) lowY = res_m->positions[i * 3 + 1];
+        if (hiY <  res_m->positions[i * 3 + 1]) hiY =  res_m->positions[i * 3 + 1];
+        if (lowZ > res_m->positions[i * 3 + 2]) lowZ = res_m->positions[i * 3 + 2];
+        if (hiZ <  res_m->positions[i * 3 + 2]) hiZ =  res_m->positions[i * 3 + 2];
     }
 
-	res_m->bounding_box = (VECTOR*)malloc(sizeof(VECTOR)*8);
+    res_m->bounding_box[0] = lowX;
+	res_m->bounding_box[1] = lowY;
+	res_m->bounding_box[2] = lowZ;
 
-    res_m->bounding_box[0][0] = lowX;
-	res_m->bounding_box[0][1] = lowY;
-	res_m->bounding_box[0][2] = lowZ;
-	res_m->bounding_box[0][3] = 1.00f;
+    res_m->bounding_box[3] = lowX;
+	res_m->bounding_box[4] = lowY;
+	res_m->bounding_box[5] = hiZ;
 
-    res_m->bounding_box[1][0] = lowX;
-	res_m->bounding_box[1][1] = lowY;
-	res_m->bounding_box[1][2] = hiZ;
-	res_m->bounding_box[1][3] = 1.00f;
+    res_m->bounding_box[6] = lowX;
+	res_m->bounding_box[7] = hiY;
+	res_m->bounding_box[8] = lowZ;
 
-    res_m->bounding_box[2][0] = lowX;
-	res_m->bounding_box[2][1] = hiY;
-	res_m->bounding_box[2][2] = lowZ;
-	res_m->bounding_box[2][3] = 1.00f;
+    res_m->bounding_box[9] = lowX;
+	res_m->bounding_box[10] = hiY;
+	res_m->bounding_box[11] = hiZ;
 
-    res_m->bounding_box[3][0] = lowX;
-	res_m->bounding_box[3][1] = hiY;
-	res_m->bounding_box[3][2] = hiZ;
-	res_m->bounding_box[3][3] = 1.00f;
+    res_m->bounding_box[12] = hiX;
+	res_m->bounding_box[13] = lowY;
+	res_m->bounding_box[14] = lowZ;
 
-    res_m->bounding_box[4][0] = hiX;
-	res_m->bounding_box[4][1] = lowY;
-	res_m->bounding_box[4][2] = lowZ;
-	res_m->bounding_box[4][3] = 1.00f;
+    res_m->bounding_box[15] = hiX;
+	res_m->bounding_box[16] = lowY;
+	res_m->bounding_box[17] = hiZ;
 
-    res_m->bounding_box[5][0] = hiX;
-	res_m->bounding_box[5][1] = lowY;
-	res_m->bounding_box[5][2] = hiZ;
-	res_m->bounding_box[5][3] = 1.00f;
+    res_m->bounding_box[18] = hiX;
+	res_m->bounding_box[19] = hiY;
+	res_m->bounding_box[20] = lowZ;
 
-    res_m->bounding_box[6][0] = hiX;
-	res_m->bounding_box[6][1] = hiY;
-	res_m->bounding_box[6][2] = lowZ;
-	res_m->bounding_box[6][3] = 1.00f;
-
-    res_m->bounding_box[7][0] = hiX;
-	res_m->bounding_box[7][1] = hiY;
-	res_m->bounding_box[7][2] = hiZ;
-	res_m->bounding_box[7][3] = 1.00f;
-
-	*/
+    res_m->bounding_box[21] = hiX;
+	res_m->bounding_box[22] = hiY;
+	res_m->bounding_box[23] = hiZ;
 
 	fast_obj_destroy(m);
 

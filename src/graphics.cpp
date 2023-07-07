@@ -1173,7 +1173,8 @@ void InitGL(GLvoid) // Create Some Everyday Functions
     glShadeModel(GL_SMOOTH);              // Enable Smooth Shading
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Black Background
     glClearDepth(1.0f);                   // Depth Buffer Setup
-    //glEnable(GL_DEPTH_TEST);              // Enables Depth Testing
+    glEnable(GL_DEPTH_TEST);              // Enables Depth Testing
+	glEnable(GL_RESCALE_NORMAL);
     glDepthFunc(GL_LEQUAL);               // The Type Of Depth Testing To Do
     
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
