@@ -427,8 +427,6 @@ static int lua_circle(lua_State *L) {
 
 
 static int lua_free(lua_State *L) {
-	int argc = lua_gettop(L);
-
 	gl_texture_t* source = (gl_texture_t*)(luaL_checkinteger(L, 1));
 	UnloadTexture(source);
 	

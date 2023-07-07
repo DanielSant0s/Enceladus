@@ -69,18 +69,45 @@ typedef struct
     VECTOR*     test;
 } vData; 
 
-struct model{
-	uint32_t facesCount;
-    uint16_t* idxList;
-    VECTOR* positions;
-	VECTOR* texcoords;
-	VECTOR* normals;
-    VECTOR* colours;
-    VECTOR* bounding_box;
-    void* texture;
+*/
+
+struct materialRangeInfo {
+    uint32_t start;
+    uint32_t end;
+    uint32_t materialIndex;
 };
 
-*/
+struct material {
+    float Ka[4];  /* Ambient */
+    float Kd[4];  /* Diffuse */
+    float Ks[4];  /* Specular */
+    float Ke[4];  /* Emission */
+    float Kt[4];  /* Transmittance */
+    float Ns;     /* Shininess */
+    float Ni;     /* Index of refraction */
+    float Tf[4];  /* Transmission filter */
+    float d;      /* Disolve (alpha) */
+    int   illum;  /* Illumination model */
+};
+
+struct model {
+	uint32_t indexCount;
+    float* positions;
+	float* texcoords;
+	float* normals;
+    float* colours;
+    float* bounding_box;
+    gl_texture_t* texture;
+    gl_texture_t** textures;
+
+    material* materials;
+	int materialCount;
+
+    materialRangeInfo* ranges;
+    int rangeCount;
+};
+
+
 
 typedef u32 Color;
 #define A(color) ((u8)(color >> 24 & 0xFF))
@@ -141,7 +168,7 @@ extern void loadFontM();
 extern void printFontMText(const char* text, float x, float y, float scale, Color color);
 
 extern void unloadFontM();
-/*
+
 extern void init3D(float aspect);
 
 extern void setCameraPosition(float x, float y, float z);
@@ -152,10 +179,14 @@ extern void setLightQuantity(int quantity);
 
 extern void createLight(int lightid, float dir_x, float dir_y, float dir_z, int type, float r, float g, float b);
 
-extern model* loadOBJ(const char* path, void* text);
+extern model* loadOBJ(const char* path, gl_texture_t* text);
 
 extern void drawOBJ(model* m, float pos_x, float pos_y, float pos_z, float rot_x, float rot_y, float rot_z);
 
 extern void draw_bbox(model* m, float pos_x, float pos_y, float pos_z, float rot_x, float rot_y, float rot_z, Color color);
-*/
+
+void viewport_3d(float fov, float aspect, float nearClip, float farClip);
+
+void viewport_2d(int width, int height);
+
 #endif

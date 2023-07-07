@@ -6,12 +6,17 @@
 
 #include "include/render.h"
 #include "include/luaplayer.h"
-/*
+
 static int lua_initrender(lua_State *L) {
 	int argc = lua_gettop(L);
   	if (argc != 1) return luaL_error(L, "wrong number of arguments.");
 	float aspect = luaL_checknumber(L, 1);
   	init3D(aspect);
+	return 0;
+}
+
+static int lua_setview(lua_State *L) {
+  	viewport_3d(luaL_checknumber(L, 1), luaL_checknumber(L, 2), luaL_checknumber(L, 3), luaL_checknumber(L, 4));
 	return 0;
 }
 
@@ -23,8 +28,8 @@ static int lua_loadobj(lua_State *L){
 	const char *file_tbo = luaL_checkstring(L, 1); //Model filename
 	
 	// Loading texture
-    GSTEXTURE* text = NULL;
-	if(argc == 2) text = (GSTEXTURE*)(luaL_checkinteger(L, 2));
+    gl_texture_t* text = NULL;
+	if(argc == 2) text = (gl_texture_t*)(luaL_checkinteger(L, 2));
 	
 	model* res_m = loadOBJ(file_tbo, text);
 
@@ -36,30 +41,15 @@ static int lua_loadobj(lua_State *L){
 
 
 static int lua_freeobj(lua_State *L) {
-	int argc = lua_gettop(L);
-#ifndef SKIP_ERROR_HANDLING
-	if (argc != 1) return luaL_error(L, "wrong number of arguments");
-#endif
-	
 	model* m = (model*)(luaL_checkinteger(L, 1));
 
-    free(m->idxList);
-	m->idxList = NULL;
-
 	free(m->positions);
-	m->positions = NULL;
-
-    free(m->colours);
-	m->colours = NULL;
-
     free(m->normals);
-	m->normals = NULL;
-
     free(m->texcoords);
-	m->texcoords = NULL;
+    //free(m->colours);
 	
-	free(m->bounding_box);
-	m->bounding_box = NULL;
+	//free(m->bounding_box);
+	//m->bounding_box = NULL;
 	
 	free(m);
 	m = NULL;
@@ -68,8 +58,6 @@ static int lua_freeobj(lua_State *L) {
 }
 
 static int lua_drawobj(lua_State *L){
-	int argc = lua_gettop(L);
-	if (argc != 7) return luaL_error(L, "wrong number of arguments");
 	model* m = (model*)luaL_checkinteger(L, 1);
 	float pos_x = luaL_checknumber(L, 2);
 	float pos_y = luaL_checknumber(L, 3);
@@ -104,6 +92,7 @@ static int lua_drawbbox(lua_State *L){
 //Register our Render Functions
 static const luaL_Reg Render_functions[] = {
     {"init",           		    lua_initrender},
+	{"setView",           		   lua_setview},
   	{"loadOBJ",           		   lua_loadobj},
     {"drawOBJ",           		   lua_drawobj},
 	{"drawBbox",           		  lua_drawbbox},
@@ -178,24 +167,24 @@ static const luaL_Reg Camera_functions[] = {
   {"rotation", 	lua_camrotation},
   {0, 0}
 };
-*/
-void luaRender_init(lua_State *L) {
-    //lua_newtable(L);
-	//luaL_setfuncs(L, Render_functions, 0);
-	//lua_setglobal(L, "Render");
 
-	//lua_newtable(L);
-	//luaL_setfuncs(L, Lights_functions, 0);
-	//lua_setglobal(L, "Lights");
-//
-	//lua_newtable(L);
-	//luaL_setfuncs(L, Camera_functions, 0);
-	//lua_setglobal(L, "Camera");
-//
-	//lua_pushinteger(L, LIGHT_AMBIENT);
-	//lua_setglobal (L, "AMBIENT");
-//
-	//lua_pushinteger(L, LIGHT_DIRECTIONAL);
-	//lua_setglobal (L, "DIRECTIONAL");
+void luaRender_init(lua_State *L) {
+    lua_newtable(L);
+	luaL_setfuncs(L, Render_functions, 0);
+	lua_setglobal(L, "Render");
+
+	lua_newtable(L);
+	luaL_setfuncs(L, Lights_functions, 0);
+	lua_setglobal(L, "Lights");
+
+	lua_newtable(L);
+	luaL_setfuncs(L, Camera_functions, 0);
+	lua_setglobal(L, "Camera");
+
+	lua_pushinteger(L, LIGHT_AMBIENT);
+	lua_setglobal (L, "AMBIENT");
+
+	lua_pushinteger(L, LIGHT_DIRECTIONAL);
+	lua_setglobal (L, "DIRECTIONAL");
 
 }

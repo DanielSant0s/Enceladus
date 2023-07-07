@@ -1084,6 +1084,9 @@ initGsMemory()
     pglAddGsMemSlot(302, 64, GS::kPsm32);
     pglAddGsMemSlot(366, 64, GS::kPsm32);
 
+    pglAddGsMemSlot(430, 128, GS::kPsm32);
+    pglAddGsMemSlot(558, 128, GS::kPsm32);
+
     pglPrintGsMemAllocation();
 }
 
@@ -1129,6 +1132,23 @@ void glutInit()
         printf("GS memory has not been allocated by the user; using default values.");
         initGsMemory();
     }
+}
+
+void viewport_2d(int width, int height) // Create The Reshape Function (the viewport)
+{
+    glViewport(0, 0, width, height); // Reset The Current Viewport
+
+    glMatrixMode(GL_PROJECTION);     // Select The Projection Matrix
+	glLoadIdentity();
+	
+	glOrtho(0, width, height, 0, -1, 1);
+    //glLoadIdentity();                // Reset The Projection Matrix
+
+    // Calculate The Aspect Ratio Of The Window
+    //gluPerspective(80, (GLfloat)width / (GLfloat)height, 1, 5000);
+
+    glMatrixMode(GL_MODELVIEW); // Select The Modelview Matrix
+    glLoadIdentity();
 }
 
 void reshape(int width, int height) // Create The Reshape Function (the viewport)
