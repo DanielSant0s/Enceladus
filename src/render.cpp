@@ -206,45 +206,42 @@ model* loadOBJ(const char* path, gl_texture_t* text){
 
 void draw_bbox(model* m, float pos_x, float pos_y, float pos_z, float rot_x, float rot_y, float rot_z, Color color)
 {
-	/*VECTOR object_position = { pos_x, pos_y, pos_z, 1.00f };
-	VECTOR object_rotation = { rot_x, rot_y, rot_z, 1.00f };
+	glLoadIdentity();
+    glTranslatef(pos_x-camera_pos[0], pos_y-camera_pos[1], pos_z-camera_pos[2]);
+    glRotatef(rot_x+camera_rot[0], 1, 0, 0); // Rotação em torno do eixo x
+    glRotatef(rot_y+camera_rot[1], 0, 1, 0); // Rotação em torno do eixo y
+    glRotatef(rot_z+camera_rot[2], 0, 0, 1); // Rotação em torno do eixo z
 
-    GSGLOBAL *gsGlobal = getGSGLOBAL();
+	glColor4f(R(color)/255.0f, G(color)/255.0f, B(color)/255.0f, A(color)/255.0f);
 
-	// Matrices to setup the 3D environment and camera
-	MATRIX local_world;
-	MATRIX world_view;
-	MATRIX local_screen;
+	glBegin(GL_LINES);
+		glVertex3f(m->bounding_box[0], m->bounding_box[1], m->bounding_box[2]);
+		glVertex3f(m->bounding_box[3], m->bounding_box[4], m->bounding_box[5]);
+		glVertex3f(m->bounding_box[3], m->bounding_box[4], m->bounding_box[5]);
+		glVertex3f(m->bounding_box[9], m->bounding_box[10], m->bounding_box[11]);
+		glVertex3f(m->bounding_box[6], m->bounding_box[7], m->bounding_box[8]);
+		glVertex3f(m->bounding_box[9], m->bounding_box[10], m->bounding_box[11]);
+		glVertex3f(m->bounding_box[0], m->bounding_box[1], m->bounding_box[2]);
+		glVertex3f(m->bounding_box[6], m->bounding_box[7], m->bounding_box[8]);
+		glVertex3f(m->bounding_box[12], m->bounding_box[13], m->bounding_box[14]);
+		glVertex3f(m->bounding_box[15], m->bounding_box[16], m->bounding_box[17]);
+		glVertex3f(m->bounding_box[15], m->bounding_box[16], m->bounding_box[17]);
+		glVertex3f(m->bounding_box[21], m->bounding_box[22], m->bounding_box[23]);
+		glVertex3f(m->bounding_box[18], m->bounding_box[19], m->bounding_box[20]);
+		glVertex3f(m->bounding_box[21], m->bounding_box[22], m->bounding_box[23]);
+		glVertex3f(m->bounding_box[12], m->bounding_box[13], m->bounding_box[14]);
+		glVertex3f(m->bounding_box[18], m->bounding_box[19], m->bounding_box[20]);
+		glVertex3f(m->bounding_box[0], m->bounding_box[1], m->bounding_box[2]);
+		glVertex3f(m->bounding_box[12], m->bounding_box[13], m->bounding_box[14]);
+		glVertex3f(m->bounding_box[3], m->bounding_box[4], m->bounding_box[5]);
+		glVertex3f(m->bounding_box[15], m->bounding_box[16], m->bounding_box[17]);
+		glVertex3f(m->bounding_box[6], m->bounding_box[7], m->bounding_box[8]);
+		glVertex3f(m->bounding_box[18], m->bounding_box[19], m->bounding_box[20]);
+		glVertex3f(m->bounding_box[9], m->bounding_box[10], m->bounding_box[11]);
+		glVertex3f(m->bounding_box[21], m->bounding_box[22], m->bounding_box[23]);
+	glEnd();
 
-	create_local_world(local_world, object_position, object_rotation);
-	create_world_view(world_view, camera_position, camera_rotation);
-	create_local_screen(local_screen, local_world, world_view, view_screen);
-	if(clip_bounding_box(local_screen, m->bounding_box)) return;
-
-	vertex_f_t *t_xyz = (vertex_f_t *)memalign(128, sizeof(vertex_f_t)*8);
-	calculate_vertices_no_clip((VECTOR *)t_xyz,  8, m->bounding_box, local_screen);
-
-	xyz_t *xyz  = (xyz_t *)memalign(128, sizeof(xyz_t)*8);
-	draw_convert_xyz(xyz, 2048, 2048, 16,  8, t_xyz);
-
-	float fX=gsGlobal->Width/2;
-	float fY=gsGlobal->Height/2;
-
-	gsKit_prim_line_3d(gsGlobal, (t_xyz[0].x+1.0f)*fX, (t_xyz[0].y+1.0f)*fY, xyz[0].z, (t_xyz[1].x+1.0f)*fX, (t_xyz[1].y+1.0f)*fY, xyz[1].z, color);
-	gsKit_prim_line_3d(gsGlobal, (t_xyz[1].x+1.0f)*fX, (t_xyz[1].y+1.0f)*fY, xyz[1].z, (t_xyz[3].x+1.0f)*fX, (t_xyz[3].y+1.0f)*fY, xyz[3].z, color);
-	gsKit_prim_line_3d(gsGlobal, (t_xyz[2].x+1.0f)*fX, (t_xyz[2].y+1.0f)*fY, xyz[2].z, (t_xyz[3].x+1.0f)*fX, (t_xyz[3].y+1.0f)*fY, xyz[3].z, color);
-	gsKit_prim_line_3d(gsGlobal, (t_xyz[0].x+1.0f)*fX, (t_xyz[0].y+1.0f)*fY, xyz[0].z, (t_xyz[2].x+1.0f)*fX, (t_xyz[2].y+1.0f)*fY, xyz[2].z, color);
-	gsKit_prim_line_3d(gsGlobal, (t_xyz[4].x+1.0f)*fX, (t_xyz[4].y+1.0f)*fY, xyz[4].z, (t_xyz[5].x+1.0f)*fX, (t_xyz[5].y+1.0f)*fY, xyz[5].z, color);
-	gsKit_prim_line_3d(gsGlobal, (t_xyz[5].x+1.0f)*fX, (t_xyz[5].y+1.0f)*fY, xyz[5].z, (t_xyz[7].x+1.0f)*fX, (t_xyz[7].y+1.0f)*fY, xyz[7].z, color);
-	gsKit_prim_line_3d(gsGlobal, (t_xyz[6].x+1.0f)*fX, (t_xyz[6].y+1.0f)*fY, xyz[6].z, (t_xyz[7].x+1.0f)*fX, (t_xyz[7].y+1.0f)*fY, xyz[7].z, color);
-	gsKit_prim_line_3d(gsGlobal, (t_xyz[4].x+1.0f)*fX, (t_xyz[4].y+1.0f)*fY, xyz[4].z, (t_xyz[6].x+1.0f)*fX, (t_xyz[6].y+1.0f)*fY, xyz[6].z, color);
-	gsKit_prim_line_3d(gsGlobal, (t_xyz[0].x+1.0f)*fX, (t_xyz[0].y+1.0f)*fY, xyz[0].z, (t_xyz[4].x+1.0f)*fX, (t_xyz[4].y+1.0f)*fY, xyz[4].z, color);
-	gsKit_prim_line_3d(gsGlobal, (t_xyz[1].x+1.0f)*fX, (t_xyz[1].y+1.0f)*fY, xyz[1].z, (t_xyz[5].x+1.0f)*fX, (t_xyz[5].y+1.0f)*fY, xyz[5].z, color);
-	gsKit_prim_line_3d(gsGlobal, (t_xyz[2].x+1.0f)*fX, (t_xyz[2].y+1.0f)*fY, xyz[2].z, (t_xyz[6].x+1.0f)*fX, (t_xyz[6].y+1.0f)*fY, xyz[6].z, color);
-	gsKit_prim_line_3d(gsGlobal, (t_xyz[3].x+1.0f)*fX, (t_xyz[3].y+1.0f)*fY, xyz[3].z, (t_xyz[7].x+1.0f)*fX, (t_xyz[7].y+1.0f)*fY, xyz[7].z, color);
 	
-	free(t_xyz);
-	free(xyz);*/
 }
 
 void drawOBJ(model* res_m, float pos_x, float pos_y, float pos_z, float rot_x, float rot_y, float rot_z)
