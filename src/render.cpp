@@ -11,11 +11,12 @@ extern "C" {
 }
 
 #include "include/render.h"
+
+static float camera_pos[] = {0.0f, 0.0f, 0.0f};
+static float camera_rot[] = {0.0f, 0.0f, 0.0f};
+
 /*
 MATRIX view_screen;
-
-VECTOR camera_position = { 0.00f, 0.00f, 0.00f, 1.00f };
-VECTOR camera_rotation = { 0.00f, 0.00f, 0.00f, 1.00f };
 
 int light_count;
 VECTOR* light_direction;
@@ -45,6 +46,7 @@ void viewport_3d(float fov, float aspect, float nearClip, float farClip) {
     glLoadIdentity();
 }
 
+GLfloat ambient[] = { 0.2, 0.2, 0.2, 1.0 };
 
 void init3D(float aspect)
 {
@@ -53,10 +55,6 @@ void init3D(float aspect)
     glEnable(GL_RESCALE_NORMAL);
 
     // lighting
-    GLfloat ambient[] = { 0.2, 0.2, 0.2, 1.0 };
-
-    GLfloat l0_position[] = { 0, 1.0, 1.0, 0.0 };
-    GLfloat l0_diffuse[]  = { 1.0f, 1.0f, 1.0f, 0 };
 
     GLfloat l1_position[] = { 0.0, -20.0, -80.0, 1.0 };
     // GLfloat l1_position[] = {0, -1, 1, 0.0};
@@ -65,13 +63,7 @@ void init3D(float aspect)
     GLfloat black[] = { 0, 0, 0, 0 };
 
     glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT0);
     glEnable(GL_LIGHT1);
-
-    glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, l0_diffuse);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, l0_diffuse);
-    glLightfv(GL_LIGHT0, GL_POSITION, l0_position);
 
     glLightfv(GL_LIGHT1, GL_AMBIENT, black);
     glLightfv(GL_LIGHT1, GL_DIFFUSE, l1_diffuse);
@@ -84,18 +76,17 @@ void init3D(float aspect)
 
 }
 
+
 void setCameraPosition(float x, float y, float z){
-	//camera_position[0] = x;
-	//camera_position[1] = y;
-	//camera_position[2] = z;
-	//camera_position[3] = 1.00f;
+	camera_pos[0] = x;
+	camera_pos[1] = y;
+	camera_pos[2] = z;
 }
 
 void setCameraRotation(float x, float y, float z){
-	//camera_rotation[0] = x;
-	//camera_rotation[1] = y;
-	//camera_rotation[2] = z;
-	//camera_rotation[3] = 1.00f;
+	camera_rot[0] = x;
+	camera_rot[1] = y;
+	camera_rot[2] = z;
 }
 
 void setLightQuantity(int quantity){
@@ -106,17 +97,14 @@ void setLightQuantity(int quantity){
 }
 
 void createLight(int lightid, float dir_x, float dir_y, float dir_z, int type, float r, float g, float b){
-	//light_direction[lightid-1][0] = dir_x;
-	//light_direction[lightid-1][1] = dir_y;
-	//light_direction[lightid-1][2] = dir_z;
-	//light_direction[lightid-1][3] = 1.00f;
+	glEnable(GL_LIGHT0+lightid);
+	float position[] = {dir_x, dir_y, dir_z, 0};
+	float color[] = {r, g, b, 0};
 
-	//light_colour[lightid-1][0] = r;
-	//light_colour[lightid-1][1] = g;
-	//light_colour[lightid-1][2] = b;
-	//light_colour[lightid-1][3] = 1.00f;
-
-	//light_type[lightid-1] = type;
+    glLightfv(GL_LIGHT0+lightid, GL_AMBIENT, ambient);
+    glLightfv(GL_LIGHT0+lightid, GL_DIFFUSE, color);
+    glLightfv(GL_LIGHT0+lightid, GL_SPECULAR, color);
+    glLightfv(GL_LIGHT0+lightid, GL_POSITION, position);
 }
 
 model* loadOBJ(const char* path, gl_texture_t* text){
@@ -271,6 +259,8 @@ model* loadOBJ(const char* path, gl_texture_t* text){
 
 	*/
 
+	fast_obj_destroy(m);
+
     return res_m;
 }
 
@@ -321,10 +311,10 @@ void draw_bbox(model* m, float pos_x, float pos_y, float pos_z, float rot_x, flo
 void drawOBJ(model* res_m, float pos_x, float pos_y, float pos_z, float rot_x, float rot_y, float rot_z)
 {
 	glLoadIdentity();
-    glTranslatef(pos_x, pos_y, pos_z);
-    glRotatef(rot_x, 1, 0, 0); // Rotação em torno do eixo x
-    glRotatef(rot_y, 0, 1, 0); // Rotação em torno do eixo y
-    glRotatef(rot_z, 0, 0, 1); // Rotação em torno do eixo z
+    glTranslatef(pos_x-camera_pos[0], pos_y-camera_pos[1], pos_z-camera_pos[2]);
+    glRotatef(rot_x+camera_rot[0], 1, 0, 0); // Rotação em torno do eixo x
+    glRotatef(rot_y+camera_rot[1], 0, 1, 0); // Rotação em torno do eixo y
+    glRotatef(rot_z+camera_rot[2], 0, 0, 1); // Rotação em torno do eixo z
 
 	glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_NORMAL_ARRAY);

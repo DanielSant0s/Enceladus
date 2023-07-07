@@ -5,26 +5,22 @@
 Render.init(4/3) 
 Render.setView(40.0, 4/3, 1.0, 4000.0)
 
-local orange = Render.loadOBJ("mesh/moon.obj")
-local car = Render.loadOBJ("mesh/Car.obj")
-
-local models = {orange, car}
+local models = {Render.loadOBJ("mesh/earth.obj"), Render.loadOBJ("mesh/moon.obj"), Render.loadOBJ("mesh/Car.obj")}
 local modIdx = 1
 
---Camera.position(0.0, 0.0, 50.0)
---Camera.rotation(0.0, 0.0,  0.0)
+Camera.position(0.0, 0.0,  10.0)
+Camera.rotation(0.0, 180.0, 0.0)
 
---Lights.create(4)
-
+Lights.set(0,  0, 1.0, 1.0, 0.9, 0.5, 0.5, DIRECTIONAL)
 --Lights.set(1,  0.0,  0.0,  0.0, 1.0, 1.0, 1.0,     AMBIENT)
 --Lights.set(2,  1.0,  0.0, -1.0, 1.0, 1.0, 1.0, DIRECTIONAL)
---Lights.set(3,  0.0,  1.0, -1.0, 0.9, 0.5, 0.5, DIRECTIONAL)
+
 --Lights.set(4, -1.0, -1.0, -1.0, 0.5, 0.5, 0.5, DIRECTIONAL)
 
 local lx = nil
 local ly = nil
 local rx = nil
-local yy = nil
+local ry = nil
 local pad = nil
 local oldpad = nil
 local modeltodisplay = 0
@@ -63,7 +59,7 @@ while true do
         modelz = modelz - 0.5
     end
 
-    if Pads.check(pad, PAD_RIGHT) and not Pads.check(oldpad, PAD_RIGHT) and modIdx < 2 then
+    if Pads.check(pad, PAD_RIGHT) and not Pads.check(oldpad, PAD_RIGHT) and modIdx < 3 then
         modIdx = modIdx + 1
     end
 
