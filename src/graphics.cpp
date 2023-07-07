@@ -978,7 +978,7 @@ void UnloadTexture(gl_texture_t *txt)
 	glDeleteTextures(1, &(txt->id));
 	if(txt->clut) free(txt->clut);
 	free(txt->texels);
-	
+
 	free(txt);
 }
 
@@ -999,11 +999,11 @@ void fntDrawQuad(rm_quad_t *q)
 {
     glBindTexture(GL_TEXTURE_2D, q->txt->id);
     glEnable(GL_TEXTURE_2D);
-    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     glColorTable(GL_COLOR_TABLE, GL_RGBA, 256, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, q->txt->clut);
 
-    //glDisable(GL_LIGHTING);
+    glDisable(GL_LIGHTING);
 
     glColor4f(R(q->color)/255.0f, G(q->color)/255.0f, B(q->color)/255.0f, A(q->color)/255.0f); //blue colors
 
@@ -1023,9 +1023,9 @@ void fntDrawQuad(rm_quad_t *q)
 
     glEnd();
 
-	glFlush();
-
     glDisable(GL_TEXTURE_2D);
+
+	glEnable(GL_LIGHTING);
 }
 
 
@@ -1086,19 +1086,6 @@ initGsMemory()
     pglPrintGsMemAllocation();
 }
 
-void gluPerspective(GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFar)
-{
-    GLdouble xmin, xmax, ymin, ymax;
-
-    ymax = zNear * tan(fovy * M_PI / 360.0f);
-    ymin = -ymax;
-    xmin = ymin * aspect;
-    xmax = ymax * aspect;
-
-    glFrustum(xmin, xmax, ymin, ymax, zNear, zFar);
-}
-
-
 void glutInit()
 {
     // does the ps2gl library need to be initialized?
@@ -1130,18 +1117,14 @@ void glutInit()
     }
 }
 
-void viewport_2d(int width, int height) // Create The Reshape Function (the viewport)
+void viewport_2d(float sx, float ex, float sy, float ey) // Create The Reshape Function (the viewport)
 {
-    glViewport(0, 0, width, height); // Reset The Current Viewport
+	glViewport(0, 0, 640, 448);
 
     glMatrixMode(GL_PROJECTION);     // Select The Projection Matrix
 	glLoadIdentity();
 	
-	glOrtho(0, width, height, 0, -1, 1);
-    //glLoadIdentity();                // Reset The Projection Matrix
-
-    // Calculate The Aspect Ratio Of The Window
-    //gluPerspective(80, (GLfloat)width / (GLfloat)height, 1, 5000);
+	glOrtho(sx, ex, ey, sy, -1, 1);
 
     glMatrixMode(GL_MODELVIEW); // Select The Modelview Matrix
     glLoadIdentity();
@@ -1156,9 +1139,6 @@ void reshape(int width, int height) // Create The Reshape Function (the viewport
 	
 	glOrtho(0, width, height, 0, -1, 1);
     //glLoadIdentity();                // Reset The Projection Matrix
-
-    // Calculate The Aspect Ratio Of The Window
-    //gluPerspective(80, (GLfloat)width / (GLfloat)height, 1, 5000);
 
     glMatrixMode(GL_MODELVIEW); // Select The Modelview Matrix
     glLoadIdentity();

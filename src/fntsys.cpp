@@ -229,11 +229,9 @@ static void fntPrepareCLUT()
     fontClut.clut = (u32*)memalign(128, 256 * 4);
 
     // generate the clut table
-    size_t i;
+    int i;
     u32 *clut = fontClut.clut;
     for (i = 0; i < 256; ++i) {
-        u8 alpha = (i * 128) / 255;
-
         *clut = i << 24 | 0xFF << 16 | 0xFF << 8 | 0xFF;
         clut++;
     }

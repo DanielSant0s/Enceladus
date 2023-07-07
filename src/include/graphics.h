@@ -33,6 +33,9 @@ struct gl_texture_t
   s32 internalFormat;
   u32 id;
 
+  u32 mag_filter;
+  u32 min_filter;
+
   u8 clut_size;
   u32* clut;
   u8 *texels;
@@ -59,17 +62,6 @@ typedef struct
     u64 color;
     gl_texture_t* txt;
 } rm_quad_t;
-
-
-/*typedef struct 
-{
-	texel_t* 	stqr;
-	color_t* 	rgba;
-    vertex_f_t* xyzw;
-    VECTOR*     test;
-} vData; 
-
-*/
 
 struct materialRangeInfo {
     uint32_t start;
@@ -189,6 +181,6 @@ extern void draw_bbox(model* m, float pos_x, float pos_y, float pos_z, float rot
 
 void viewport_3d(float fov, float aspect, float nearClip, float farClip);
 
-void viewport_2d(int width, int height);
+void viewport_2d(float sx, float ex, float sy, float ey);
 
 #endif

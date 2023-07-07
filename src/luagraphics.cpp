@@ -457,8 +457,14 @@ static int lua_getloaddata(lua_State *L){
 	}else return 0;
 }
 
+static int lua_setview(lua_State *L) {
+  	viewport_2d(luaL_checknumber(L, 1), luaL_checknumber(L, 2), luaL_checknumber(L, 3), luaL_checknumber(L, 4));
+	return 0;
+}
+
 //Register our Graphics Functions
 static const luaL_Reg Graphics_functions[] = {
+	{"setView",           		   	 lua_setview},
   	{"drawPixel",           		   lua_pixel},
   //{"getPixel",            		  lua_gpixel},
   	{"drawRect",           				lua_rect},

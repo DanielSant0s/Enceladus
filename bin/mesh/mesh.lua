@@ -6,8 +6,6 @@ local minecraft = Font.ftLoad("minecraft.ttf")
 
 --Screen.setVSync(0)
 
-Render.setView(40.0, 4/3, 1.0, 4000.0)
-
 local models = {Render.loadOBJ("mesh/earth.obj"), Render.loadOBJ("mesh/moon.obj"), Render.loadOBJ("mesh/Car.obj")}
 local modIdx = 1
 
@@ -18,7 +16,7 @@ local main_light = Lights.new()
 Lights.set(main_light, LIGHT_POSITION, 0, 1.0, 1.0, 0)
 Lights.set(main_light, LIGHT_DIFFUSE, 1, 1, 1, 0)
 Lights.set(main_light, LIGHT_SPECULAR, 0.8, 0.8, 0.8, 0)
-Lights.set(main_light, LIGHT_AMBIENT, 0.2, 0.2, 0.2, 0)
+--Lights.set(main_light, LIGHT_AMBIENT, 0.2, 0.2, 0.2, 0)
 
 local lx = nil
 local ly = nil
@@ -64,6 +62,12 @@ while true do
     savedry = savedry + ry
 
     Screen.clear(Color.new(40, 40, 40))
+
+    Graphics.setView(0.0, 640.0, 0.0, 448.0)
+
+    Font.ftPrint(minecraft, 30, 15,  0, 640, 448, "Enceladus Render Demo | Graphics by PS2GL")
+
+    Render.setView(40.0, 4/3, 1.0, 4000.0)
 
     if Pads.check(pad, PAD_R2) then
        modelz = modelz + 0.5
