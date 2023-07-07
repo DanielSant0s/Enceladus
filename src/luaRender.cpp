@@ -101,38 +101,27 @@ static const luaL_Reg Render_functions[] = {
 };
 
 
-static int lua_lightnumber(lua_State *L){
-	int argc = lua_gettop(L);
-	if (argc != 1) return luaL_error(L, "wrong number of arguments");
-
-	int lightcount = luaL_checkinteger(L, 1);
-
-	setLightQuantity(lightcount);
-
-	return 0;
+static int lua_createlight(lua_State *L){
+	lua_pushinteger(L, createLight());
+	return 1;
 }
 
-static int lua_createlight(lua_State *L){
-	int argc = lua_gettop(L);
-	if (argc != 8) return luaL_error(L, "wrong number of arguments");
+static int lua_setlight(lua_State *L){
 	int id = luaL_checkinteger(L, 1);
-	float dir_x = luaL_checknumber(L, 2);
-	float dir_y = luaL_checknumber(L, 3);
-	float dir_z = luaL_checknumber(L, 4);
-	float r = luaL_checknumber(L, 5);
-	float g = luaL_checknumber(L, 6);
-	float b = luaL_checknumber(L, 7);
-	int type = luaL_checknumber(L, 8);
+	int attr = luaL_checkinteger(L, 2);
+	float a = luaL_checknumber(L, 3);
+	float b = luaL_checknumber(L, 4);
+	float c = luaL_checknumber(L, 5);
+	float d = luaL_checknumber(L, 6);
 	
-	
-	createLight(id, dir_x, dir_y, dir_z, type, r, g, b);
+	setLightAttribute(id, a, b, c, d, attr);
 
 	return 0;
 }
 
 static const luaL_Reg Lights_functions[] = {
-  {"set",  		lua_createlight},
-  {"create", 	lua_lightnumber},
+  {"set",  		lua_setlight},
+  {"new", 	    lua_createlight},
   {0, 0}
 };
 
@@ -181,10 +170,15 @@ void luaRender_init(lua_State *L) {
 	luaL_setfuncs(L, Camera_functions, 0);
 	lua_setglobal(L, "Camera");
 
-	lua_pushinteger(L, LIGHT_AMBIENT);
-	lua_setglobal (L, "AMBIENT");
+	lua_pushinteger(L, GL_POSITION);
+	lua_setglobal (L, "LIGHT_POSITION");
 
-	lua_pushinteger(L, LIGHT_DIRECTIONAL);
-	lua_setglobal (L, "DIRECTIONAL");
+	lua_pushinteger(L, GL_AMBIENT);
+	lua_setglobal (L, "LIGHT_AMBIENT");
 
+	lua_pushinteger(L, GL_SPECULAR);
+	lua_setglobal (L, "LIGHT_SPECULAR");
+
+	lua_pushinteger(L, GL_DIFFUSE);
+	lua_setglobal (L, "LIGHT_DIFFUSE");
 }

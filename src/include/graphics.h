@@ -99,7 +99,7 @@ struct model {
 	float* normals;
     float* colours;
     float* bounding_box;
-    
+
     gl_texture_t* texture;
 
     material* materials;
@@ -177,9 +177,9 @@ extern void setCameraPosition(float x, float y, float z);
 
 extern void setCameraRotation(float x, float y, float z);
 
-extern void setLightQuantity(int quantity);
+extern int createLight();
 
-extern void createLight(int lightid, float dir_x, float dir_y, float dir_z, int type, float r, float g, float b);
+extern void setLightAttribute(int lightid, float a, float b, float c, float d, int attr);
 
 extern model* loadOBJ(const char* path, gl_texture_t* text);
 

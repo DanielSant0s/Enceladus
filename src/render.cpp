@@ -15,15 +15,7 @@ extern "C" {
 static float camera_pos[] = {0.0f, 0.0f, 0.0f};
 static float camera_rot[] = {0.0f, 0.0f, 0.0f};
 
-/*
-MATRIX view_screen;
-
-int light_count;
-VECTOR* light_direction;
-VECTOR* light_colour;
-int* light_type;
-
-*/
+static int active_lights = 0;
 
 void perspective(float fov, float aspect, float nearClip, float farClip)
 {
@@ -89,22 +81,14 @@ void setCameraRotation(float x, float y, float z){
 	camera_rot[2] = z;
 }
 
-void setLightQuantity(int quantity){
-	//light_count = quantity;
-	//light_direction = (VECTOR*)memalign(128, sizeof(VECTOR) * light_count);
-	//light_colour = (VECTOR*)memalign(128, sizeof(VECTOR) * light_count);
-	//light_type = (int*)memalign(128, sizeof(int) * light_count);
+void setLightAttribute(int lightid, float a, float b, float c, float d, int attr){
+	float data[] = {a, b, c, d};
+    glLightfv(GL_LIGHT0+lightid, attr, data);
 }
 
-void createLight(int lightid, float dir_x, float dir_y, float dir_z, int type, float r, float g, float b){
-	glEnable(GL_LIGHT0+lightid);
-	float position[] = {dir_x, dir_y, dir_z, 0};
-	float color[] = {r, g, b, 0};
-
-    glLightfv(GL_LIGHT0+lightid, GL_AMBIENT, ambient);
-    glLightfv(GL_LIGHT0+lightid, GL_DIFFUSE, color);
-    glLightfv(GL_LIGHT0+lightid, GL_SPECULAR, color);
-    glLightfv(GL_LIGHT0+lightid, GL_POSITION, position);
+int createLight(){
+	glEnable(GL_LIGHT0+active_lights);
+	return active_lights++;
 }
 
 model* loadOBJ(const char* path, gl_texture_t* text){

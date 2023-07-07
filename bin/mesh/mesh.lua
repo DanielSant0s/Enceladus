@@ -11,11 +11,11 @@ local modIdx = 1
 Camera.position(0.0, 0.0,  10.0)
 Camera.rotation(0.0, 180.0, 0.0)
 
-Lights.set(0,  0, 1.0, 1.0, 0.9, 0.5, 0.5, DIRECTIONAL)
---Lights.set(1,  0.0,  0.0,  0.0, 1.0, 1.0, 1.0,     AMBIENT)
---Lights.set(2,  1.0,  0.0, -1.0, 1.0, 1.0, 1.0, DIRECTIONAL)
-
---Lights.set(4, -1.0, -1.0, -1.0, 0.5, 0.5, 0.5, DIRECTIONAL)
+local main_light = Lights.new()
+Lights.set(main_light, LIGHT_POSITION, 0, 1.0, 1.0, 0)
+Lights.set(main_light, LIGHT_DIFFUSE, 1, 1, 1, 0)
+Lights.set(main_light, LIGHT_SPECULAR, 0.5, 0.5, 0.5, 0)
+Lights.set(main_light, LIGHT_AMBIENT, 0.2, 0.2, 0.2, 0)
 
 local lx = nil
 local ly = nil
