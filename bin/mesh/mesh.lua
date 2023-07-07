@@ -17,7 +17,7 @@ Camera.rotation(0.0, 180.0, 0.0)
 local main_light = Lights.new()
 Lights.set(main_light, LIGHT_POSITION, 0, 1.0, 1.0, 0)
 Lights.set(main_light, LIGHT_DIFFUSE, 1, 1, 1, 0)
-Lights.set(main_light, LIGHT_SPECULAR, 0.5, 0.5, 0.5, 0)
+Lights.set(main_light, LIGHT_SPECULAR, 0.8, 0.8, 0.8, 0)
 Lights.set(main_light, LIGHT_AMBIENT, 0.2, 0.2, 0.2, 0)
 
 local lx = nil

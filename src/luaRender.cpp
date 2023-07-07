@@ -38,11 +38,17 @@ static int lua_freeobj(lua_State *L) {
 	free(m->positions);
     free(m->normals);
     free(m->texcoords);
-    //free(m->colours);
-	
-	//free(m->bounding_box);
-	//m->bounding_box = NULL;
-	
+    free(m->colours);
+	free(m->ranges);
+
+	for(int i = 0; i < m->materialCount; i++) {
+		if(m->materials[i].texture) {
+			UnloadTexture(m->materials[i].texture);
+		}
+	}
+
+	free(m->materials);
+
 	free(m);
 	m = NULL;
 

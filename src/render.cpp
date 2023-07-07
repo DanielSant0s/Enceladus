@@ -115,7 +115,6 @@ model* loadOBJ(const char* path, gl_texture_t* text){
 			rangeCount++;
 		}
 		old_fMI = new_fMI;
-
 	}
 
 	res_m->rangeCount = rangeCount;

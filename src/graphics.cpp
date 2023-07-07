@@ -978,6 +978,8 @@ void UnloadTexture(gl_texture_t *txt)
 	glDeleteTextures(1, &(txt->id));
 	if(txt->clut) free(txt->clut);
 	free(txt->texels);
+	
+	free(txt);
 }
 
 int GetInterlacedFrameMode()
