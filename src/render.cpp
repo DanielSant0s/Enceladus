@@ -158,6 +158,8 @@ model* loadOBJ(const char* path, gl_texture_t* text){
 		res_m->materials[i].Kt[1] = m->materials[i].Kt[1];
 		res_m->materials[i].Kt[2] = m->materials[i].Kt[2];
 		res_m->materials[i].Kt[3] = 1.0f;
+
+		res_m->materials[i].Ns = m->materials[i].Ns;
 	}
 
 	int new_fMI = -1, old_fMI = -1, rangeCount = 0;
@@ -203,19 +205,6 @@ model* loadOBJ(const char* path, gl_texture_t* text){
 			oldFaceMaterialIndex = faceMaterialIndex;
 		}
 	}
-
-	//res_m->display_list = glGenLists(1);
-    //glNewList(res_m->display_list, GL_COMPILE);
-    //{
-    //    glPushMatrix();
-    //    glRotatef(180, 0, 1, 0);
-    //    //glBindTexture(GL_TEXTURE_2D, tex_ids[0]);
-    //    glVertexPointer(3, GL_FLOAT, 0, res_m->positions);
-    //	glNormalPointer(GL_FLOAT, 0, res_m->normals);
-    //	glTexCoordPointer(2, GL_FLOAT, 0, res_m->texcoords);
-	//	glDrawArrays(GL_TRIANGLES, 0, res_m->indexCount);
-    //}
-    //glEndList();
 
 	/*
 	//calculate bounding box
@@ -347,6 +336,9 @@ void drawOBJ(model* res_m, float pos_x, float pos_y, float pos_z, float rot_x, f
 		for(int i = 0; i < res_m->rangeCount; i++) {
 			glMaterialfv(GL_FRONT, GL_AMBIENT, res_m->materials[res_m->ranges[i].materialIndex].Ka);
 			glMaterialfv(GL_FRONT, GL_DIFFUSE, res_m->materials[res_m->ranges[i].materialIndex].Kd);
+			glMaterialfv(GL_FRONT, GL_SPECULAR, res_m->materials[res_m->ranges[i].materialIndex].Ks);
+			glMaterialfv(GL_FRONT, GL_EMISSION, res_m->materials[res_m->ranges[i].materialIndex].Ke);
+			glMaterialf(GL_FRONT, GL_SHININESS, res_m->materials[res_m->ranges[i].materialIndex].Ns);
 			glDrawArrays(GL_TRIANGLES, res_m->ranges[i].start, (res_m->ranges[i].end-res_m->ranges[i].start)+1);
 			
 		}
