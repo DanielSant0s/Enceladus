@@ -5,10 +5,11 @@
 Render.init(4/3) 
 Render.setView(40.0, 4/3, 1.0, 4000.0)
 
---local orangetex = Graphics.loadImage("mesh/moon.jpg")
---Graphics.setImageFilters(orangetex, LINEAR) 
---local orange = Render.loadOBJ("mesh/moon.obj", orangetex)
+local orange = Render.loadOBJ("mesh/moon.obj")
 local car = Render.loadOBJ("mesh/Car.obj")
+
+local models = {orange, car}
+local modIdx = 1
 
 --Camera.position(0.0, 0.0, 50.0)
 --Camera.rotation(0.0, 0.0,  0.0)
@@ -62,7 +63,15 @@ while true do
         modelz = modelz - 0.5
     end
 
-    Render.drawOBJ(car,  savedrx, savedry, modelz, savedly, savedlx, 0.0)
+    if Pads.check(pad, PAD_RIGHT) and not Pads.check(oldpad, PAD_RIGHT) and modIdx < 2 then
+        modIdx = modIdx + 1
+    end
+
+    if Pads.check(pad, PAD_LEFT) and not Pads.check(oldpad, PAD_LEFT) and modIdx > 1 then
+        modIdx = modIdx - 1
+    end
+
+    Render.drawOBJ(models[modIdx],  savedrx, savedry, modelz, savedly, savedlx, 0.0)
     --Render.drawBbox(orange,  savedrx, savedry, modelz, savedly, savedlx, 0.0, Color.new(0, 255, 0, 128))
     Screen.flip()
 end

@@ -88,6 +88,8 @@ struct material {
     float Tf[4];  /* Transmission filter */
     float d;      /* Disolve (alpha) */
     int   illum;  /* Illumination model */
+
+    gl_texture_t* texture;
 };
 
 struct model {
@@ -97,8 +99,8 @@ struct model {
 	float* normals;
     float* colours;
     float* bounding_box;
+    
     gl_texture_t* texture;
-    gl_texture_t** textures;
 
     material* materials;
 	int materialCount;

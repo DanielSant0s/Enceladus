@@ -160,6 +160,11 @@ model* loadOBJ(const char* path, gl_texture_t* text){
 		res_m->materials[i].Kt[3] = 1.0f;
 
 		res_m->materials[i].Ns = m->materials[i].Ns;
+		if (m->materials[i].map_Kd.name) {
+			res_m->materials[i].texture = load_image(m->materials[i].map_Kd.path, false);
+		} else {
+			res_m->materials[i].texture = nullptr;
+		}
 	}
 
 	int new_fMI = -1, old_fMI = -1, rangeCount = 0;
@@ -333,21 +338,26 @@ void drawOBJ(model* res_m, float pos_x, float pos_y, float pos_z, float rot_x, f
 	glEnable(GL_TEXTURE_2D);
 
 	if(res_m->rangeCount > 0) {
+		material mat;
 		for(int i = 0; i < res_m->rangeCount; i++) {
-			glMaterialfv(GL_FRONT, GL_AMBIENT, res_m->materials[res_m->ranges[i].materialIndex].Ka);
-			glMaterialfv(GL_FRONT, GL_DIFFUSE, res_m->materials[res_m->ranges[i].materialIndex].Kd);
-			glMaterialfv(GL_FRONT, GL_SPECULAR, res_m->materials[res_m->ranges[i].materialIndex].Ks);
-			glMaterialfv(GL_FRONT, GL_EMISSION, res_m->materials[res_m->ranges[i].materialIndex].Ke);
-			glMaterialf(GL_FRONT, GL_SHININESS, res_m->materials[res_m->ranges[i].materialIndex].Ns);
+			mat = res_m->materials[res_m->ranges[i].materialIndex];
+			glMaterialfv(GL_FRONT, GL_AMBIENT,   mat.Ka);
+			glMaterialfv(GL_FRONT, GL_DIFFUSE,   mat.Kd);
+			glMaterialfv(GL_FRONT, GL_SPECULAR,  mat.Ks);
+			glMaterialfv(GL_FRONT, GL_EMISSION,  mat.Ke);
+			glMaterialf (GL_FRONT, GL_SHININESS, mat.Ns);
+
+			if (mat.texture) {
+				glBindTexture(GL_TEXTURE_2D, mat.texture->id);
+				glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    			if(mat.texture->clut) {
+    			    glColorTable(GL_COLOR_TABLE, GL_RGBA, mat.texture->clut_size, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, mat.texture->clut);
+    			}
+			}
+
 			glDrawArrays(GL_TRIANGLES, res_m->ranges[i].start, (res_m->ranges[i].end-res_m->ranges[i].start)+1);
-			
 		}
 	} else {
-		///glVertexPointer(3, GL_FLOAT, 0, res_m->positions);
-		///glNormalPointer(GL_FLOAT, 0, res_m->normals);
-		///glTexCoordPointer(2, GL_FLOAT, 0, res_m->texcoords);
-		///glColorPointer(3, GL_FLOAT, 0, res_m->colours);
-
 		if (res_m->texture) {
 			glBindTexture(GL_TEXTURE_2D, res_m->texture->id);
 			glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
