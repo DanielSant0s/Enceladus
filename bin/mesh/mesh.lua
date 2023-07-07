@@ -1,5 +1,9 @@
 --Screen.setMode(NTSC, 640, 448, CT24, INTERLACED, FIELD, true, Z16S)
 
+Font.ftInit()
+
+local minecraft = Font.ftLoad("minecraft.ttf")
+
 --Screen.setVSync(0)
 
 Render.setView(40.0, 4/3, 1.0, 4000.0)
@@ -32,9 +36,20 @@ local savedry = 0.0
 
 local modelz = 0.0
 
+local show_bbox = 0
+
+Screen.getFPS(720)
+
+local timer = Timer.new()
+
 while true do
     oldpad = pad
     pad = Pads.get()
+
+    if Timer.getTime(timer) > 720 then
+        print("FPS: " .. Screen.getFPS(720))
+        Timer.reset(timer)
+    end
 
     lx, ly = Pads.getLeftStick()
     lx = lx / 512.0
@@ -66,7 +81,19 @@ while true do
         modIdx = modIdx - 1
     end
 
-    Render.drawOBJ(models[modIdx],  savedrx, savedry, modelz, savedly, savedlx, 0.0)
-    Render.drawBbox(models[modIdx],  savedrx, savedry, modelz, savedly, savedlx, 0.0, Color.new(0, 255, 0))
+    if Pads.check(pad, PAD_CROSS) and not Pads.check(oldpad, PAD_CROSS) then
+        if show_bbox == 0 then
+            show_bbox = 1
+        else 
+            show_bbox = 0
+        end
+    end
+
+    Render.drawOBJ(models[modIdx], savedrx, savedry, modelz, savedly, savedlx, 0.0)
+
+    if show_bbox == 1 then 
+        Render.drawBbox(models[modIdx],  savedrx, savedry, modelz, savedly, savedlx, 0.0, Color.new(0, 255, 0))
+    end
+
     Screen.flip()
 end

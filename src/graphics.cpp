@@ -12,12 +12,6 @@
 
 #include "include/graphics.h"
 
-
-#define DEG2RAD(x) ((x)*0.01745329251)
-
-void *gsGlobal = NULL;
-void *gsFontM = NULL;
-
 static bool vsync = true;
 static clock_t curtime = 0;
 static float fps = 0.0f;
@@ -993,7 +987,7 @@ int GetInterlacedFrameMode()
 
 void setVSync(bool vsync_flag){ vsync = vsync_flag; }
 
-void *getGSGLOBAL(){return gsGlobal;}
+void *getGSGLOBAL(){return NULL;}
 
 void setVideoMode(s16 mode, int width, int height, int psm, s16 interlace, s16 field, bool zbuffering, int psmz) {
 
