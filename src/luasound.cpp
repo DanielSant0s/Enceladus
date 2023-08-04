@@ -1,4 +1,4 @@
-
+#include <stdint.h>
 #include "include/luaplayer.h"
 #include "include/sound.h"
 
