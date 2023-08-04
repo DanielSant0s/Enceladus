@@ -219,7 +219,7 @@ Enceladus uses the latest version of Lua language (currently 5.4.3), which means
   - `CUR`
   - `END`
 * `size = System.sizeFile(fd)`
-* `System.doesFileExist(path)`
+* `doesFileExist(path)` __(note the absence of the `System.` prefix.)__
 * `System.currentDirectory(path)` *if path given, it sets the current dir, else it gets the current dir*
 * `listdir = System.listDirectory(path)` *path isn't mandatory, defaults to CWD*
   - `listdir[index].name` - *file name on indicated index(string)*
