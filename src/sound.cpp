@@ -127,8 +127,6 @@ audsrv_adpcm_t* sound_loadadpcm(const char* path){
 
 	audsrv_load_adpcm(sample, buffer, size);
 
-	free(buffer);
-
 	return sample;
 }
 
