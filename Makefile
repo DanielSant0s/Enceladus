@@ -106,6 +106,8 @@ EMBED/%.s: EMBED/%.png
 
 #-------------------- Embedded IOP Modules ------------------------#
 vpath %.irx embed/iop/
+vpath %.irx modules/ds34bt/iop/
+vpath %.irx modules/ds34usb/iop/
 vpath %.irx $(PS2SDK)/iop/irx/
 IRXTAG = $(notdir $(addsuffix _irx, $(basename $<)))
 $(EE_ASM_DIR)%.s: %.irx
