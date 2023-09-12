@@ -7,6 +7,15 @@
 
 #include "include/luaplayer.h"
 
+/* ///Reference of the structure for a valid keyboard mapfile
+typedef struct keyboard_map
+{
+  PS2KbdKeyMap KeyMap;
+  u8 SpecialMap[PS2KBD_KEYMAP_SIZE];
+  u8 CtrlMap[PS2KBD_KEYMAP_SIZE];
+  u8 AltMap[PS2KBD_KEYMAP_SIZE];
+} keyboard_map_t; */
+
 extern unsigned char ps2kbd_irx;
 extern unsigned int size_ps2kbd_irx;
 
