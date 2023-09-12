@@ -38,10 +38,14 @@ DEBUG = 0
 PS2LINK_IP = 192.168.1.10
 #------------------------------------------------------------------#
 
+F_KEYBOARD ?= 1
+
 EE_BIN = enceladus.elf
 EE_BIN_PKD = enceladus_pkd.elf
 
-EE_LIBS = -L$(PS2SDK)/ports/lib -L$(PS2DEV)/gsKit/lib/ -Lmodules/ds34bt/ee/ -Lmodules/ds34usb/ee/ -lpatches -lfileXio -lpad -ldebug -llua -lmath3d -ljpeg -lfreetype -lgskit_toolkit -lgskit -ldmakit -lpng -lz -lmc -laudsrv -lelf-loader -lds34bt -lds34usb
+EE_LIBS = -L$(PS2SDK)/ports/lib -L$(PS2DEV)/gsKit/lib/ -Lmodules/ds34bt/ee/ -Lmodules/ds34usb/ee/ \
+	-lpatches -lfileXio -lpad -ldebug -llua -lmath3d -ljpeg -lfreetype -lgskit_toolkit -lgskit -ldmakit \
+	-lpng -lz -lmc -laudsrv -lelf-loader -lds34bt -lds34usb
 
 EE_INCS += -I$(PS2DEV)/gsKit/include -I$(PS2SDK)/ports/include -I$(PS2SDK)/ports/include/freetype2 -I$(PS2SDK)/ports/include/zlib
 
@@ -57,6 +61,7 @@ endif
 ifeq ($(DEBUG),1)
 EE_CXXFLAGS += -DDEBUG
 endif
+
 
 BIN2S = $(PS2SDK)/bin/bin2s
 
@@ -77,6 +82,13 @@ IOP_MODULES = iomanx.o filexio.o \
 			  usbmass_bd.o cdfs.o ds34bt.o ds34usb.o
 
 EMBEDDED_RSC = boot.o
+
+ifeq ($(F_KEYBOARD),1)
+  EE_CXXFLAGS += -DPS2KBD
+  EE_LIBS += -lkbd
+  IOP_MODULES += ps2kbd.o
+  LUA_LIBS +=  luaKeyboard.o
+endif
 
 EE_OBJS = $(IOP_MODULES) $(EMBEDDED_RSC) $(APP_CORE) $(LUA_LIBS)
 
@@ -161,6 +173,9 @@ $(EE_ASM_DIR)usbmass_bd.s: $(PS2SDK)/iop/irx/usbmass_bd.irx | $(EE_ASM_DIR)
 
 $(EE_ASM_DIR)cdfs.s: $(PS2SDK)/iop/irx/cdfs.irx | $(EE_ASM_DIR)
 	$(BIN2S) $< $@ cdfs_irx
+
+$(EE_ASM_DIR)ps2kbd.s: $(PS2SDK)/iop/irx/ps2kbd.irx | $(EE_ASM_DIR)
+	$(BIN2S) $< $@ ps2kbd_irx
 
 modules/ds34bt/ee/libds34bt.a: modules/ds34bt/ee
 	$(MAKE) -C $<
