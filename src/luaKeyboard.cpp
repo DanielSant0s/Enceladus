@@ -54,7 +54,7 @@ static int kbd_close(lua_State *L) {
     return 1;
 }
 static int kbd_keymap_set(lua_State *L) {
-    if (lua_gettop(L) != 3) return luaL_error(L, "%s wrong number of arguments", __FUNCTION__);
+    if (lua_gettop(L) != 1) return luaL_error(L, "%s wrong number of arguments", __FUNCTION__);
     size_t MAPSIZE;
     const char* MAP;
     MAP = luaL_checklstring(L, 1, &MAPSIZE);
