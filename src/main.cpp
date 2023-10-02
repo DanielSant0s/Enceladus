@@ -157,7 +157,7 @@ int main(int argc, char * argv[])
     sbv_patch_fileio(); 
 
 	DIR *directorytoverify;
-	directorytoverify = opendir("host:.");
+	//directorytoverify = opendir("host:.");
 	if(directorytoverify==NULL){
 		SifExecModuleBuffer(&iomanX_irx, size_iomanX_irx, 0, NULL, NULL);
 		SifExecModuleBuffer(&fileXio_irx, size_fileXio_irx, 0, NULL, NULL);

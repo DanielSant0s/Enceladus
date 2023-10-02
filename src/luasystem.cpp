@@ -10,6 +10,10 @@
 
 #include "include/system.h"
 
+#define NEWLIB_PORT_AWARE
+#include <fileXio_rpc.h>
+#include <fileio.h>
+
 #define MAX_DIR_FILES 512
 
 static int lua_getCurrentDirectory(lua_State *L)
@@ -198,6 +202,35 @@ static int lua_dir(lua_State *L)
 	{
 		lua_pushnil(L);  // return nil
 		return 1;
+	}
+	return 1;  /* table is already on top */
+}
+
+
+static int lua_dev_table(lua_State *L)
+{
+	int i, devcnt;
+	struct fileXioDevice DEV[FILEXIO_MAX_DEVICES];
+	
+	devcnt = fileXioGetDeviceList(DEV, FILEXIO_MAX_DEVICES);
+	if (devcnt > 0) {
+		lua_newtable(L);
+		for(i = 0; i < devcnt; i++ )
+		{
+			printf("DEV[%s] type %d desc '%s'\n", DEV[i].name, DEV[i].type, DEV[i].desc);
+    	    lua_pushnumber(L, i+1);  // push key for file entry
+		    lua_newtable(L);
+    	    lua_pushstring(L, "name");
+    	    lua_pushstring(L, (const char *)DEV[i].name);
+    	    lua_settable(L, -3);
+	
+    	    lua_pushstring(L, "desc");
+    	    lua_pushstring(L, DEV[i].desc);
+    	    lua_settable(L, -3);
+		    lua_settable(L, -3);
+		}
+	} else {
+		lua_pushnil(L);
 	}
 	return 1;  /* table is already on top */
 }
@@ -668,6 +701,7 @@ static const luaL_Reg System_functions[] = {
 	//{"doesFileExist",            lua_checkexist}, BREAKS ERROR HANDLING IF DECLARED INSIDE TABLE. DONT ASK ME WHY
 	{"currentDirectory",             lua_curdir},
 	{"listDirectory",           	    lua_dir},
+	{"listDevices",               lua_dev_table},
 	{"createDirectory",           lua_createDir},
 	{"removeDirectory",           lua_removeDir},
 	{"moveFile",	               lua_movefile},
