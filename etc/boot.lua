@@ -1,4 +1,4 @@
-
+System.listDevices()
 if doesFileExist("System/index.lua") then
 	dofile("System/index.lua");
   elseif doesFileExist("System/script.lua") then
