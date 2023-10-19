@@ -204,6 +204,9 @@ Enceladus uses the latest version of Lua language (currently 5.4.3), which means
 
 #### **System functions:**
 
+* `System.loadELF(path, reboot_iop, args...)` tries to load an EE ELF program from path
+  - `reboot_iop`: integer, indicates if I/O Processor should be rebooted before loading ELF (`0`: no, `1`: yes). unless extremely needed, its **not** recommended to reboot it
+  - args: variadic arg for strings, these will be passed to the ELF (path will be `argv[0]`)
 * `fd = System.openFile(path, type)`
 * Types list:  
   - `FREAD`
