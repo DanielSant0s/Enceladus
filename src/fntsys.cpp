@@ -312,6 +312,29 @@ static int fntLoadSlot(font_t *font, const char* path)
 
     return 0;
 }
+static int fntLoadSlotBuffer(font_t *font, void* buffer, int bufferSize)
+{
+
+    fntInitSlot(font);
+
+    if (!buffer || (bufferSize < 1)) {
+        printf("%s: buffer pointer is NULL or buffer size is <1\n", __func__);
+        return FNT_ERROR;
+    }
+
+    // load the font via memory handle
+    int error = FT_New_Memory_Face(font_library, (FT_Byte *)buffer, bufferSize, 0, &font->face);
+    if (error) {
+        printf("FNTSYS@%s Freetype font loading failed with %x!\n", __func__, error);
+        fntDeleteSlot(font);
+        return FNT_ERROR;
+    }
+
+    font->isValid = 1;
+    fntUpdateAspectRatio();
+
+    return 0;
+}
 
 void fntInit()
 {
@@ -341,6 +364,22 @@ int fntLoadFile(const char* path)
         font = &fonts[i];
         if (!font->isValid) {
             if (fntLoadSlot(font, path) != FNT_ERROR)
+                return i;
+            break;
+        }
+    }
+
+    return FNT_ERROR;
+}
+
+int fntLoadbuff(void* Buf, int BufSize)
+{
+    font_t *font;
+    int i = 0;
+    for (; i < FNT_MAX_COUNT; i++) {
+        font = &fonts[i];
+        if (!font->isValid) {
+            if (fntLoadSlotBuffer(font, Buf, BufSize) != FNT_ERROR)
                 return i;
             break;
         }
