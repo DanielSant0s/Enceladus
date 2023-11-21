@@ -267,6 +267,7 @@ Enceladus uses the latest version of Lua language (currently 5.4.3), which means
 * `Sound.setADPCMVolume(channel, volume)`
 * `audio = Sound.loadADPCM(path)`
 * `Sound.playADPCM(channel, audio)`
+* `Sound.freeADPCM(audio)`
 
 ## Contributing
 
