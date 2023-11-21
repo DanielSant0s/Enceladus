@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include "include/luaplayer.h"
 #include "include/sound.h"
+#include <stdlib.h>
 
 static int lua_setformat(lua_State *L) {
 	int argc = lua_gettop(L);
@@ -37,12 +38,24 @@ static int lua_playadpcm(lua_State *L) {
 	return 0;
 }
 
+static int lua_freeadpcm(lua_State *L) {
+	int argc = lua_gettop(L);
+	if (argc != 1) return luaL_error(L, "FreeADPCM takes 1 arg");
+	
+    audsrv_adpcm_t* ADPCM = (audsrv_adpcm_t *)luaL_checkinteger(L, 1);
+    free(ADPCM->buffer);
+	ADPCM->buffer = NULL;
+	free(ADPCM);
+	return 0;
+}
+
 static const luaL_Reg Sound_functions[] = {
 	{"setFormat",      							 lua_setformat},
 	{"setVolume",      				   			 lua_setvolume},
 	{"setADPCMVolume",      				lua_setadpcmvolume},
 	{"loadADPCM",      							 lua_loadadpcm},
 	{"playADPCM",      							 lua_playadpcm},
+	{"freeADPCM",      							 lua_freeadpcm},
 	{0, 0}
 };
 
