@@ -48,6 +48,7 @@ Enceladus is a project that seeks to facilitate and at the same time brings a co
 * `Pads`: Above being able to draw and everything else, A human interface is important. Supports rumble and pressure sensitivity.
 * `Timer`: Control the time precisely in your code, it contains several timing functions.
 * `Sound`: Basic sound functions.
+* `Keyboard`: Basic USB keyboard functions.
 
 New types are always being added and this list can grow a lot over time, so stay tuned.
 
@@ -268,6 +269,15 @@ Enceladus uses the latest version of Lua language (currently 5.4.3), which means
 * `audio = Sound.loadADPCM(path)`
 * `Sound.playADPCM(channel, audio)`
 * `Sound.freeADPCM(audio)`
+
+#### **Keyboard functions:**
+* `sucess[bool] = Keyboard.Init()`: Upload USB Keyboard IRX driver and initialize RPC
+* `key[char] = Keyboard.GetKey()`: get key input
+* `Keyboard.SetRepeatRate(rate)` rate in ms
+* `Keyboard.SetBlockingMode(mode)` see [here](https://github.com/ps2dev/ps2sdk/blob/6b656d1ae18dd2bb75a6caa03346cf9f933c12c6/ee/rpc/keyboard/include/ps2kbd.h#L61-L69)
+* `Keyboard.Close()`: Close keyboard virtual device (does not unload Keyboard IRX, that requires new homebrew MODLOAD module)
+* `Keyboard.LoadKeyMap(keymap_buffer)`:load keymap, must be a binary file, with a size of (`0x600` aka `1536` bytes). same format than wLaunchELF keymap
+* `Keyboard.ResetDefaultKeymap()`: reset the keymaps with the stock configuration
 
 ## Contributing
 
