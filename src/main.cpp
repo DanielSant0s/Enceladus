@@ -136,13 +136,10 @@ int main(int argc, char * argv[])
 	if (directorytoverify==NULL) {
 		SifExecModuleBuffer(&iomanX_irx, size_iomanX_irx, 0, NULL, NULL);
 		SifExecModuleBuffer(&fileXio_irx, size_fileXio_irx, 0, NULL, NULL);
-	}
-	if (directorytoverify==NULL) {
 		fileXioInit();
-	}
-	if (directorytoverify!=NULL) {
 		closedir(directorytoverify);
 	}
+  
     printf("Loading mc drivers\n");
 	  SifExecModuleBuffer(&sio2man_irx, size_sio2man_irx, 0, NULL, NULL);
     SifExecModuleBuffer(&mcman_irx, size_mcman_irx, 0, NULL, NULL);
