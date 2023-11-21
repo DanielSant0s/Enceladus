@@ -1,7 +1,7 @@
 
-.vscode/settings.json
 .vscode/launch.json
 *.ttf
+*.bak
 *.otf
 bin/img/bg0.png
 bin/img/bg1.png

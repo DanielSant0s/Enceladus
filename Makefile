@@ -215,7 +215,10 @@ rebuild: clean all
 
 run:
 	cd bin; ps2client -h $(PS2LINK_IP) execee host:$(EE_BIN)
-       
+
+intellisense:
+	etc/update_lua_globals.sh
+
 reset:
 	ps2client -h $(PS2LINK_IP) reset   
 
