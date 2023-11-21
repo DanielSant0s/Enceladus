@@ -710,10 +710,12 @@ static int lua_sifloadmodule(lua_State *L){
 		args = luaL_checkstring(L, 3);
 	}
 	
-
-	int result = SifLoadModule(path, arg_len, args);
+	int result;
+	int irx_id = SifLoadStartModule(path, arg_len, args, &result);
+	printf("%s: '%s' with %d args.\tIRX ID=%d, IRX ret=%d\n", __FUNCTION__, path, arg_len, irx_id, result);
 	lua_pushinteger(L, result);
-	return 1;
+	lua_pushinteger(L, irx_id);
+	return 2;
 }
 
 
