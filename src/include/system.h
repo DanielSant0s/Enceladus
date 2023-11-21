@@ -16,6 +16,6 @@ typedef struct
 } DiscType;
 
 extern char* __ps2_normalize_path(char *path_name);
-extern void load_elf_NoIOPReset(const char *elf_path);
-extern void load_elf(const char *elf_path);
+#define load_elf_NoIOPReset(ELF) load_elf(ELF, 0, NULL, 0);
+extern void load_elf(const char *elf_path, int reboot_iop, char** Cargs, int Cargc);
 extern size_t GetFreeSize(void);
