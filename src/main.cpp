@@ -158,31 +158,31 @@ int main(int argc, char * argv[])
 
 	DIR *directorytoverify;
 	directorytoverify = opendir("host:.");
-	if(directorytoverify==NULL){
+	if (directorytoverify==NULL) {
 		SifExecModuleBuffer(&iomanX_irx, size_iomanX_irx, 0, NULL, NULL);
 		SifExecModuleBuffer(&fileXio_irx, size_fileXio_irx, 0, NULL, NULL);
 	}
-	SifExecModuleBuffer(&sio2man_irx, size_sio2man_irx, 0, NULL, NULL);
-	if(directorytoverify==NULL){
+	if (directorytoverify==NULL) {
 		fileXioInit();
 	}
-	if(directorytoverify!=NULL){
+	if (directorytoverify!=NULL) {
 		closedir(directorytoverify);
 	}
+    printf("Loading mc drivers\n");
+	  SifExecModuleBuffer(&sio2man_irx, size_sio2man_irx, 0, NULL, NULL);
     SifExecModuleBuffer(&mcman_irx, size_mcman_irx, 0, NULL, NULL);
     SifExecModuleBuffer(&mcserv_irx, size_mcserv_irx, 0, NULL, NULL);
+    printf("Initialize mc\n");
     initMC();
 
+    printf("loading pad drivers\n");
     SifExecModuleBuffer(&padman_irx, size_padman_irx, 0, NULL, NULL);
     SifExecModuleBuffer(&libsd_irx, size_libsd_irx, 0, NULL, NULL);
-
-    // load pad & mc modules 
-    printf("Installing Pad & MC modules...\n");
 
     // load USB modules    
     SifExecModuleBuffer(&usbd_irx, size_usbd_irx, 0, NULL, NULL);
 
-    
+    printf("loading ds34(USB/bt) drivers\n");
     int ds3pads = 1;
     SifExecModuleBuffer(&ds34usb_irx, size_ds34usb_irx, 4, (char *)&ds3pads, NULL);
     SifExecModuleBuffer(&ds34bt_irx, size_ds34bt_irx, 4, (char *)&ds3pads, NULL);
