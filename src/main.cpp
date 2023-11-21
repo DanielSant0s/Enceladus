@@ -34,50 +34,25 @@ extern "C"{
 extern char bootString[];
 extern unsigned int size_bootString;
 
-extern unsigned char iomanX_irx[];
-extern unsigned int size_iomanX_irx;
+#define IMPORT_BIN2C(_T) \
+    extern unsigned char _T[]; \
+    extern unsigned int size_##_T
 
-extern unsigned char fileXio_irx[];
-extern unsigned int size_fileXio_irx;
-
-extern unsigned char sio2man_irx;
-extern unsigned int size_sio2man_irx;
-
-extern unsigned char mcman_irx;
-extern unsigned int size_mcman_irx;
-
-extern unsigned char mcserv_irx;
-extern unsigned int size_mcserv_irx;
-
-extern unsigned char padman_irx;
-extern unsigned int size_padman_irx;
-
-extern unsigned char libsd_irx;
-extern unsigned int size_libsd_irx;
-
-extern unsigned char cdfs_irx;
-extern unsigned int size_cdfs_irx;
-
-extern unsigned char usbd_irx;
-extern unsigned int size_usbd_irx;
-
-extern unsigned char bdm_irx;
-extern unsigned int size_bdm_irx;
-
-extern unsigned char bdmfs_fatfs_irx;
-extern unsigned int size_bdmfs_fatfs_irx;
-
-extern unsigned char usbmass_bd_irx;
-extern unsigned int size_usbmass_bd_irx;
-
-extern unsigned char audsrv_irx;
-extern unsigned int size_audsrv_irx;
-
-extern unsigned char ds34usb_irx;
-extern unsigned int size_ds34usb_irx;
-
-extern unsigned char ds34bt_irx;
-extern unsigned int size_ds34bt_irx;
+IMPORT_BIN2C(iomanX_irx);
+IMPORT_BIN2C(fileXio_irx);
+IMPORT_BIN2C(sio2man_irx);
+IMPORT_BIN2C(mcman_irx);
+IMPORT_BIN2C(mcserv_irx);
+IMPORT_BIN2C(padman_irx);
+IMPORT_BIN2C(libsd_irx);
+IMPORT_BIN2C(cdfs_irx);
+IMPORT_BIN2C(usbd_irx);
+IMPORT_BIN2C(bdm_irx);
+IMPORT_BIN2C(bdmfs_fatfs_irx);
+IMPORT_BIN2C(usbmass_bd_irx);
+IMPORT_BIN2C(audsrv_irx);
+IMPORT_BIN2C(ds34usb_irx);
+IMPORT_BIN2C(ds34bt_irx);
 
 char boot_path[255];
 
