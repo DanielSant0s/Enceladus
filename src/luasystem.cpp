@@ -190,9 +190,8 @@ static int lua_dir(lua_State *L)
         	lua_pushstring(L, "size");
         	lua_pushnumber(L, dir->d_stat.st_size);
         	lua_settable(L, -3);
-        	        
         	lua_pushstring(L, "directory");
-        	lua_pushboolean(L, S_ISDIR(dir->d_stat.st_mode));
+        	lua_pushboolean(L, (dir->d_type == DT_DIR));
         	lua_settable(L, -3);
 			lua_settable(L, -3);
 	    }
