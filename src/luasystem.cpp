@@ -206,9 +206,10 @@ static int lua_dir(lua_State *L)
 	return 1;  /* table is already on top */
 }
 
-
+extern int HAVE_FILEXIO;
 static int lua_dev_table(lua_State *L)
 {
+	if (!HAVE_FILEXIO) luaL_error(L, "System error: cant use fileXio functions if fileXio is not loaded!!!");
 	int i, devcnt;
 	struct fileXioDevice DEV[FILEXIO_MAX_DEVICES];
 	
