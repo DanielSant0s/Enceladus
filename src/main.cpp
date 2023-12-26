@@ -114,6 +114,8 @@ void initMC(void)
    mcSync(MC_WAIT, NULL, &ret);
 }
 
+int GLOBAL_STATE =0;
+
 int main(int argc, char * argv[])
 {
     const char * errMsg;
