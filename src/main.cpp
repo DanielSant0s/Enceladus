@@ -171,7 +171,7 @@ int main(int argc, char * argv[])
     pad_init();
 
     // set base path luaplayer
-    getcwd(boot_path, sizeof(boot_path))
+    getcwd(boot_path, sizeof(boot_path));
 
     printf("boot path : %s\n", boot_path);
     dbgprintf("boot path : %s\n", boot_path);
