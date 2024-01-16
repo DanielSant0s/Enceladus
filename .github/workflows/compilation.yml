@@ -9,7 +9,7 @@ on:
   pull_request:
   workflow_dispatch:
     inputs:
-      dbg-sdk:
+      dbgsdk:
         type: boolean
         description: compile with debug PS2SDK
   repository_dispatch:
@@ -33,7 +33,7 @@ jobs:
         git fetch --prune --unshallow
 
     - name: Compile debug SDK
-      if: github.event.inputs.name == true
+      if: github.event.inputs.dbgsdk == true
       run: |
         git clone https://github.com/ps2dev/ps2sdk/
         cd ps2sdk
