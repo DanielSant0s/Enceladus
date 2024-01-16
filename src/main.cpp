@@ -1,4 +1,3 @@
-
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -55,41 +54,6 @@ IMPORT_BIN2C(ds34usb_irx);
 IMPORT_BIN2C(ds34bt_irx);
 
 char boot_path[255];
-
-void setLuaBootPath(int argc, char ** argv, int idx)
-{
-    if (argc>=(idx+1))
-    {
-
-	char *p;
-	if ((p = strrchr(argv[idx], '/'))!=NULL) {
-	    snprintf(boot_path, sizeof(boot_path), "%s", argv[idx]);
-	    p = strrchr(boot_path, '/');
-	if (p!=NULL)
-	    p[1]='\0';
-	} else if ((p = strrchr(argv[idx], '\\'))!=NULL) {
-	   snprintf(boot_path, sizeof(boot_path), "%s", argv[idx]);
-	   p = strrchr(boot_path, '\\');
-	   if (p!=NULL)
-	     p[1]='\0';
-	} else if ((p = strchr(argv[idx], ':'))!=NULL) {
-	   snprintf(boot_path, sizeof(boot_path), "%s", argv[idx]);
-	   p = strchr(boot_path, ':');
-	   if (p!=NULL)
-	   p[1]='\0';
-	}
-
-    }
-    
-    // check if path needs patching
-    if( !strncmp( boot_path, "mass:/", 6) && (strlen (boot_path)>6))
-    {
-        strcpy((char *)&boot_path[5],(const char *)&boot_path[6]);
-    }
-      
-    
-}
-
 
 void initMC(void)
 {
@@ -197,21 +161,6 @@ int main(int argc, char * argv[])
         retries--;
     }
 	
-        // if no parameters are specified, use the default boot
-	if (argc < 2)
-	{
-	   // set boot path global variable based on the elf path
-	   setLuaBootPath (argc, argv, 0);  
-        }
-        else // set path based on the specified script
-        {
-           if (!strchr(argv[1], ':')) // filename doesn't contain device
-              // set boot path global variable based on the elf path
-	      setLuaBootPath (argc, argv, 0);  
-           else
-              // set path global variable based on the given script path
-	      setLuaBootPath (argc, argv, 1);
-	}
 	
 	// Lua init
 	// init internals library
@@ -222,10 +171,10 @@ int main(int argc, char * argv[])
     pad_init();
 
     // set base path luaplayer
-    chdir(boot_path); 
+    getcwd(boot_path, sizeof(boot_path))
 
     printf("boot path : %s\n", boot_path);
-	dbgprintf("boot path : %s\n", boot_path);
+    dbgprintf("boot path : %s\n", boot_path);
     
     while (1)
     {
