@@ -63,7 +63,7 @@ EE_CXXFLAGS += -DDEBUG
 endif
 
 
-BIN2S = $(PS2SDK)/bin/bin2s
+BIN2S = $(PS2SDK)/bin/bin2c
 
 #-------------------------- App Content ---------------------------#
 EXT_LIBS = modules/ds34usb/ee/libds34usb.a modules/ds34bt/ee/libds34bt.a
@@ -122,11 +122,11 @@ vpath %.irx modules/ds34bt/iop/
 vpath %.irx modules/ds34usb/iop/
 vpath %.irx $(PS2SDK)/iop/irx/
 IRXTAG = $(notdir $(addsuffix _irx, $(basename $<)))
-$(EE_ASM_DIR)%.s: %.irx
+$(EE_ASM_DIR)%.c: %.irx
 	$(DIR_GUARD)
 	$(BIN2S) $< $@ $(IRXTAG)
 
-$(EE_ASM_DIR)ps2kbd.s: $(PS2SDK)/iop/irx/ps2kbd.irx | $(EE_ASM_DIR)
+$(EE_ASM_DIR)ps2kbd.c: $(PS2SDK)/iop/irx/ps2kbd.irx | $(EE_ASM_DIR)
 	$(BIN2S) $< $@ ps2kbd_irx
 
 modules/ds34bt/ee/libds34bt.a: modules/ds34bt/ee
@@ -175,9 +175,9 @@ $(EE_OBJS_DIR)%.o: $(EE_SRC_DIR)%.c | $(EE_OBJS_DIR)
 	@echo "  - $@"
 	@$(EE_CC) $(EE_CFLAGS) $(EE_INCS) -c $< -o $@
 
-$(EE_OBJS_DIR)%.o: $(EE_ASM_DIR)%.s | $(EE_OBJS_DIR)
+$(EE_OBJS_DIR)%.o: $(EE_ASM_DIR)%.c | $(EE_OBJS_DIR)
 	@echo "  - $@"
-	@$(EE_AS) $(EE_ASFLAGS) $< -o $@
+	@$(EE_CC) $(EE_CFLAGS) $(EE_INCS) -c $< -o $@
 
 $(EE_OBJS_DIR)%.o: $(EE_SRC_DIR)%.cpp | $(EE_OBJS_DIR)
 	@echo "  - $@"
