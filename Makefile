@@ -107,7 +107,7 @@ all: $(EXT_LIBS) $(EE_BIN)
 	
 #--------------------- Embedded ressources ------------------------#
 
-$(EE_ASM_DIR)boot.s: etc/boot.lua | $(EE_ASM_DIR)
+$(EE_ASM_DIR)boot.c: etc/boot.lua | $(EE_ASM_DIR)
 	$(BIN2S) $< $@ bootString
 
 # Images
