@@ -8,6 +8,10 @@ on:
       - v*
   pull_request:
   workflow_dispatch:
+    inputs:
+      dbgsdk:
+        type: boolean
+        description: compile with debug PS2SDK
   repository_dispatch:
     types: [run_build]
 
@@ -27,6 +31,13 @@ jobs:
     - uses: actions/checkout@v2
     - run: |
         git fetch --prune --unshallow
+
+    - name: Compile debug SDK
+      if: github.event.inputs.dbgsdk == 'true'
+      run: |
+        git clone https://github.com/ps2dev/ps2sdk/
+        cd ps2sdk
+        make clean debug install
 
     - name: Compile project
       run: |
