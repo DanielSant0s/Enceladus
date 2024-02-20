@@ -85,6 +85,8 @@ static int lua_ftload(lua_State *L){
     lua_pushinteger(L, fntHandle);
 	return 1;
 }
+
+#ifdef F_BUILTIN_FONT
 extern unsigned char builtin_font[];
 extern unsigned int size_builtin_font;
 static int lua_ftloadDefault(lua_State *L){
@@ -92,6 +94,7 @@ static int lua_ftloadDefault(lua_State *L){
     lua_pushinteger(L, fntHandle);
 	return 1;
 }
+#endif
 
 static int lua_ftSetPixelSize(lua_State *L) {
 	if (lua_gettop(L) != 3) return luaL_error(L, "wrong number of arguments"); 
@@ -176,7 +179,9 @@ static const luaL_Reg Font_functions[] = {
 	//FreeType functions
 	{"ftInit",            		  lua_ftinit},
 	{"ftLoad",            		  lua_ftload},
+#ifdef F_BUILTIN_FONT
 	{"LoadBuiltinFont",    lua_ftloadDefault},
+#endif
 	{"ftSetPixelSize",    lua_ftSetPixelSize},
 	{"ftSetCharSize", 	   lua_ftSetCharSize},
 	{"ftPrint",         		 lua_ftprint},
