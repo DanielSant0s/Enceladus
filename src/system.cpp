@@ -162,24 +162,32 @@ void CleanUp(int iop_reset)
 }
 
 
-void load_elf(const char *elf_path)
+void load_elf(const char *elf_path, int reboot_iop, char** Cargs, int Cargc)
 {   
 	u8 *boot_elf;
 	elf_header_t *boot_header;
 	elf_pheader_t *boot_pheader;
 	int i;
 	char *args[6];
+	char **final_argv;
+	int final_argc = 1;
 	char elfpath[1024];
 	//int n = 0;
 	
-    CleanUp(1);	
+    CleanUp(reboot_iop);	
 
 	SifInitRpc(0);
 	SifLoadFileInit();
  	SifLoadFileExit();  
 
 	strcpy(elfpath, elf_path);
-	args[0] = elfpath;
+	if (Cargs == NULL || Cargc < 1) {
+		args[0] = elfpath;
+		final_argv = args;
+	} else {
+		final_argv = Cargs;
+		final_argc = Cargc;
+	}
 
 	// Load & execute embedded loader from here	
 	boot_elf = (u8 *)&loader_elf;
@@ -210,59 +218,7 @@ void load_elf(const char *elf_path)
 	SifExitRpc();
 	
 	// Execute Elf Loader
-	ExecPS2((void *)boot_header->entry, 0, 1, args);	
-	
-}
-
-void load_elf_NoIOPReset(const char *elf_path)
-{   
-	u8 *boot_elf;
-	elf_header_t *boot_header;
-	elf_pheader_t *boot_pheader;
-	int i;
-	char *args[6];
-	char elfpath[1024];
-	//int n = 0;
-	
-    CleanUp(0);	
-
-	SifInitRpc(0);
-	SifLoadFileInit();
- 	SifLoadFileExit();  
-
-	strcpy(elfpath, elf_path);
-	args[0] = elfpath;
-
-	// Load & execute embedded loader from here	
-	boot_elf = (u8 *)&loader_elf;
-	
-	// Get Elf header
-	boot_header = (elf_header_t *)boot_elf;
-	
-	// Check elf magic
-	if ((*(u32*)boot_header->ident) != ELF_MAGIC) 
-		return;
-
-	// Get program headers
-	boot_pheader = (elf_pheader_t *)(boot_elf + boot_header->phoff);
-	
-	// Scan through the ELF's program headers and copy them into apropriate RAM
-	// section, then padd with zeros if needed.
-	for (i = 0; i < boot_header->phnum; i++) {
-		
-		if (boot_pheader[i].type != ELF_PT_LOAD)
-			continue;
-
-		memcpy(boot_pheader[i].vaddr, boot_elf + boot_pheader[i].offset, boot_pheader[i].filesz);
-	
-		if (boot_pheader[i].memsz > boot_pheader[i].filesz)
-			memset((void*)((int)boot_pheader[i].vaddr + boot_pheader[i].filesz), 0, boot_pheader[i].memsz - boot_pheader[i].filesz);
-	}		
-	
-	SifExitRpc();
-	
-	// Execute Elf Loader
-	ExecPS2((void *)boot_header->entry, 0, 1, args);	
+	ExecPS2((void *)boot_header->entry, 0, final_argc, final_argv);	
 	
 }
 

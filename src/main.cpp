@@ -1,4 +1,3 @@
-
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -34,87 +33,27 @@ extern "C"{
 extern char bootString[];
 extern unsigned int size_bootString;
 
-extern unsigned char iomanX_irx[];
-extern unsigned int size_iomanX_irx;
+#define IMPORT_BIN2C(_T) \
+    extern unsigned char _T[]; \
+    extern unsigned int size_##_T
 
-extern unsigned char fileXio_irx[];
-extern unsigned int size_fileXio_irx;
-
-extern unsigned char sio2man_irx;
-extern unsigned int size_sio2man_irx;
-
-extern unsigned char mcman_irx;
-extern unsigned int size_mcman_irx;
-
-extern unsigned char mcserv_irx;
-extern unsigned int size_mcserv_irx;
-
-extern unsigned char padman_irx;
-extern unsigned int size_padman_irx;
-
-extern unsigned char libsd_irx;
-extern unsigned int size_libsd_irx;
-
-extern unsigned char cdfs_irx;
-extern unsigned int size_cdfs_irx;
-
-extern unsigned char usbd_irx;
-extern unsigned int size_usbd_irx;
-
-extern unsigned char bdm_irx;
-extern unsigned int size_bdm_irx;
-
-extern unsigned char bdmfs_fatfs_irx;
-extern unsigned int size_bdmfs_fatfs_irx;
-
-extern unsigned char usbmass_bd_irx;
-extern unsigned int size_usbmass_bd_irx;
-
-extern unsigned char audsrv_irx;
-extern unsigned int size_audsrv_irx;
-
-extern unsigned char ds34usb_irx;
-extern unsigned int size_ds34usb_irx;
-
-extern unsigned char ds34bt_irx;
-extern unsigned int size_ds34bt_irx;
+IMPORT_BIN2C(iomanX_irx);
+IMPORT_BIN2C(fileXio_irx);
+IMPORT_BIN2C(sio2man_irx);
+IMPORT_BIN2C(mcman_irx);
+IMPORT_BIN2C(mcserv_irx);
+IMPORT_BIN2C(padman_irx);
+IMPORT_BIN2C(libsd_irx);
+IMPORT_BIN2C(cdfs_irx);
+IMPORT_BIN2C(usbd_irx);
+IMPORT_BIN2C(bdm_irx);
+IMPORT_BIN2C(bdmfs_fatfs_irx);
+IMPORT_BIN2C(usbmass_bd_irx);
+IMPORT_BIN2C(audsrv_irx);
+IMPORT_BIN2C(ds34usb_irx);
+IMPORT_BIN2C(ds34bt_irx);
 
 char boot_path[255];
-
-void setLuaBootPath(int argc, char ** argv, int idx)
-{
-    if (argc>=(idx+1))
-    {
-
-	char *p;
-	if ((p = strrchr(argv[idx], '/'))!=NULL) {
-	    snprintf(boot_path, sizeof(boot_path), "%s", argv[idx]);
-	    p = strrchr(boot_path, '/');
-	if (p!=NULL)
-	    p[1]='\0';
-	} else if ((p = strrchr(argv[idx], '\\'))!=NULL) {
-	   snprintf(boot_path, sizeof(boot_path), "%s", argv[idx]);
-	   p = strrchr(boot_path, '\\');
-	   if (p!=NULL)
-	     p[1]='\0';
-	} else if ((p = strchr(argv[idx], ':'))!=NULL) {
-	   snprintf(boot_path, sizeof(boot_path), "%s", argv[idx]);
-	   p = strchr(boot_path, ':');
-	   if (p!=NULL)
-	   p[1]='\0';
-	}
-
-    }
-    
-    // check if path needs patching
-    if( !strncmp( boot_path, "mass:/", 6) && (strlen (boot_path)>6))
-    {
-        strcpy((char *)&boot_path[5],(const char *)&boot_path[6]);
-    }
-      
-    
-}
-
 
 void initMC(void)
 {
@@ -139,8 +78,20 @@ void initMC(void)
    mcSync(MC_WAIT, NULL, &ret);
 }
 
+#ifdef DONT_LOAD_FILEXIO_ON_HOST_DEVICE
+int HAVE_FILEXIO = 1; // for PS2CLIENT
+#else
+int HAVE_FILEXIO = 0;
+#endif
+
+#define LOAD_IRX(_irx, argc, arglist) \
+    ID = SifExecModuleBuffer(&_irx, size_##_irx, argc, arglist, &RET); \
+    printf("%s: id:%d, ret:%d\n", #_irx, ID, RET)
+#define LOAD_IRX_NARG(_irx) LOAD_IRX(_irx, 0, NULL)
+
 int main(int argc, char * argv[])
 {
+    int ID, RET;
     const char * errMsg;
 
     #ifdef RESET_IOP  
@@ -156,46 +107,44 @@ int main(int argc, char * argv[])
     sbv_patch_disable_prefix_check(); 
     sbv_patch_fileio(); 
 
+#ifdef DONT_LOAD_FILEXIO_ON_HOST_DEVICE
 	DIR *directorytoverify;
 	directorytoverify = opendir("host:.");
-	if(directorytoverify==NULL){
-		SifExecModuleBuffer(&iomanX_irx, size_iomanX_irx, 0, NULL, NULL);
-		SifExecModuleBuffer(&fileXio_irx, size_fileXio_irx, 0, NULL, NULL);
-	}
-	SifExecModuleBuffer(&sio2man_irx, size_sio2man_irx, 0, NULL, NULL);
-	if(directorytoverify==NULL){
+	if (directorytoverify==NULL) {
+#endif
+		LOAD_IRX_NARG(iomanX_irx);
+		LOAD_IRX_NARG(fileXio_irx);
 		fileXioInit();
-	}
-	if(directorytoverify!=NULL){
+        if (ID > 0 && RET != 1) HAVE_FILEXIO = 1;
+#ifdef DONT_LOAD_FILEXIO_ON_HOST_DEVICE
 		closedir(directorytoverify);
 	}
-    SifExecModuleBuffer(&mcman_irx, size_mcman_irx, 0, NULL, NULL);
-    SifExecModuleBuffer(&mcserv_irx, size_mcserv_irx, 0, NULL, NULL);
+#endif
+  
+	LOAD_IRX_NARG(sio2man_irx);
+    LOAD_IRX_NARG(mcman_irx);
+    LOAD_IRX_NARG(mcserv_irx);
+    printf("Initialize mcserv\n");
     initMC();
 
-    SifExecModuleBuffer(&padman_irx, size_padman_irx, 0, NULL, NULL);
-    SifExecModuleBuffer(&libsd_irx, size_libsd_irx, 0, NULL, NULL);
-
-    // load pad & mc modules 
-    printf("Installing Pad & MC modules...\n");
+    LOAD_IRX_NARG(padman_irx);
+    LOAD_IRX_NARG(libsd_irx);
 
     // load USB modules    
-    SifExecModuleBuffer(&usbd_irx, size_usbd_irx, 0, NULL, NULL);
+    LOAD_IRX_NARG(usbd_irx);
 
-    
     int ds3pads = 1;
-    SifExecModuleBuffer(&ds34usb_irx, size_ds34usb_irx, 4, (char *)&ds3pads, NULL);
-    SifExecModuleBuffer(&ds34bt_irx, size_ds34bt_irx, 4, (char *)&ds3pads, NULL);
+    LOAD_IRX(ds34usb_irx, 4, (char *)&ds3pads);
+    LOAD_IRX(ds34bt_irx, 4, (char *)&ds3pads);
+    printf("starting ds34 RPCs...\n");
     ds34usb_init();
     ds34bt_init();
 
-    SifExecModuleBuffer(&bdm_irx, size_bdm_irx, 0, NULL, NULL);
-    SifExecModuleBuffer(&bdmfs_fatfs_irx, size_bdmfs_fatfs_irx, 0, NULL, NULL);
-    SifExecModuleBuffer(&usbmass_bd_irx, size_usbmass_bd_irx, 0, NULL, NULL);
-
-    SifExecModuleBuffer(&cdfs_irx, size_cdfs_irx, 0, NULL, NULL);
-
-    SifExecModuleBuffer(&audsrv_irx, size_audsrv_irx, 0, NULL, NULL);
+    LOAD_IRX_NARG(bdm_irx);
+    LOAD_IRX_NARG(bdmfs_fatfs_irx);
+    LOAD_IRX_NARG(usbmass_bd_irx);
+    LOAD_IRX_NARG(cdfs_irx);
+    LOAD_IRX_NARG(audsrv_irx);
 
     //waitUntilDeviceIsReady by fjtrujy
 
@@ -212,21 +161,6 @@ int main(int argc, char * argv[])
         retries--;
     }
 	
-        // if no parameters are specified, use the default boot
-	if (argc < 2)
-	{
-	   // set boot path global variable based on the elf path
-	   setLuaBootPath (argc, argv, 0);  
-        }
-        else // set path based on the specified script
-        {
-           if (!strchr(argv[1], ':')) // filename doesn't contain device
-              // set boot path global variable based on the elf path
-	      setLuaBootPath (argc, argv, 0);  
-           else
-              // set path global variable based on the given script path
-	      setLuaBootPath (argc, argv, 1);
-	}
 	
 	// Lua init
 	// init internals library
@@ -237,10 +171,10 @@ int main(int argc, char * argv[])
     pad_init();
 
     // set base path luaplayer
-    chdir(boot_path); 
+    getcwd(boot_path, sizeof(boot_path));
 
     printf("boot path : %s\n", boot_path);
-	dbgprintf("boot path : %s\n", boot_path);
+    dbgprintf("boot path : %s\n", boot_path);
     
     while (1)
     {
