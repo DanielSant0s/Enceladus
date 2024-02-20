@@ -112,7 +112,7 @@ $(EE_ASM_DIR)boot.c: etc/boot.lua | $(EE_ASM_DIR)
 
 # automatict embedding
 embed/%.c: embed/%
-	$(BIN2S) $< $@ $(basename $<)$(subst .,_,$(suffix $<))
+	$(BIN2S) $< $@ $(notdir $(basename $<)$(subst .,_,$(suffix $<)))
 #------------------------------------------------------------------#
 
 
