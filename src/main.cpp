@@ -121,7 +121,7 @@ int main(int argc, char * argv[])
 	}
 #endif
   
-	LOAD_IRX_NARG(sio2man_irx);
+    LOAD_IRX_NARG(sio2man_irx);
     LOAD_IRX_NARG(mcman_irx);
     LOAD_IRX_NARG(mcserv_irx);
     printf("Initialize mcserv\n");
@@ -129,6 +129,7 @@ int main(int argc, char * argv[])
 
     LOAD_IRX_NARG(padman_irx);
     LOAD_IRX_NARG(libsd_irx);
+    LOAD_IRX_NARG(audsrv_irx);
 
     // load USB modules    
     LOAD_IRX_NARG(usbd_irx);
@@ -143,8 +144,10 @@ int main(int argc, char * argv[])
     LOAD_IRX_NARG(bdm_irx);
     LOAD_IRX_NARG(bdmfs_fatfs_irx);
     LOAD_IRX_NARG(usbmass_bd_irx);
+    
     LOAD_IRX_NARG(cdfs_irx);
-    LOAD_IRX_NARG(audsrv_irx);
+    sceCdInit(SCECdINoD);
+    
 
     //waitUntilDeviceIsReady by fjtrujy
 
