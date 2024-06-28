@@ -1,6 +1,6 @@
 
-#include "include/luaplayer.h"
-#include "include/graphics.h"
+#include "../include/luaplayer.h"
+#include "../include/graphics.h"
 
 static int lua_flip(lua_State *L){
 	int argc = lua_gettop(L);

@@ -1,7 +1,7 @@
 #include <stdint.h>
-#include "include/luaplayer.h"
-#include "include/sound.h"
 #include <stdlib.h>
+#include "../include/luaplayer.h"
+#include "../include/sound.h"
 
 static int lua_setformat(lua_State *L) {
 	int argc = lua_gettop(L);

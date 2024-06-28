@@ -4,9 +4,9 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#include "include/graphics.h"
-#include "include/fntsys.h"
-#include "include/luaplayer.h"
+#include "../include/graphics.h"
+#include "../include/fntsys.h"
+#include "../include/luaplayer.h"
 
 static bool asyncDelayed = true;
 

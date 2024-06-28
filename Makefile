@@ -72,9 +72,9 @@ APP_CORE = main.o system.o pad.o graphics.o render.o \
 		   calc_3d.o gsKit3d_sup.o atlas.o fntsys.o md5.o \
 		   sound.o
 
-LUA_LIBS =	luaplayer.o luasound.o luacontrols.o \
-			luatimer.o luaScreen.o luagraphics.o \
-			luasystem.o luaRender.o
+LUA_LIBS =	player.o sound.o controls.o \
+			timer.o Screen.o graphics.o \
+			system.o Render.o
 
 IOP_MODULES = iomanX.o fileXio.o \
 			  sio2man.o mcman.o mcserv.o padman.o libsd.o \
@@ -87,9 +87,10 @@ ifeq ($(F_KEYBOARD),1)
   EE_CXXFLAGS += -DPS2KBD
   EE_LIBS += -lkbd
   IOP_MODULES += ps2kbd.o
-  LUA_LIBS +=  luaKeyboard.o
+  LUA_LIBS +=  Keyboard.o
 endif
 
+LUA_LIBS := $(LUA_LIBS:%=lua/%)
 EE_OBJS = $(APP_CORE) $(LUA_LIBS) $(IOP_MODULES) $(EMBEDDED_RSC)
 
 EE_OBJS_DIR = obj/
@@ -173,14 +174,17 @@ reset:
 
 $(EE_OBJS_DIR)%.o: $(EE_SRC_DIR)%.c | $(EE_OBJS_DIR)
 	@echo "  - $@"
+	$(DIR_GUARD)
 	@$(EE_CC) $(EE_CFLAGS) $(EE_INCS) -c $< -o $@
 
 $(EE_OBJS_DIR)%.o: $(EE_ASM_DIR)%.c | $(EE_OBJS_DIR)
 	@echo "  - $@"
+	$(DIR_GUARD)
 	@$(EE_CC) $(EE_CFLAGS) $(EE_INCS) -c $< -o $@
 
 $(EE_OBJS_DIR)%.o: $(EE_SRC_DIR)%.cpp | $(EE_OBJS_DIR)
 	@echo "  - $@"
+	$(DIR_GUARD)
 	$(EE_CXX) $(EE_CXXFLAGS) $(EE_INCS) -c $< -o $@
 
 include $(PS2SDK)/samples/Makefile.pref
