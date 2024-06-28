@@ -90,6 +90,11 @@ ifeq ($(F_KEYBOARD),1)
   LUA_LIBS +=  Keyboard.o
 endif
 
+ifeq ($(POWERPC_UART),1)
+  EE_CXXFLAGS += -DPOWERPC_UART
+  IOP_MODULES += ppctty.o
+endif
+
 LUA_LIBS := $(LUA_LIBS:%=lua/%)
 EE_OBJS = $(APP_CORE) $(LUA_LIBS) $(IOP_MODULES) $(EMBEDDED_RSC)
 
