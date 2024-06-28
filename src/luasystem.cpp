@@ -786,7 +786,7 @@ void luaSystem_init(lua_State *L) {
 
 	lua_newtable(L);
 	luaL_setfuncs(L, Sif_functions, 0);
-	lua_setglobal(L, "Sif");
+	lua_setglobal(L, "IOP");
 
 	lua_pushinteger(L, O_RDONLY);
 	lua_setglobal(L, "FREAD");
