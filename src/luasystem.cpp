@@ -10,9 +10,15 @@
 
 #include "include/system.h"
 
+extern "C" {
+#include <ps2sdkapi.h>
+}
 #define NEWLIB_PORT_AWARE
 #include <fileXio_rpc.h>
 #include <fileio.h>
+
+extern int HAVE_FILEXIO;
+#define CHECK_FILEXIO_DEPENDENCY() if (!HAVE_FILEXIO) luaL_error(L, "System error: cant use fileXio functions if fileXio is not loaded!!!")
 
 #define MAX_DIR_FILES 512
 
@@ -201,10 +207,9 @@ static int lua_dir(lua_State *L)
 	return 1;  /* table is already on top */
 }
 
-extern int HAVE_FILEXIO;
 static int lua_dev_table(lua_State *L)
 {
-	if (!HAVE_FILEXIO) luaL_error(L, "System error: cant use fileXio functions if fileXio is not loaded!!!");
+	CHECK_FILEXIO_DEPENDENCY();
 	int i, devcnt;
 	struct fileXioDevice DEV[FILEXIO_MAX_DEVICES];
 	
@@ -229,6 +234,18 @@ static int lua_dev_table(lua_State *L)
 		lua_pushnil(L);
 	}
 	return 1;  /* table is already on top */
+}
+
+static int lua_ioctl(lua_State *L)
+{
+	if (lua_gettop(L) != 3) luaL_error(L, "ioctl(fd, cmd, param) expects 3 args ");
+	int fd = luaL_checkinteger(L, 1),
+	 	cmd = luaL_checkinteger(L, 2);
+	char* param = (char*)luaL_checkstring(L, 3);
+	lua_pushinteger(L, 
+		_ps2sdk_ioctl(fd, cmd, param)
+	);
+	return 1;
 }
 
 static int lua_createDir(lua_State *L)
@@ -723,6 +740,7 @@ static const luaL_Reg System_functions[] = {
 	{"checkValidDisc",       lua_checkValidDisc},
 	{"getDiscType",             lua_getDiscType},
 	{"checkDiscTray",         lua_checkDiscTray},
+	{"sendIOCTL",                     lua_ioctl},
 	{0, 0}
 };
 
