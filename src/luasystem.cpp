@@ -797,6 +797,9 @@ void luaSystem_init(lua_State *L) {
 	lua_pushinteger(L, O_CREAT | O_WRONLY);
 	lua_setglobal(L, "FCREATE");
 
+	lua_pushinteger(L, O_CREAT | O_WRONLY | O_TRUNC);
+	lua_setglobal(L, "FTRUNCATE");
+
 	lua_pushinteger(L, O_RDWR);
 	lua_setglobal(L, "FRDWR");
 	
