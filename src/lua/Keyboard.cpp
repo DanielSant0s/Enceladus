@@ -5,7 +5,7 @@
 #define NEWLIB_PORT_AWARE
 #include <fileXio_rpc.h>
 
-#include "include/luaplayer.h"
+#include "../include/luaplayer.h"
 
 /* ///Reference of the structure for a valid keyboard mapfile
 typedef struct keyboard_map

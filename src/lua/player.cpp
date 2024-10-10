@@ -5,7 +5,7 @@
 #include <string.h>
 #include <malloc.h>
 
-#include "include/luaplayer.h"
+#include "../include/luaplayer.h"
 
 static lua_State *L;
 
