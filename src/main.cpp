@@ -53,6 +53,10 @@ IMPORT_BIN2C(audsrv_irx);
 IMPORT_BIN2C(ds34usb_irx);
 IMPORT_BIN2C(ds34bt_irx);
 
+#ifdef POWERPC_UART
+IMPORT_BIN2C(ppctty_irx);
+#endif
+
 char boot_path[255];
 
 void initMC(void)
@@ -104,8 +108,11 @@ int main(int argc, char * argv[])
     // install sbv patch fix
     printf("Installing SBV Patches...\n");
     sbv_patch_enable_lmb();
-    sbv_patch_disable_prefix_check(); 
-    sbv_patch_fileio(); 
+    sbv_patch_disable_prefix_check();
+    sbv_patch_fileio();
+#ifdef POWERPC_UART
+	LOAD_IRX_NARG(ppctty_irx);
+#endif
 
 #ifdef DONT_LOAD_FILEXIO_ON_HOST_DEVICE
 	DIR *directorytoverify;

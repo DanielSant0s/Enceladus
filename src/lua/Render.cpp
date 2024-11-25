@@ -4,8 +4,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#include "include/render.h"
-#include "include/luaplayer.h"
+#include "../include/render.h"
+#include "../include/luaplayer.h"
 
 static int lua_initrender(lua_State *L) {
 	int argc = lua_gettop(L);

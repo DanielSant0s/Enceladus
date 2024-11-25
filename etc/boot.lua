@@ -12,3 +12,5 @@ if doesFileExist("System/index.lua") then
   elseif doesFileExist("system.lua") then
 	dofile("system.lua");
 end
+
+error("end of builtin script reached")

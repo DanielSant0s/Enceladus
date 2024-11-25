@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <time.h>
-#include "include/luaplayer.h"
+#include "../include/luaplayer.h"
 
 // if the timer is running:
 // measuredTime is the value of the last call to getCurrentMilliseconds
