@@ -1065,7 +1065,7 @@ void fntDrawQuad(rm_quad_t *q)
 
 
 /* PRIVATE METHODS */
-static int vsync_handler()
+static int vsync_handler(unt unknown)
 {
    iSignalSema(vsync_sema_id);
 
