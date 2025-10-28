@@ -209,11 +209,12 @@ Enceladus uses the latest version of Lua language (currently 5.4.3), which means
   - `reboot_iop`: integer, indicates if I/O Processor should be rebooted before loading ELF (`0`: no, `1`: yes). unless extremely needed, its **not** recommended to reboot it
   - args: variadic arg for strings, these will be passed to the ELF (path will be `argv[0]`)
 * `fd = System.openFile(path, type)`
-* Types list:  
-  - `FREAD`
-  - `FWRITE`
-  - `FCREATE`
-  - `FRDWR`
+* the types are the same than in C programming, and can be combined with bitwise or (`|`):  
+  - `O_RDONLY`: Read Only operation
+  - `O_WRONLY`: Write only operation
+  - `O_CREAT`: Create file if not exist
+  - `O_TRUNC`: destroy file contents
+  - `O_RDWR`: Read / Write
 * `buffer = System.readFile(file, size)`
 * `System.writeFile(fd, data, size)`
 * `System.closeFile(fd)`
