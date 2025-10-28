@@ -393,6 +393,7 @@ static atlas_t *fntNewAtlas()
 
     atl->surface.ClutPSM = GS_PSM_CT32;
     atl->surface.Clut = fontClut.Clut;
+    atl->surface.ClutStorageMode = GS_CLUT_STORAGE_CSM1;
 
     return atl;
 }
