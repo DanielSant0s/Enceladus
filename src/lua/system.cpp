@@ -4,11 +4,11 @@
 #include <sys/fcntl.h>
 #include <dirent.h>
 #include <sys/stat.h>
-#include "include/luaplayer.h"
-#include "include/md5.h"
-#include "include/graphics.h"
 
-#include "include/system.h"
+#include "../include/luaplayer.h"
+#include "../include/md5.h"
+#include "../include/graphics.h"
+#include "../include/system.h"
 
 #define NEWLIB_PORT_AWARE
 #include <fileXio_rpc.h>
@@ -200,7 +200,6 @@ static int lua_dir(lua_State *L)
 	}
 	return 1;  /* table is already on top */
 }
-
 extern int HAVE_FILEXIO;
 static int lua_dev_table(lua_State *L)
 {
@@ -786,7 +785,7 @@ void luaSystem_init(lua_State *L) {
 
 	lua_newtable(L);
 	luaL_setfuncs(L, Sif_functions, 0);
-	lua_setglobal(L, "Sif");
+	lua_setglobal(L, "IOP");
 
 	lua_pushinteger(L, O_RDONLY);
 	lua_setglobal(L, "FREAD");
