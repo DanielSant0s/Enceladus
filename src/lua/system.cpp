@@ -75,7 +75,7 @@ static int lua_setCurrentDirectory(lua_State *L)
 static int lua_curdir(lua_State *L) {
 	int argc = lua_gettop(L);
 	if(argc == 0) return lua_getCurrentDirectory(L);
-	if(argc == 1) return lua_setCurrentDirectory(L);
+	if(argc == 1 && lua_type(L, 1) == LUA_TSTRING) return lua_setCurrentDirectory(L);
 	return luaL_error(L, "Argument error: System.currentDirectory([file]) takes zero or one argument.");
 }
 
