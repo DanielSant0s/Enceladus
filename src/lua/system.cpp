@@ -778,8 +778,9 @@ static int lua_sifloadmodulebuffer(lua_State *L){
 		arg_len = luaL_checkinteger(L, 3);
 		args = luaL_checkstring(L, 4);
 	}
-
-	int result = SifExecModuleBuffer((void*)ptr, size, arg_len, args, NULL);
+	int result = -1;
+	int irx_id = SifExecModuleBuffer((void*)ptr, size, arg_len, args, &result);
+	lua_pushinteger(L, irx_id);
 	lua_pushinteger(L, result);
 	return 1;
 }
