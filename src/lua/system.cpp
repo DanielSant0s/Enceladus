@@ -529,7 +529,12 @@ static int lua_loadELF(lua_State *L)
 	if (argc < 2) return luaL_error(L, "%s(path, reboot_iop, args...): not enough args", __FUNCTION__);
 	size_t size;
 	const char *elftoload = luaL_checklstring(L, 1, &size);
-	int rebootIOP = luaL_checkinteger(L, 2);
+	int rebootIOP;
+	if (lua_type(L, 1) == LUA_TBOOLEAN)
+		rebootIOP = lua_toboolean(L, 2);
+	else
+		rebootIOP = luaL_checkinteger(L, 2);
+
 	char** p = (char**)malloc((argc-1) * sizeof(const char*));
 	p[0] = (char*)elftoload;
 	printf("# Loading ELF '%s' iop_reboot=%d, extra_args=%d\n", elftoload, rebootIOP, argc-2);
