@@ -40,7 +40,7 @@ static int lua_getpad(lua_State *L) {
         if (ret != 0) {
             paddata = 0xffff ^ buttons.btns;
         }
-    } 
+    }
 
 	if (ds34bt_get_status(port) & DS34BT_STATE_RUNNING) {
         ret = ds34bt_get_data(port, (u8 *)&buttons.btns);
@@ -115,7 +115,7 @@ static int lua_getpressure(lua_State *L){
 	} else {
 		button = luaL_checkinteger(L, 1);
 	}
-	
+
 	padButtonStatus pad;
 
 	unsigned char pressure = 255;
@@ -241,66 +241,37 @@ static const luaL_Reg Pads_functions[] = {
   {0, 0}
 };
 
+#define LUA_FORWARD_INTMACRO(macro) lua_pushinteger(L, macro); lua_setglobal (L, #macro)
+
 void luaControls_init(lua_State *L) {
 	lua_newtable(L);
 	luaL_setfuncs(L, Pads_functions, 0);
 	lua_setglobal(L, "Pads");
 
-	lua_pushinteger(L, PAD_SELECT);
-	lua_setglobal (L, "PAD_SELECT");
+	LUA_FORWARD_INTMACRO(PAD_SELECT);
+	LUA_FORWARD_INTMACRO(PAD_START);
+	LUA_FORWARD_INTMACRO(PAD_UP);
+	LUA_FORWARD_INTMACRO(PAD_RIGHT);
+	LUA_FORWARD_INTMACRO(PAD_DOWN);
+	LUA_FORWARD_INTMACRO(PAD_LEFT);
+	LUA_FORWARD_INTMACRO(PAD_TRIANGLE);
+	LUA_FORWARD_INTMACRO(PAD_CIRCLE);
+	LUA_FORWARD_INTMACRO(PAD_CROSS);
+	LUA_FORWARD_INTMACRO(PAD_SQUARE);
+	LUA_FORWARD_INTMACRO(PAD_L1);
+	LUA_FORWARD_INTMACRO(PAD_R1);
+	LUA_FORWARD_INTMACRO(PAD_L2);
+	LUA_FORWARD_INTMACRO(PAD_R2);
+	LUA_FORWARD_INTMACRO(PAD_L3);
+	LUA_FORWARD_INTMACRO(PAD_R3);
 
-	lua_pushinteger(L, PAD_START);
-	lua_setglobal (L, "PAD_START");
-	
-	lua_pushinteger(L, PAD_UP);
-	lua_setglobal (L, "PAD_UP");
-	
-	lua_pushinteger(L, PAD_RIGHT);
-	lua_setglobal (L, "PAD_RIGHT");
-	
-	lua_pushinteger(L, PAD_DOWN);
-	lua_setglobal (L, "PAD_DOWN");
-	
-	lua_pushinteger(L, PAD_LEFT);
-	lua_setglobal (L, "PAD_LEFT");
-	
-	lua_pushinteger(L, PAD_TRIANGLE);
-	lua_setglobal (L, "PAD_TRIANGLE");
-	
-	lua_pushinteger(L, PAD_CIRCLE);
-	lua_setglobal (L, "PAD_CIRCLE");
-
-	lua_pushinteger(L, PAD_CROSS);
-	lua_setglobal (L, "PAD_CROSS");
-
-	lua_pushinteger(L, PAD_SQUARE);
-	lua_setglobal (L, "PAD_SQUARE");
-
-	lua_pushinteger(L, PAD_L1);
-	lua_setglobal (L, "PAD_L1");
-
-	lua_pushinteger(L, PAD_R1);
-	lua_setglobal (L, "PAD_R1");
-	
-	lua_pushinteger(L, PAD_L2);
-	lua_setglobal (L, "PAD_L2");
-
-	lua_pushinteger(L, PAD_R2);
-	lua_setglobal (L, "PAD_R2");
-
-	lua_pushinteger(L, PAD_L3);
-	lua_setglobal (L, "PAD_L3");
-
-	lua_pushinteger(L, PAD_R3);
-	lua_setglobal (L, "PAD_R3");
-
-	lua_pushinteger(L, PAD_TYPE_DIGITAL);
-	lua_setglobal (L, "PAD_DIGITAL");
-
-	lua_pushinteger(L, PAD_TYPE_ANALOG);
-	lua_setglobal (L, "PAD_ANALOG");
-
-	lua_pushinteger(L, PAD_TYPE_DUALSHOCK);
-	lua_setglobal (L, "PAD_DUALSHOCK");
-
+	LUA_FORWARD_INTMACRO(PAD_TYPE_NEJICON);
+	LUA_FORWARD_INTMACRO(PAD_TYPE_KONAMIGUN);
+	LUA_FORWARD_INTMACRO(PAD_TYPE_DIGITAL);
+	LUA_FORWARD_INTMACRO(PAD_TYPE_ANALOG);
+	LUA_FORWARD_INTMACRO(PAD_TYPE_NAMCOGUN);
+	LUA_FORWARD_INTMACRO(PAD_TYPE_DUALSHOCK);
+	LUA_FORWARD_INTMACRO(PAD_TYPE_JOGCON);
+	LUA_FORWARD_INTMACRO(PAD_TYPE_EX_TSURICON);
+	LUA_FORWARD_INTMACRO(PAD_TYPE_EX_JOGCON);
 }
