@@ -213,28 +213,29 @@ Enceladus uses the latest version of Lua language (currently 5.4.3), which means
   - `reboot_iop`: integer, indicates if I/O Processor should be rebooted before loading ELF (`0`: no, `1`: yes). unless extremely needed, its **not** recommended to reboot it
   - args: variadic arg for strings, these will be passed to the ELF (path will be `argv[0]`)
 * `fd = System.openFile(path, type)`
-* Types list:
-  - `FREAD`
-  - `FWRITE`
-  - `FCREATE`
-  - `FRDWR`
+* Types list (combine with bitwise or if necesary: `|`):
+  - `O_RDONLY`
+  - `O_WRONLY`
+  - `O_CREAT`
+  - `O_TRUNC`
+  - `O_RDWR`
 * `buffer = System.readFile(file, size)`
-* `System.writeFile(fd, data, size)`
-* `System.closeFile(fd)`
-* `System.seekFile(fd, pos, type)`
+* `size = System.writeFile(fd, data, size)`
+* `result = System.closeFile(fd)`
+* `seekpos = System.seekFile(fd, pos, type)`
 * Types list:
   - `SET`
   - `CUR`
   - `END`
 * `size = System.sizeFile(fd)`
-* `doesFileExist(path)` __(note the absence of the `System.` prefix.)__
+* `exist = doesFileExist(path)` __(note the absence of the `System.` prefix.)__
 * `System.currentDirectory(path)` *if path given, it sets the current dir, else it gets the current dir*
 * `listdir = System.listDirectory(path)` *path isn't mandatory, defaults to CWD*
   - `listdir[index].name` - *file name on indicated index(string)*
   - `listdir[index].size` - *size on indicated index(integer)*
   - `listdir[index].directory` *if indicated index is a file or a directory(bool)*
-* `System.createDirectory(path)`
-* `System.removeDirectory(path)`
+* `result = System.createDirectory(path)`
+* `result = System.removeDirectory(path)`
 * `System.removeFile(path)`
 * `System.copyFile(source, dest)`
 * `System.moveFile(source, dest)`

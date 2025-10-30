@@ -287,33 +287,6 @@ static int lua_removeFile(lua_State *L)
 	return 1;
 }
 
-#if 0
-static int lua_rename(lua_State *L)
-{
-	const char *oldName = luaL_checkstring(L, 1);
-	const char *newName = luaL_checkstring(L, 2);
-	if(!oldName || !newName)
-		return luaL_error(L, "Argument error: System.rename(source, destination) takes two filenames as strings as arguments.");
-
-	char buf[BUFSIZ];
-    size_t size;
-
-	int source = open(oldName, O_RDONLY, 0);
-    int dest = open(newName, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-
-	while ((size = read(source, buf, BUFSIZ)) > 0) {
-	   write(dest, buf, size);
-    }
-
-    close(source);
-    close(dest);
-
-	remove(oldName);
-
-	return 0;
-}
-#endif
-
 static int lua_copyfile(lua_State *L)
 {
 	const char *ogfile = luaL_checkstring(L, 1);
@@ -729,7 +702,6 @@ static const luaL_Reg System_functions[] = {
 	{"threadCopyFile",	          lua_copyasync},
 	{"getFileProgress",	    lua_getfileprogress},
 	{"removeFile",               lua_removeFile},
-	{"rename",                       lua_rename},
 	{"md5sum",                       lua_md5sum},
 	{"sleep",                         lua_sleep},
 	{"getFreeMemory",         lua_getFreeMemory},

@@ -143,7 +143,8 @@ function System.removeFile(file) end
 ---internally it is the same than `System.moveFile`. use that instead
 ---@see System.moveFile
 ---
----@deprecated System.moveFile
+---@deprecated 
+---@see System.moveFile
 function System.rename(source, dest) end
 
 ---Calculates MD5 checksum for a string (or data buffer)
