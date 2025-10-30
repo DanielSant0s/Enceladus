@@ -460,8 +460,9 @@ static int lua_readfile(lua_State *L){
 	int len = read(file,buffer, size);
 	buffer[len] = 0;
 	lua_pushlstring(L,(const char*)buffer,len);
+	lua_pushinteger(L, len);
 	free(buffer);
-	return 1;
+	return 2;
 }
 
 
