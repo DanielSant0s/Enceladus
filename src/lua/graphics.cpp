@@ -10,13 +10,13 @@
 
 static bool asyncDelayed = true;
 
-volatile int imgThreadResult = 1;
+volatile int imgThreadResult = -2;
 unsigned char* imgThreadData = NULL;
 uint32_t imgThreadSize = 0;
 
 static u8 imgThreadStack[4096] __attribute__((aligned(16)));
 
-// Extern symbol 
+// Extern symbol
 extern void *_gp;
 
 static int imgThread(void* data)
@@ -24,9 +24,9 @@ static int imgThread(void* data)
 	char* text = (char*)data;
 	bool delayed = asyncDelayed;
 	GSTEXTURE* image = load_image(text, delayed);
-	if (image == NULL) 
+	if (image == NULL)
 	{
-		imgThreadResult = 1;
+		imgThreadResult = 2;
 		ExitDeleteThread();
 		return 0;
 	}
@@ -42,7 +42,7 @@ static int imgThread(void* data)
 
 
 static int lua_fontload(lua_State *L){
-	if (lua_gettop(L) != 1) return luaL_error(L, "wrong number of arguments"); 
+	if (lua_gettop(L) != 1) return luaL_error(L, "wrong number of arguments");
 	const char* path = luaL_checkstring(L, 1);
 	GSFONT* font = loadFont(path);
 	if (font == NULL) return luaL_error(L, "Error loading font (invalid magic).");
@@ -65,21 +65,21 @@ static int lua_print(lua_State *L) {
 }
 
 static int lua_fontunload(lua_State *L){
-	int argc = lua_gettop(L); 
-	if (argc != 1) return luaL_error(L, "wrong number of arguments"); 
+	int argc = lua_gettop(L);
+	if (argc != 1) return luaL_error(L, "wrong number of arguments");
 	GSFONT* font = (GSFONT*)luaL_checkinteger(L, 1);
 	unloadFont(font);
 	return 0;
 }
 
 static int lua_ftinit(lua_State *L){
-	if (lua_gettop(L) != 0) return luaL_error(L, "wrong number of arguments"); 
+	if (lua_gettop(L) != 0) return luaL_error(L, "wrong number of arguments");
 	fntInit();
 	return 0;
 }
 
 static int lua_ftload(lua_State *L){
-	if (lua_gettop(L) != 1) return luaL_error(L, "wrong number of arguments"); 
+	if (lua_gettop(L) != 1) return luaL_error(L, "wrong number of arguments");
 	const char* fontpath = luaL_checkstring(L, 1);
 	int fntHandle = fntLoadFile(fontpath);
     lua_pushinteger(L, fntHandle);
@@ -87,20 +87,20 @@ static int lua_ftload(lua_State *L){
 }
 
 static int lua_ftSetPixelSize(lua_State *L) {
-	if (lua_gettop(L) != 3) return luaL_error(L, "wrong number of arguments"); 
+	if (lua_gettop(L) != 3) return luaL_error(L, "wrong number of arguments");
 	int fontid = luaL_checkinteger(L, 1);
-	int width = luaL_checknumber(L, 2); 
-	int height = luaL_checknumber(L, 3); 
+	int width = luaL_checknumber(L, 2);
+	int height = luaL_checknumber(L, 3);
 	fntSetPixelSize(fontid, width, height);
 	return 0;
 }
 
 
 static int lua_ftSetCharSize(lua_State *L) {
-	if (lua_gettop(L) != 3) return luaL_error(L, "wrong number of arguments"); 
+	if (lua_gettop(L) != 3) return luaL_error(L, "wrong number of arguments");
 	int fontid = luaL_checkinteger(L, 1);
-	int width = luaL_checkinteger(L, 2); 
-	int height = luaL_checkinteger(L, 3); 
+	int width = luaL_checkinteger(L, 2);
+	int height = luaL_checkinteger(L, 3);
 	fntSetCharSize(fontid, width, height);
 	return 0;
 }
@@ -112,8 +112,8 @@ static int lua_ftprint(lua_State *L) {
     int x = luaL_checkinteger(L, 2);
 	int y = luaL_checkinteger(L, 3);
 	int alignment = luaL_checkinteger(L, 4);
-	int width = luaL_checkinteger(L, 5); 
-	int height = luaL_checkinteger(L, 6); 
+	int width = luaL_checkinteger(L, 5);
+	int height = luaL_checkinteger(L, 6);
     const char* text = luaL_checkstring(L, 7);
 	Color color = 0x80808080;
 	if (argc == 8) color = luaL_checkinteger(L, 8);
@@ -122,8 +122,8 @@ static int lua_ftprint(lua_State *L) {
 }
 
 static int lua_ftunload(lua_State *L){
-	int argc = lua_gettop(L); 
-	if (argc != 1) return luaL_error(L, "wrong number of arguments"); 
+	int argc = lua_gettop(L);
+	if (argc != 1) return luaL_error(L, "wrong number of arguments");
 	int fontid = luaL_checkinteger(L, 1);
 	fntRelease(fontid);
 	return 0;
@@ -179,9 +179,9 @@ static const luaL_Reg Font_functions[] = {
   	{"print",                      lua_print},
     {"unload",                lua_fontunload},
 	//gsFontM functions
-  	{"fmLoad",            		  lua_fmload}, 
-	{"fmPrint",           		 lua_fmprint}, 
-	{"fmUnload",         	    lua_fmunload}, 
+  	{"fmLoad",            		  lua_fmload},
+	{"fmPrint",           		 lua_fmprint},
+	{"fmUnload",         	    lua_fmunload},
   {0, 0}
 };
 
@@ -191,9 +191,9 @@ static int lua_loadimgasync(lua_State *L){
 	if (argc != 1) return luaL_error(L, "wrong number of arguments");
 	char* text = (char*)(luaL_checkstring(L, 1));
 	if (argc == 2) asyncDelayed = lua_toboolean(L, 2);
-	
+
 	ee_thread_t thread_param;
-	
+
 	thread_param.gp_reg = &_gp;
     thread_param.func = (void*)imgThread;
     thread_param.stack = (void *)imgThreadStack;
@@ -205,7 +205,7 @@ static int lua_loadimgasync(lua_State *L){
 		imgThreadResult = -1;
 		return 0;
 	}
-	
+
 	imgThreadResult = 0;
 	StartThread(thread, (void*)text);
 	return 0;
@@ -300,7 +300,7 @@ static int lua_drawimg_part(lua_State *L) {
 	if (argc == 8) color = (Color)luaL_checknumber(L, 8);
 	float width = source->Width;
 	float height = source->Height;
-	
+
 	drawImage(source, x, y, width, height, startx, starty, endx, endy, color);
 
 	return 0;
@@ -466,18 +466,18 @@ static int lua_free(lua_State *L) {
 #ifndef SKIP_ERROR_HANDLING
 	if (argc != 1) return luaL_error(L, "wrong number of arguments");
 #endif
-	
+
 	GSTEXTURE* source = (GSTEXTURE*)(luaL_checkinteger(L, 1));
 
 	UnloadTexture(source);
 
 	free(source->Mem);
 	source->Mem = NULL;
-	
+
 	// Free texture CLUT
 	if(source->Clut != NULL)
 	{
-		
+
 		free(source->Clut);
 		source->Clut = NULL;
 	}
@@ -503,12 +503,15 @@ static int lua_getloaddata(lua_State *L){
 #ifndef SKIP_ERROR_HANDLING
 	if(argc != 0) return luaL_error(L, "wrong number of arguments.");
 #endif
-	if (imgThreadData != NULL){
-		lua_pushlstring(L,(const char*)imgThreadData,imgThreadSize);
+	if (imgThreadData != NULL) {
+		lua_pushlstring(L, (const char*)imgThreadData, imgThreadSize);
 		free(imgThreadData);
 		imgThreadData = NULL;
-		return 1;
-	}else return 0;
+		imgThreadResult = -2;
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
 }
 
 //Register our Graphics Functions
