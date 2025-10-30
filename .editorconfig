@@ -10,6 +10,10 @@ insert_final_newline = true
 trim_trailing_whitespace = true
 charset = utf-8
 
+# because in this metadata, we can use markdown line break (double trailing whitespace)
+[lua_intellisense/*.lua]
+trim_trailing_whitespace = false
+
 # 4 space indentation
 [*.{c,h,js,css,html}]
 indent_style = space
