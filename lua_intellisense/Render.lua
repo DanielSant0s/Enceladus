@@ -62,18 +62,20 @@ function Camera.position(X, Y, Z) end
 ---@param Z integer Rotation angle
 function Camera.rotation(X, Y, Z) end
 
+---@type lightmode integer
 AMBIENT = 0;
+---@type lightmode integer
 DIRECTIONAL = 1;
 
 --- @param id integer
 ---@param dir_x number
 ---@param dir_y number
 ---@param dir_z number
----@param type number
 ---@param r number
 ---@param g number
 ---@param b number
-function Lights.set(id, dir_x, dir_y, dir_z, type, r, g, b) end
+---@param type lightmode
+function Lights.set(id, dir_x, dir_y, dir_z, r, g, b, type) end
 
 --- @param count integer the ammount of lights
 function Lights.create(count) end

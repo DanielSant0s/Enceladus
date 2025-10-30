@@ -94,7 +94,7 @@ function Pads.getType(port) end
 ---@param pad padbuttons wich button to check the pressure
 ---@return integer pressure
 --- if not specifying port, port 0 is assumed
----@overload fun(pad:padbuttons):integer:pressure
+---@overload fun(pad:padbuttons):pressure:integer
 function Pads.getPressure(port, pad) end
 
 ---control joystick rumble
