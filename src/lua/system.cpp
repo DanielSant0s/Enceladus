@@ -806,17 +806,20 @@ void luaSystem_init(lua_State *L) {
 	lua_setglobal(L, "IOP");
 
 	lua_pushinteger(L, O_RDONLY);
-	lua_setglobal(L, "FREAD");
+	lua_setglobal(L, "O_RDONLY");
 
 	lua_pushinteger(L, O_WRONLY);
-	lua_setglobal (L, "FWRITE");
+	lua_setglobal (L, "O_WRONLY");
 
-	lua_pushinteger(L, O_CREAT | O_WRONLY);
-	lua_setglobal(L, "FCREATE");
+	lua_pushinteger(L, O_CREAT);
+	lua_setglobal(L, "O_CREAT");
+
+	lua_pushinteger(L, O_TRUNC);
+	lua_setglobal(L, "O_TRUNC");
 
 	lua_pushinteger(L, O_RDWR);
-	lua_setglobal(L, "FRDWR");
-	
+	lua_setglobal(L, "O_RDWR");
+
 	lua_pushinteger(L, SEEK_SET);
 	lua_setglobal(L, "SET");
 
