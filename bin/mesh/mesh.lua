@@ -3,7 +3,9 @@ Screen.setMode(NTSC, 640, 448, CT24, INTERLACED, FIELD, true, Z16S)
 Render.init(4/3)
 
 local orangetex = Graphics.loadImage("mesh/moon.jpg")
-Graphics.setImageFilters(orangetex, LINEAR) 
+if orangetex == nil then error("Could not load 'mesh/moon.jpg'") end
+
+Graphics.setImageFilters(orangetex, LINEAR)
 local orange = Render.loadOBJ("mesh/moon.obj", orangetex)
 
 Camera.position(0.0, 0.0, 50.0)

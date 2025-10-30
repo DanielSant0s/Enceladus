@@ -1,26 +1,33 @@
 Font.fmLoad()
 
-local circle = Graphics.loadImage("pads/circle.png")
-local cross = Graphics.loadImage("pads/cross.png")
-local square = Graphics.loadImage("pads/square.png")
-local triangle = Graphics.loadImage("pads/triangle.png")
+function LoadImageHelper(path)
+  --- Intellisense will warn us if we use images without checking if the load failed
+  local I = Graphics.loadImage(path)
+  if I == nil then error("failed to load image\n\nPath:"..path) end
+  return I
+end
 
-local up = Graphics.loadImage("pads/up.png")
-local down = Graphics.loadImage("pads/down.png")
-local left = Graphics.loadImage("pads/left.png")
-local right = Graphics.loadImage("pads/right.png")
+local circle = LoadImageHelper("pads/circle.png")
+local cross = LoadImageHelper("pads/cross.png")
+local square = LoadImageHelper("pads/square.png")
+local triangle = LoadImageHelper("pads/triangle.png")
 
-local start = Graphics.loadImage("pads/start.png")
-local pad_select = Graphics.loadImage("pads/select.png")
+local up = LoadImageHelper("pads/up.png")
+local down = LoadImageHelper("pads/down.png")
+local left = LoadImageHelper("pads/left.png")
+local right = LoadImageHelper("pads/right.png")
 
-local r1 = Graphics.loadImage("pads/R1.png")
-local r2 = Graphics.loadImage("pads/R2.png")
+local start = LoadImageHelper("pads/start.png")
+local pad_select = LoadImageHelper("pads/select.png")
 
-local l1 = Graphics.loadImage("pads/L1.png")
-local l2 = Graphics.loadImage("pads/L2.png")
+local r1 = LoadImageHelper("pads/R1.png")
+local r2 = LoadImageHelper("pads/R2.png")
 
-local l3 = Graphics.loadImage("pads/L3.png")
-local r3 = Graphics.loadImage("pads/R3.png")
+local l1 = LoadImageHelper("pads/L1.png")
+local l2 = LoadImageHelper("pads/L2.png")
+
+local l3 = LoadImageHelper("pads/L3.png")
+local r3 = LoadImageHelper("pads/R3.png")
 
 local pad = nil
 local rx = nil
@@ -46,7 +53,7 @@ while true do
   else
     Graphics.drawImage(pad_select, 260.0, 190.0, Color.new(128, 128, 128, 60))
   end
-  
+
   if Pads.check(pad, PAD_START) then
     Graphics.drawImage(start, 380.0, 190.0)
   else
@@ -104,7 +111,7 @@ while true do
 
   if Pads.check(pad, PAD_CIRCLE) then
     pressure = Pads.getPressure(PAD_CIRCLE)
-    Graphics.drawImage(circle, 555.0, 190.0, Color.new(128, 128, 128,  pressure))
+    Graphics.drawImage(circle, 555.0, 190.0, Color.new(128, 128, 128, pressure))
   else
     Graphics.drawImage(circle, 555.0, 190.0, Color.new(128, 128, 128, 60))
   end
@@ -162,7 +169,7 @@ while true do
   if Pads.check(pad, PAD_R3) and Pads.check(pad, PAD_L3) then
     Pads.rumble(0 ,0)
   end
-  
+
   Screen.flip()
   --Screen.waitVblankStart()
 end

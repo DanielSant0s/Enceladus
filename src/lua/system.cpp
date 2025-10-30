@@ -21,7 +21,7 @@ static int lua_getCurrentDirectory(lua_State *L)
 	char path[256];
 	getcwd(path, 256);
 	lua_pushstring(L, path);
-	
+
 	return 1;
 }
 
@@ -32,8 +32,8 @@ static int lua_setCurrentDirectory(lua_State *L)
 	if(!path) return luaL_error(L, "Argument error: System.currentDirectory(file) takes a filename as string as argument.");
 
 	lua_getCurrentDirectory(L);
-	
-	// let's do what the ps2sdk should do, 
+
+	// let's do what the ps2sdk should do,
 	// some normalization... :)
 	// if absolute path (contains [drive]:path/)
 	if (strchr(path, ':'))
@@ -55,7 +55,7 @@ static int lua_setCurrentDirectory(lua_State *L)
 	           } while (temp_path[idx] != '/');
 	           temp_path[idx] = '\0';
 	        }
-	        
+
            }
            // add given directory to the existing path
            else
@@ -65,17 +65,17 @@ static int lua_setCurrentDirectory(lua_State *L)
 	      strcat(temp_path,path);
 	   }
         }
-        
+
         printf("changing directory to %s\n",__ps2_normalize_path(temp_path));
         chdir(__ps2_normalize_path(temp_path));
-       
+
 	return 1;
 }
 
 static int lua_curdir(lua_State *L) {
 	int argc = lua_gettop(L);
 	if(argc == 0) return lua_getCurrentDirectory(L);
-	if(argc == 1) return lua_setCurrentDirectory(L);
+	if(argc == 1 && lua_type(L, 1) == LUA_TSTRING) return lua_setCurrentDirectory(L);
 	return luaL_error(L, "Argument error: System.currentDirectory([file]) takes zero or one argument.");
 }
 
@@ -84,66 +84,66 @@ static int lua_dir(lua_State *L)
 {
 	int argc = lua_gettop(L);
 	if (argc != 0 && argc != 1) return luaL_error(L, "Argument error: System.listDirectory([path]) takes zero or one argument.");
-	
+
         const char *temp_path = "";
 	char path[255];
-	
+
 	getcwd((char *)path, 256);
 	printf("current dir %s\n",(char *)path);
-	
-	if (argc != 0) 
+
+	if (argc != 0)
 	{
 		temp_path = luaL_checkstring(L, 1);
 		// append the given path to the boot_path
-	        
+
 	        strcpy ((char *)path, boot_path);
-	        
+
 	        if (strchr(temp_path, ':'))
-	           // workaround in case of temp_path is containing 
+	           // workaround in case of temp_path is containing
 	           // a device name again
 	           strcpy ((char *)path, temp_path);
 	        else
 	           strcat ((char *)path, temp_path);
 	}
-	
+
 	strcpy(path,__ps2_normalize_path(path));
 	printf("\nchecking path : %s\n",path);
-		
 
-        
+
+
         //-----------------------------------------------------------------------------------------
-	
+
 	// read from MC ?
-        
+
         if( !strcmp( path, "mc0:" ) || !strcmp( path, "mc1:" ) )
-        {       
+        {
                 int	nPort;
                 int	numRead;
                 char    mcPath[256];
 		sceMcTblGetDir mcEntries[MAX_DIR_FILES] __attribute__((aligned(64)));
-		
+
 		if( !strcmp( path, "mc0:" ) )
 			nPort = 0;
 		else
 			nPort = 1;
-		
-		
+
+
 		// copy only the path without the device (ie : mc0:/xxx/xxx -> /xxx/xxx)
 		strcpy(mcPath,(char *)&path[4]);
-				
+
 		// it temp_path is empty put a "/" inside
                 if (strlen(mcPath)==0)
                    strcpy((char *)mcPath,(char *)"/");
-		
+
 
 		if (mcPath[strlen(mcPath)-1] != '/')
 		  strcat( mcPath, "/-*" );
 		else
 		  strcat( mcPath, "*" );
-	
+
 		mcGetDir( nPort, 0, mcPath, 0, MAX_DIR_FILES, mcEntries);
    		while (!mcSync( MC_WAIT, NULL, &numRead ));
-   		                	    
+
 	        int cpt = 1;
 	        lua_newtable(L);
 
@@ -155,11 +155,11 @@ static int lua_dir(lua_State *L)
             lua_pushstring(L, "name");
             lua_pushstring(L, (const char *)mcEntries[i].EntryName);
             lua_settable(L, -3);
-        
+
             lua_pushstring(L, "size");
             lua_pushnumber(L, mcEntries[i].FileSizeByte);
             lua_settable(L, -3);
-    
+
             lua_pushstring(L, "directory");
             lua_pushboolean(L, ( mcEntries[i].AttrFile & MC_ATTR_SUBDIR ));
             lua_settable(L, -3);
@@ -169,7 +169,7 @@ static int lua_dir(lua_State *L)
 		return 1;  // table is already on top
         }
         //-----------------------------------------------------------------------------------------
-        
+
         // else regular one using Dopen/Dread
 
 	int i = 1;
@@ -206,7 +206,7 @@ static int lua_dev_table(lua_State *L)
 	if (!HAVE_FILEXIO) luaL_error(L, "System error: cant use fileXio functions if fileXio is not loaded!!!");
 	int i, devcnt;
 	struct fileXioDevice DEV[FILEXIO_MAX_DEVICES];
-	
+
 	devcnt = fileXioGetDeviceList(DEV, FILEXIO_MAX_DEVICES);
 	if (devcnt > 0) {
 		lua_newtable(L);
@@ -218,7 +218,7 @@ static int lua_dev_table(lua_State *L)
     	    lua_pushstring(L, "name");
     	    lua_pushstring(L, (const char *)DEV[i].name);
     	    lua_settable(L, -3);
-	
+
     	    lua_pushstring(L, "desc");
     	    lua_pushstring(L, DEV[i].desc);
     	    lua_settable(L, -3);
@@ -234,28 +234,30 @@ static int lua_createDir(lua_State *L)
 {
 	const char *path = luaL_checkstring(L, 1);
 	if(!path) return luaL_error(L, "Argument error: System.createDirectory(directory) takes a directory name as string as argument.");
-	mkdir(path, 0777);
-	
-	return 0;
+	int r = mkdir(path, 0777);
+
+	lua_pushinteger(L, r);
+	return 1;
 }
 
 static int lua_removeDir(lua_State *L)
 {
 	const char *path = luaL_checkstring(L, 1);
 	if(!path) return luaL_error(L, "Argument error: System.removeDirectory(directory) takes a directory name as string as argument.");
-	rmdir(path);
-	
-	return 0;
+	int r = rmdir(path);
+
+	lua_pushinteger(L, r);
+	return 1;
 }
 
 static int lua_movefile(lua_State *L)
 {
 	const char *path = luaL_checkstring(L, 1);
-	if(!path) return luaL_error(L, "Argument error: System.removeFile(filename) takes a filename as string as argument.");
+	if(!path) return luaL_error(L, "Argument error: System.moveFile(filename) takes a filename as string as argument.");
 		const char *oldName = luaL_checkstring(L, 1);
 	const char *newName = luaL_checkstring(L, 2);
 	if(!oldName || !newName)
-		return luaL_error(L, "Argument error: System.rename(source, destination) takes two filenames as strings as arguments.");
+		return luaL_error(L, "Argument error: System.moveFile(source, destination) takes two filenames as strings as arguments.");
 
 	char buf[BUFSIZ];
     size_t size;
@@ -279,34 +281,10 @@ static int lua_removeFile(lua_State *L)
 {
 	const char *path = luaL_checkstring(L, 1);
 	if(!path) return luaL_error(L, "Argument error: System.removeFile(filename) takes a filename as string as argument.");
-	remove(path);
+	int r = remove(path);
 
-	return 0;
-}
-
-static int lua_rename(lua_State *L)
-{
-	const char *oldName = luaL_checkstring(L, 1);
-	const char *newName = luaL_checkstring(L, 2);
-	if(!oldName || !newName)
-		return luaL_error(L, "Argument error: System.rename(source, destination) takes two filenames as strings as arguments.");
-
-	char buf[BUFSIZ];
-    size_t size;
-
-	int source = open(oldName, O_RDONLY, 0);
-    int dest = open(newName, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-
-	while ((size = read(source, buf, BUFSIZ)) > 0) {
-	   write(dest, buf, size);
-    }
-
-    close(source);
-    close(dest);
-
-	remove(oldName);
-	
-	return 0;
+	lua_pushinteger(L, r);
+	return 1;
 }
 
 static int lua_copyfile(lua_State *L)
@@ -328,7 +306,7 @@ static int lua_copyfile(lua_State *L)
 
     close(source);
     close(dest);
-	
+
 	return 0;
 }
 
@@ -346,7 +324,7 @@ static int lua_md5sum(lua_State *L)
 	if (!string) return luaL_error(L, "Argument error: System.md5sum(string) takes a string as argument.");
 
 	int i;
-	char result[33];        
+	char result[33];
 	u8 digest[16];
 
 	MD5_CTX ctx;
@@ -356,7 +334,7 @@ static int lua_md5sum(lua_State *L)
 
 	for (i = 0; i < 16; i++) sprintf(result + 2 * i, "%02x", digest[i]);
 	lua_pushstring(L, result);
-	
+
 	return 1;
 }
 
@@ -371,7 +349,7 @@ static int lua_sleep(lua_State *L)
 static int lua_getFreeMemory(lua_State *L)
 {
 	if (lua_gettop(L) != 0) return luaL_error(L, "no arguments expected.");
-	
+
 	size_t result = GetFreeSize();
 
 	lua_pushinteger(L, (uint32_t)(result));
@@ -428,6 +406,10 @@ static int lua_getmcinfo(lua_State *L){
 	lua_pushinteger(L, format);
 	lua_settable(L, -3);
 
+	lua_pushstring(L, "result");
+	lua_pushinteger(L, result);
+	lua_settable(L, -3);
+
 	return 1;
 }
 
@@ -437,7 +419,9 @@ static int lua_openfile(lua_State *L){
 	const char *file_tbo = luaL_checkstring(L, 1);
 	int type = luaL_checkinteger(L, 2);
 	int fileHandle = open(file_tbo, type, 0777);
+#ifdef OPENFILE_FAIL_RAISE_LUAERR
 	if (fileHandle < 0) return luaL_error(L, "cannot open requested file.");
+#endif
 	lua_pushinteger(L,fileHandle);
 	return 1;
 }
@@ -452,8 +436,9 @@ static int lua_readfile(lua_State *L){
 	int len = read(file,buffer, size);
 	buffer[len] = 0;
 	lua_pushlstring(L,(const char*)buffer,len);
+	lua_pushinteger(L, len);
 	free(buffer);
-	return 1;
+	return 2;
 }
 
 
@@ -463,16 +448,18 @@ static int lua_writefile(lua_State *L){
 	int fileHandle = luaL_checkinteger(L, 1);
 	const char *text = luaL_checkstring(L, 2);
 	int size = luaL_checknumber(L, 3);
-	write(fileHandle, text, size);
-	return 0;
+	int len = write(fileHandle, text, size);
+	lua_pushinteger(L, len);
+	return 1;
 }
 
 static int lua_closefile(lua_State *L){
 	int argc = lua_gettop(L);
 	if (argc != 1) return luaL_error(L, "wrong number of arguments");
 	int fileHandle = luaL_checkinteger(L, 1);
-	close(fileHandle);
-	return 0;
+	int r = close(fileHandle);
+	lua_pushinteger(L, r);
+	return 1;
 }
 
 static int lua_seekfile(lua_State *L){
@@ -481,8 +468,9 @@ static int lua_seekfile(lua_State *L){
 	int fileHandle = luaL_checkinteger(L, 1);
 	int pos = luaL_checkinteger(L, 2);
 	uint32_t type = luaL_checkinteger(L, 3);
-	lseek(fileHandle, pos, type);	
-	return 0;
+	off_t newpos = lseek(fileHandle, pos, type);
+	lua_pushinteger(L, newpos);
+	return 1;
 }
 
 
@@ -517,7 +505,12 @@ static int lua_loadELF(lua_State *L)
 	if (argc < 2) return luaL_error(L, "%s(path, reboot_iop, args...): not enough args", __FUNCTION__);
 	size_t size;
 	const char *elftoload = luaL_checklstring(L, 1, &size);
-	int rebootIOP = luaL_checkinteger(L, 2);
+	int rebootIOP;
+	if (lua_type(L, 1) == LUA_TBOOLEAN)
+		rebootIOP = lua_toboolean(L, 2);
+	else
+		rebootIOP = luaL_checkinteger(L, 2);
+
 	char** p = (char**)malloc((argc-1) * sizeof(const char*));
 	p[0] = (char*)elftoload;
 	printf("# Loading ELF '%s' iop_reboot=%d, extra_args=%d\n", elftoload, rebootIOP, argc-2);
@@ -600,7 +593,7 @@ static int lua_getDiscType(lua_State *L)
     int discType;
     int iz;
     discType = sceCdGetDiskType();
-    
+
     int DiscType_ix = 0;
         for (iz = 0; DiscTypes[iz].name[0]; iz++)
             if (DiscTypes[iz].type == discType)
@@ -660,27 +653,24 @@ static int lua_copyasync(lua_State *L){
 
 	copypaths->in = luaL_checkstring(L, 1);
 	copypaths->out = luaL_checkstring(L, 2);
-	
+
 	static u8 copyThreadStack[65*1024] __attribute__((aligned(16)));
-	
+
 	ee_thread_t thread_param;
-	
+
 	thread_param.gp_reg = &_gp;
     thread_param.func = (void*)copyThread;
     thread_param.stack = (void *)copyThreadStack;
     thread_param.stack_size = sizeof(copyThreadStack);
     thread_param.initial_priority = 0x12;
 	int thread = CreateThread(&thread_param);
-	
+
 	StartThread(thread, (void*)copypaths);
 	return 0;
 }
 
 
 static int lua_getfileprogress(lua_State *L) {
-	int argc = lua_gettop(L);
-	if (argc != 0) return luaL_error(L, "wrong number of arguments");
-
 	lua_newtable(L);
 
     lua_pushstring(L, "current");
@@ -698,8 +688,8 @@ static const luaL_Reg System_functions[] = {
 	{"openFile",                   lua_openfile},
 	{"readFile",                   lua_readfile},
 	{"writeFile",                 lua_writefile},
-	{"closeFile",                 lua_closefile},  
-	{"seekFile",                   lua_seekfile},  
+	{"closeFile",                 lua_closefile},
+	{"seekFile",                   lua_seekfile},
 	{"sizeFile",                   lua_sizefile},
 	//{"doesFileExist",            lua_checkexist}, BREAKS ERROR HANDLING IF DECLARED INSIDE TABLE. DONT ASK ME WHY
 	{"currentDirectory",             lua_curdir},
@@ -712,7 +702,6 @@ static const luaL_Reg System_functions[] = {
 	{"threadCopyFile",	          lua_copyasync},
 	{"getFileProgress",	    lua_getfileprogress},
 	{"removeFile",               lua_removeFile},
-	{"rename",                       lua_rename},
 	{"md5sum",                       lua_md5sum},
 	{"sleep",                         lua_sleep},
 	{"getFreeMemory",         lua_getFreeMemory},
@@ -738,10 +727,9 @@ static int lua_sifloadmodule(lua_State *L){
 		arg_len = luaL_checkinteger(L, 2);
 		args = luaL_checkstring(L, 3);
 	}
-	
+
 	int result;
 	int irx_id = SifLoadStartModule(path, arg_len, args, &result);
-	printf("%s: '%s' with %d args.\tIRX ID=%d, IRX ret=%d\n", __FUNCTION__, path, arg_len, irx_id, result);
 	lua_pushinteger(L, result);
 	lua_pushinteger(L, irx_id);
 	return 2;
@@ -761,8 +749,9 @@ static int lua_sifloadmodulebuffer(lua_State *L){
 		arg_len = luaL_checkinteger(L, 3);
 		args = luaL_checkstring(L, 4);
 	}
-
-	int result = SifExecModuleBuffer((void*)ptr, size, arg_len, args, NULL);
+	int result = -1;
+	int irx_id = SifExecModuleBuffer((void*)ptr, size, arg_len, args, &result);
+	lua_pushinteger(L, irx_id);
 	lua_pushinteger(L, result);
 	return 1;
 }
@@ -788,17 +777,20 @@ void luaSystem_init(lua_State *L) {
 	lua_setglobal(L, "IOP");
 
 	lua_pushinteger(L, O_RDONLY);
-	lua_setglobal(L, "FREAD");
+	lua_setglobal(L, "O_RDONLY");
 
 	lua_pushinteger(L, O_WRONLY);
-	lua_setglobal (L, "FWRITE");
+	lua_setglobal (L, "O_WRONLY");
 
-	lua_pushinteger(L, O_CREAT | O_WRONLY);
-	lua_setglobal(L, "FCREATE");
+	lua_pushinteger(L, O_CREAT);
+	lua_setglobal(L, "O_CREAT");
+
+	lua_pushinteger(L, O_TRUNC);
+	lua_setglobal(L, "O_TRUNC");
 
 	lua_pushinteger(L, O_RDWR);
-	lua_setglobal(L, "FRDWR");
-	
+	lua_setglobal(L, "O_RDWR");
+
 	lua_pushinteger(L, SEEK_SET);
 	lua_setglobal(L, "SET");
 
@@ -816,6 +808,6 @@ void luaSystem_init(lua_State *L) {
 
 
 
-	
+
 }
 

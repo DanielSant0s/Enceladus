@@ -8,6 +8,16 @@
 /// Value returned on errors
 #define FNT_ERROR   (-1)
 
+
+#define ALIGN_TOP     (0 << 0)
+#define ALIGN_BOTTOM  (1 << 0)
+#define ALIGN_VCENTER (2 << 0)
+#define ALIGN_LEFT    (0 << 2)
+#define ALIGN_RIGHT   (1 << 2)
+#define ALIGN_HCENTER (2 << 2)
+#define ALIGN_NONE    (ALIGN_TOP | ALIGN_LEFT)
+#define ALIGN_CENTER  (ALIGN_VCENTER | ALIGN_HCENTER)
+
 /** Initializes the font subsystem */
 void fntInit();
 

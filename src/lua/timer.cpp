@@ -34,9 +34,9 @@ static int lua_time(lua_State *L) {
 	#ifndef SKIP_ERROR_HANDLING
 	if (src->magic != 0x4C544D52) return luaL_error(L, "attempt to access wrong memory block type");
 	#endif
-	if (src->isPlaying){
+	if (src->isPlaying) {
 		lua_pushinteger(L, (clock() - src->tick));
-	}else{
+	} else {
 		lua_pushinteger(L, src->tick);
 	}
 	return 1;
@@ -114,7 +114,7 @@ static int lua_destroy(lua_State *L) {
 	if (timer->magic != 0x4C544D52) return luaL_error(L, "attempt to access wrong memory block type");
 	#endif
 	free(timer);
-	return 1;
+	return 0;
 }
 
 //Register our Timer Functions

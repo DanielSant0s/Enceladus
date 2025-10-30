@@ -8,72 +8,60 @@ on:
       - v*
   pull_request:
   workflow_dispatch:
-    inputs:
-      dbgsdk:
-        type: boolean
-        description: compile with debug PS2SDK
   repository_dispatch:
     types: [run_build]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: ps2dev/ps2dev:latest
+    container: ghcr.io/ps2homebrew/ps2homebrew:main
     steps:
-    - name: Install dependencies
-      run: |
-        apk add build-base git bash
 
-    - name: Workaround permission issue
+    - name: git checkout
+      uses: actions/checkout@v4
+
+    - name: safe directory and fetch
       run: |
         git config --global --add safe.directory "$GITHUB_WORKSPACE"
-
-    - uses: actions/checkout@v4
-    - run: |
         git fetch --prune --unshallow
 
-    - name: Compile debug SDK
-      if: github.event.inputs.dbgsdk == 'true'
-      run: |
-        git clone https://github.com/ps2dev/ps2sdk/
-        cd ps2sdk
-        make clean debug install
-
-    - name: Compile project
+    - name: Compile
       run: |
         make clean all
 
     - name: Get short SHA
-      id: slug
-      run: echo "::set-output name=sha8::$(echo ${GITHUB_SHA} | cut -c1-8)"
+      run: |
+       echo "SHA8=$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_ENV
 
     - name: Upload artifacts
       if: ${{ success() }}
       uses: actions/upload-artifact@v4
       with:
-        name: Enceladus-${{ steps.slug.outputs.sha8 }}
+        name: Enceladus-${{ env.SHA8 }}
         path: bin
 
     - name: Compress & Rename bin folder
       run: |
         mv bin/ Enceladus/
+        cp -r lua_intellisense/ Enceladus/
         tar -zcvf Enceladus.tar.gz Enceladus
- 
+
     - name: Create pre-release
       if: github.ref == 'refs/heads/main'
-      uses: marvinpinto/action-automatic-releases@latest
+      uses: mathieucarbou/marvinpinto-action-automatic-releases@latest
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
         automatic_release_tag: "latest"
+        prerelease: true
         title: "Development build"
         files: |
-               Enceladus.tar.gz
+          Enceladus.tar.gz
 
-    - name: Release
+    - name: Create release
       if: startsWith(github.ref, 'refs/tags/')
-      uses: softprops/action-gh-release@v1
+      uses: mathieucarbou/marvinpinto-action-automatic-releases@latest
       with:
-        files: Enceladus.tar.gz
-        tag_name: ${{ steps.tag.outputs.VERSION }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        prerelease: "${{ contains(github.ref, '-rc') }}"
+        files: |
+          Enceladus.tar.gz
