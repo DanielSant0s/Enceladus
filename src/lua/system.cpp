@@ -234,18 +234,20 @@ static int lua_createDir(lua_State *L)
 {
 	const char *path = luaL_checkstring(L, 1);
 	if(!path) return luaL_error(L, "Argument error: System.createDirectory(directory) takes a directory name as string as argument.");
-	mkdir(path, 0777);
-	
-	return 0;
+	int r = mkdir(path, 0777);
+
+	lua_pushinteger(L, r);
+	return 1;
 }
 
 static int lua_removeDir(lua_State *L)
 {
 	const char *path = luaL_checkstring(L, 1);
 	if(!path) return luaL_error(L, "Argument error: System.removeDirectory(directory) takes a directory name as string as argument.");
-	rmdir(path);
-	
-	return 0;
+	int r = rmdir(path);
+
+	lua_pushinteger(L, r);
+	return 1;
 }
 
 static int lua_movefile(lua_State *L)
