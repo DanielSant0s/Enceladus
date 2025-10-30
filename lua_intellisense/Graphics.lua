@@ -1,9 +1,14 @@
 --- @meta
---- @file intellisense metadata corresponding to the `Graphics` library inside `src/lua/graphics.cpp`
+--- @file intellisense metadata corresponding to the `Graphics` and `Font` library inside `src/lua/graphics.cpp`
 --- @diagnostic disable
+
+--#region Graphics
 
 ---@class Graphics
 Graphics = {}
+
+---@class Font
+Font = {}
 
 --- @alias color integer Color value, can be generated with Color.new()
 --- @see Color.new
@@ -27,7 +32,7 @@ function Graphics.drawRect(X, Y, width, height, color) end
 --- @param X2 integer X coordinate for end of the line
 --- @param Y2 integer Y coordinate for end of the line
 --- @param color color the color of the line
-function Graphics.drawLine(X, Y, X2, Y2) end
+function Graphics.drawLine(X, Y, X2, Y2, color) end
 
 --- @param X integer X coordinate for circle center
 --- @param Y integer Y coordinate for circle center
@@ -48,6 +53,7 @@ function Graphics.drawQuad() end
 --- @param delayed boolean Whether the texture manager will be used or not. **Optional Param:** true by default
 --- @return Texture|nil texture
 --- @overload fun(path:string):Texture|nil:texture
+--- @nodiscard
 function Graphics.loadImage(path, delayed) end
 
 --- Threaded version of Graphics.loadImage
@@ -70,13 +76,15 @@ function Graphics.getLoadState() end
 --- @return Texture|nil texture texture loaded by threadLoadImage. returns nil if there is no instance of threadLoadImage running
 --- @see Graphics.threadLoadImage
 --- @see Graphics.getLoadState
+--- @nodiscard
 function Graphics.getLoadData() end
 
 --- Draws an image on screen with it's original size
 --- @param image Texture The image texture
 --- @param X integer the X coordinates for the top left corner of the image
 --- @param Y integer the Y coordinates for the top left corner of the image
---- @param color color A color created by Color.new. [Optional Parameter]
+--- @param color color **[Optional]**: if not specified default is RGBA #80808080
+--- @overload fun(image:Texture, X:integer, Y:integer)
 function Graphics.drawImage(image, X, Y, color) end
 
 --- Draws an image on screen with it's original size and a rotation angle
@@ -146,3 +154,113 @@ function Graphics.getImageHeight(image) end
 --- destroys the texture and frees the allocated buffer where it was stored
 --- @param image Texture The image texture
 function Graphics.freeImage(image) end
+
+--#endregion
+
+--#region Font
+
+--- Initializes the TTF Fonts system
+function Font.ftInit() end
+
+---@alias ttf integer
+
+--- Loads a TTF font from a file
+--- @param path string path to file
+--- @return ttf fonthandle
+--- @nodiscard
+function Font.ftLoad(path) end
+
+--- Changes font pixel size
+--- @param font ttf font handle
+--- @param width integer 
+--- @param height integer
+function Font.ftSetPixelSize(font, width, height) end
+
+--- Changes font char size
+--- @param font ttf font handle
+--- @param width integer 
+--- @param height integer
+function Font.ftSetCharSize(font, width, height) end
+
+---@type fontalign
+ALIGN_TOP = (0 << 0);
+---@type fontalign
+ALIGN_BOTTOM = (1 << 0);
+---@type fontalign
+ALIGN_VCENTER = (2 << 0);
+---@type fontalign
+ALIGN_LEFT = (0 << 2);
+---@type fontalign
+ALIGN_RIGHT = (1 << 2);
+---@type fontalign
+ALIGN_HCENTER = (2 << 2);
+---@type fontalign
+ALIGN_NONE = (ALIGN_TOP | ALIGN_LEFT);
+---@type fontalign
+ALIGN_CENTER = (ALIGN_VCENTER | ALIGN_HCENTER);
+---@type fontalign
+
+--- Prints text with a font
+--- @param font ttf font handle
+--- @param x integer X coordinate
+--- @param y integer Y coordinate
+--- @param fontalign fontalign alignment commands for text
+--- @param width  integer defines width  of draw area, text that goes beyond this area is not drawn
+--- @param height integer defines height of draw area, text that goes beyond this area is not drawn
+--- @param text string the text to be written
+--- @param color color **[Optional]**: if not specified default is RGBA #80808080 
+--- @overload fun(font:ttf, x:integer, y:integer, fontalign:fontalign, width:integer, height:integer, text:string)
+--- @see Color.new
+function Font.ftPrint(font, x, y, fontalign, width, height, text, color) end
+
+--- Unloads a font from RAM
+--- @param font ttf font handle
+function Font.ftUnload(font) end
+
+--- DeInitializes the TTF Fonts system
+function Font.ftEnd() end
+
+---@alias gsfont integer
+
+--- Loads a GSFONT from FNT, PNG or BMP files
+--- @param path string path to font
+--- @return gsfont fonthandle 
+--- @nodiscard
+function Font.load(path) end
+
+--- Prints text with a GSFONT
+--- @param font gsfont GSFONT handle
+--- @param x number X coordinate
+--- @param y number Y coordinate
+--- @param scale number scale
+--- @param text string text to print
+--- @param color color **[Optional]**: if not specified default is RGBA #80808080 
+--- @see Font.load
+--- @see Color.new
+--- @overload fun(font:gsfont, x:number, y:number, scale:number, text:string)
+function Font.print(font, x, y, scale, text, color) end
+
+--- unloads a GSFONT
+--- @param font gsfont GSFONT handle
+--- @see Font.load
+function Font.unload(font) end
+
+--- Loads the OSD system font `rom0:FONTM`  
+--- **WARNING:** Some systems, like the PSX-DESR and all Arcade PS2s do not have this file as part of their bios, wich makes this function useless on such machines
+function Font.fmLoad() end
+
+--- Prints text with the OSD Font. you must call `Font.fmLoad` before using
+--- @param x number X coordinate
+--- @param y number Y coordinate
+--- @param scale number scaling factor for text
+--- @param text string text to print
+--- @param color color **[Optional]**: if not specified default is RGBA #80808080 
+--- @overload fun(x:number, y:number, scale:number, text:string)
+--- @see Color.new
+--- @see Font.fmLoad
+function Font.fmPrint(x, y, scale, text, color) end
+
+--- unloads the OSD Font from RAM
+--- @see Font.fmLoad
+function Font.fmUnload() end
+--#endregion

@@ -14,7 +14,7 @@ Screen = {}
 ---@param B integer GREEN color **[0-255]**
 ---@param A integer ALPHA Channel **[0-128]**. optional parameter, if not passed, 128 is assumed (no transparency)
 ---@return color color generated color, to be used as color parameter on the `Screen` and `Graphics` functions
----@overload fun(R:integer, G:integer, B:integer): Color:Color
+---@overload fun(R:integer, G:integer, B:integer): color:color
 function Color.new(R, G, B, A) end
 
 function Color.getR(Color) end
@@ -111,4 +111,9 @@ function Screen.getFreeVRAM() end
 
 function Screen.waitVblankStart() end
 
-function Screen.getFPS() end
+---@param c integer
+function Screen.getFPS(c) end
+
+---@deprecated
+---@see Screen.getFPS
+function System.getFPS(prev, cur) end

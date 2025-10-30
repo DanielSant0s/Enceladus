@@ -544,6 +544,8 @@ static const luaL_Reg Graphics_functions[] = {
 };
 
 
+#define LUA_FORWARD_INTMACRO(macro) lua_pushinteger(L, macro); lua_setglobal (L, #macro)
+
 void luaGraphics_init(lua_State *L) {
 
     lua_newtable(L);
@@ -559,4 +561,15 @@ void luaGraphics_init(lua_State *L) {
 
 	lua_pushinteger(L, GS_FILTER_LINEAR);
 	lua_setglobal (L, "LINEAR");
+
+
+	LUA_FORWARD_INTMACRO(ALIGN_TOP);
+	LUA_FORWARD_INTMACRO(ALIGN_BOTTOM);
+	LUA_FORWARD_INTMACRO(ALIGN_VCENTER);
+	LUA_FORWARD_INTMACRO(ALIGN_LEFT);
+	LUA_FORWARD_INTMACRO(ALIGN_RIGHT);
+	LUA_FORWARD_INTMACRO(ALIGN_HCENTER);
+	LUA_FORWARD_INTMACRO(ALIGN_NONE);
+	LUA_FORWARD_INTMACRO(ALIGN_CENTER);
+
 }
