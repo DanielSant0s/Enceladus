@@ -8,7 +8,7 @@
     Enhanced Lua environment for PlayStation 2™
     <br />
   </p>
-</p>  
+</p>
 
 
 <details open="open">
@@ -39,6 +39,10 @@
 
 Enceladus is a project that seeks to facilitate and at the same time brings a complete kit for users to create homebrew software for PlayStation 2 using the Lua language. It has dozens of built-in functions, both for creating games and apps. The main advantage over using Enceladus project instead of the pure PS2SDK is above all the practicality, you will use one of the simplest possible languages to create what you have in mind, besides not having to compile, just script and test, fast and simple.
 
+### Intellisense
+If you use Visual Studio Code. you can automatically setup intellisense for enceladus Lua functions by just installing this extension: https://github.com/LuaLS/lua-language-server
+After installing it, the extension will automatically detect and parse as intellisense metadata all the files inside the `lua_intellisense` directory
+
 ### Function types:
 * `System`: Everything that involves files, folders and system stuff.
 * `Graphics`: You can control the entire 2D part of your project, that is, draw images, shapes, lines, change their properties, etc.
@@ -65,8 +69,8 @@ In this section you will have some information about how to code using Enceladus
 
 Using Enceladus you only need one way to code and one way to test your code, that is, if you want, you can even create your code on PS2, but I'll leave some recommendations below.
 
-* PC: [Visual Studio Code](https://code.visualstudio.com)(with Lua extension) and [PCSX2](https://pcsx2.net/download/development/dev-windows.html)(1.7.0 or above, enabled HostFS is required) or PS2Client for test.
-* How to enable HostFS on PCSX2 1.7.0:  
+* PC: [Visual Studio Code](https://code.visualstudio.com)(with Lua extension, we recommend [this one](https://github.com/LuaLS/lua-language-server)) and [PCSX2](https://pcsx2.net/download/development/dev-windows.html)(1.7.0 or above, enabled HostFS is required) or PS2Client for test.
+* How to enable HostFS on PCSX2 1.7.0:
 ![image](https://user-images.githubusercontent.com/47725160/145600021-b07dd873-137d-4364-91ec-7ace0b1936e2.png)
 
 * Android: [QuickEdit](https://play.google.com/store/apps/details?id=com.rhmsoft.edit&hl=pt_BR&gl=US) and a PS2 with uLE for test.
@@ -98,15 +102,15 @@ Enceladus uses the latest version of Lua language (currently 5.4.3), which means
 * `width = Graphics.getImageWidth(image)`
 * `height = Graphics.getImageHeight(image)`
 * `Graphics.freeImage(image)`
-  
-##### Asynchronous functions:  
+
+##### Asynchronous functions:
 * `Graphics.threadLoadImage(path)` *Supports BMP, JPG and PNG*
 * `state = Graphics.getLoadState()`
 * `image = Graphics.getLoadData()`
-   
+
 #### **Render functions:**
 
-• Remember to enable zbuffering on screen mode, put the line of code below  
+• Remember to enable zbuffering on screen mode, put the line of code below
 • Default NTSC mode(3D enabled): `Screen.setMode(NTSC, 640, 448, CT24, INTERLACED, FIELD, true, Z16S)`
 
 * `Render.init(aspect)` *default aspect is `4/3`, widescreen is `16/9`*
@@ -114,14 +118,14 @@ Enceladus uses the latest version of Lua language (currently 5.4.3), which means
 * `Render.drawOBJ(model, pos_x, pos_y, pos_z, rot_x, rot_y, rot_z)`
 * `Render.freeOBJ(model)`
 
-##### Camera functions:  
+##### Camera functions:
 * `Camera.position(x, y, z)`
 * `Camera.rotation(x, y, z)`
 
 ##### Lights functions:
 * `Lights.create(count)`
 * `Lights.set(light, dir_x, dir_y, dir_z, r, g, b, type)`
-  - Avaiable light types: `AMBIENT`, `DIRECTIONAL ` 
+  - Avaiable light types: `AMBIENT`, `DIRECTIONAL `
 
 ##### **Screen functions:**
 
@@ -136,13 +140,13 @@ Enceladus uses the latest version of Lua language (currently 5.4.3), which means
   - Default NTSC mode(3D enabled):  `Screen.setMode(NTSC, 640, 448, CT24, INTERLACED, FIELD, true, Z16S)`
   - Default PAL mode(3D disabled): `Screen.setMode(PAL, 640, 512, CT24, INTERLACED, FIELD)`
   - Default PAL mode(3D enabled):  `Screen.setMode(PAL, 640, 512, CT24, INTERLACED, FIELD, true, Z16S)`
-  - Available modes: `NTSC`, `_480p`, `PAL`, `_576p`, `_720p`, `_1080i`  
-  - Available colormodes: `CT16`, `CT16S`, `CT24`, `CT32` 
+  - Available modes: `NTSC`, `_480p`, `PAL`, `_576p`, `_720p`, `_1080i`
+  - Available colormodes: `CT16`, `CT16S`, `CT24`, `CT32`
   - Available zbuffer colormodes: `Z16`, `Z16S`, `Z24`, `Z32`
   - Available interlaces: `INTERLACED`, `NONINTERLACED`
   - Available fields: `FIELD`, `FRAME`
-* `modetable = Screen.getMode()`  
-  - `modetable.mode` 
+* `modetable = Screen.getMode()`
+  - `modetable.mode`
   - `modetable.interlace`
   - `modetable.field`
   - `modetable.dithering`
@@ -185,7 +189,7 @@ Enceladus uses the latest version of Lua language (currently 5.4.3), which means
 * `press = Pads.getPressure(port, button)` *port isn't mandatory*
 * `Pads.rumble(port, big, small)` *port isn't mandatory*
 * `Pads.check(pad, button)`
-* Buttons list:  
+* Buttons list:
   - `PAD_SELECT`
   - `PAD_START`
   - `PAD_UP`
@@ -209,7 +213,7 @@ Enceladus uses the latest version of Lua language (currently 5.4.3), which means
   - `reboot_iop`: integer, indicates if I/O Processor should be rebooted before loading ELF (`0`: no, `1`: yes). unless extremely needed, its **not** recommended to reboot it
   - args: variadic arg for strings, these will be passed to the ELF (path will be `argv[0]`)
 * `fd = System.openFile(path, type)`
-* Types list:  
+* Types list:
   - `FREAD`
   - `FWRITE`
   - `FCREATE`
@@ -218,8 +222,8 @@ Enceladus uses the latest version of Lua language (currently 5.4.3), which means
 * `System.writeFile(fd, data, size)`
 * `System.closeFile(fd)`
 * `System.seekFile(fd, pos, type)`
-* Types list:  
-  - `SET` 
+* Types list:
+  - `SET`
   - `CUR`
   - `END`
 * `size = System.sizeFile(fd)`
@@ -243,13 +247,13 @@ Enceladus uses the latest version of Lua language (currently 5.4.3), which means
   - `info.type`
   - `info.freemem`
   - `info.format`
-  
-##### Asynchronous functions:  
+
+##### Asynchronous functions:
 * `System.threadCopyFile(source, dest)`
 * `progress = System.getFileProgress()`
   - `progress.current`
   - `progress.final`
-  
+
 #### **Timer functions:**
 
 * `timer = Timer.new()`
