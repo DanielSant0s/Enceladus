@@ -281,9 +281,10 @@ static int lua_removeFile(lua_State *L)
 {
 	const char *path = luaL_checkstring(L, 1);
 	if(!path) return luaL_error(L, "Argument error: System.removeFile(filename) takes a filename as string as argument.");
-	remove(path);
+	int r = remove(path);
 
-	return 0;
+	lua_pushinteger(L, r);
+	return 1;
 }
 
 static int lua_rename(lua_State *L)
