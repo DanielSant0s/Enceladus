@@ -481,8 +481,9 @@ static int lua_closefile(lua_State *L){
 	int argc = lua_gettop(L);
 	if (argc != 1) return luaL_error(L, "wrong number of arguments");
 	int fileHandle = luaL_checkinteger(L, 1);
-	close(fileHandle);
-	return 0;
+	int r = close(fileHandle);
+	lua_pushinteger(L, r);
+	return 1;
 }
 
 static int lua_seekfile(lua_State *L){
