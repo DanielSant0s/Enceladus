@@ -42,9 +42,40 @@ function Graphics.drawLine(X, Y, X2, Y2, color) end
 --- @overload fun(X:integer, Y:integer, radius:integer, color:color)
 function Graphics.drawCircle(X, Y, radius, color, fill) end
 
-function Graphics.drawTriangle() end
+--- @param x  number Coordinates for first  vertice
+--- @param y  number Coordinates for first  vertice
+--- @param x2 number Coordinates for second vertice
+--- @param y2 number Coordinates for second vertice
+--- @param x3 number Coordinates for third  vertice
+--- @param y3 number Coordinates for third  vertice
+--- @param color color  
+--- @overload fun(x:number, y:number, x2:number, y2:number, x3:number, y3:number)
+function Graphics.drawTriangle(x, y, x2, y2, x3, y3, color) end
 
-function Graphics.drawQuad() end
+---@param x  number coordinates for first  corner
+---@param y  number coordinates for first  corner
+---@param x2 number coordinates for second corner
+---@param y2 number coordinates for second corner
+---@param x3 number coordinates for third  corner
+---@param y3 number coordinates for third  corner
+---@param x4 number coordinates for fourth corner
+---@param y4 number coordinates for fourth corner
+---@param color color
+function Graphics.drawQuad(x, y, x2, y2, x3, y3, x4, y4, color) end
+
+---@param x  number coordinates for first  corner
+---@param y  number coordinates for first  corner
+---@param x2 number coordinates for second corner
+---@param y2 number coordinates for second corner
+---@param x3 number coordinates for third  corner
+---@param y3 number coordinates for third  corner
+---@param x4 number coordinates for fourth corner
+---@param y4 number coordinates for fourth corner
+---@param color color 
+---@param color2 color 
+---@param color3 color 
+---@param color4 color 
+function Graphics.drawQuad(x, y, x2, y2, x3, y3, x4, y4, color, color2, color3, color4) end
 
 --- @alias Texture integer
 
@@ -71,6 +102,7 @@ function Graphics.threadLoadImage(path, delayed) end
 --- - ` 2`: thread finished, failed to load texture  
 --- @see Graphics.threadLoadImage
 --- @see Graphics.getLoadData
+--- @nodiscard
 function Graphics.getLoadState() end
 
 --- @return Texture|nil texture texture loaded by threadLoadImage. returns nil if there is no instance of threadLoadImage running

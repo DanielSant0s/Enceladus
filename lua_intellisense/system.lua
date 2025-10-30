@@ -167,35 +167,39 @@ function System.getFreeMemory() end
 --- Executes the system OSDSYS abruptly
 function System.exitToBrowser() end
 
----@enum mctypes
-mctypes = {
-  --- No memory card or unknown device
-  sceMcTypeNoCard=0,
-  --- PS1 memory card
-  sceMcTypePS1=1,
-  --- PS2 memorycard
-  sceMcTypePS2=2,
-  --- PocketStation
-  sceMcTypePDA=3,
-};
+---@type mctypes
+--- No memory card or unknown device
+sceMcTypeNoCard=0;
 
----@enum mcformat
-mcformat = {
-  MC_UNFORMATTED=0,
-  MC_FORMATTED=1,
-}
+---@type mctypes
+--- PS1 memory card
+sceMcTypePS1=1;
 
----@enum mcinfores
-mcinfores = {
-  --- the memory card on this port has not been changed since the last call to `System.getMCInfo`
-  SAME_CARD = 0,
-  --- a new formatted card has been plugged to the port since the last call to `System.getMCInfo`
-  NEW_FORMATTED_CARD = -1,
-  --- a new **un**formatted card has been plugged to the port since the last call to `System.getMCInfo`
-  NEW_UNFORMATTED_CARD = -2,
-  ---Any value smaller than -2 is an error
-  MCERR = - 3,
-}
+---@type mctypes
+--- PS2 memorycard
+sceMcTypePS2=2;
+
+---@type mctypes
+--- PocketStation
+sceMcTypePDA=3;
+
+---@type mcformat
+MC_UNFORMATTED=0;
+---@type mcformat
+MC_FORMATTED=1;
+
+
+---@type mcinfores
+--- the memory card on this port has not been changed since the last call to `System.getMCInfo`
+SAME_CARD = 0;
+
+---@type mcinfores
+--- a new formatted card has been plugged to the port since the last call to `System.getMCInfo`
+NEW_FORMATTED_CARD = -1;
+
+---@type mcinfores
+--- a new **un**formatted card has been plugged to the port since the last call to `System.getMCInfo`
+NEW_UNFORMATTED_CARD = -2;
 
 ---@class mcinfo
 ---@field type mctypes what kind of memory card is plugged into that port
@@ -204,9 +208,10 @@ mcinfores = {
 ---@field result integer the result of the C mcSync() function. for more information read here
 mcinfo = {}
 
+
 --- Obtains information about a memory card connected
 --- @param port integer The memory card port to obtain information. defaults to 0 if no param passed
----
+--- @return mcinfo mcinfo
 --- @see mcinfo
 --- @overload fun()
 function System.getMCInfo(port) end
@@ -214,30 +219,44 @@ function System.getMCInfo(port) end
 --- Executes an ELF file
 ---@param path string the location of the ELF file to be executed
 ---@param reboot_iop boolean|integer if the I/O Processor should be rebooted before firing the ELF
----@vararg string parameters for the ELF file
+---@param ...string argumments for the ELF file. path is assigned as argv[0]
 function System.loadELF(path, reboot_iop, ...) end
 
-
 ---@enum disctypes
-disctypes = {
-  SCECdGDTFUNCFAIL =  -1,-- FAIL
-  SCECdNODISC = 1,-- NO DISC
-  SCECdDETCT = 2,-- disc detected, Reading...
-  SCECdDETCTCD = 3,--CD detected, reading...
-  SCECdDETCTDVDS = 4,-- DVD5 detected, reading...
-  SCECdDETCTDVDD = 5,-- DVD9 detected, reading...
-  SCECdUNKNOWN = 6,-- Unknown disc?
-  SCECdPSCD = 7, -- PS1 CD
-  SCECdPSCDDA = 8,-- PS1 CDDA
-  SCECdPS2CD = 9,-- PS2 CD
-  SCECdPS2CDDA = 10,-- PS2 CDDA
-  SCECdPS2DVD = 11,-- PS2 DVD
-  SCECdESRDVD_0 = 12,-- ESR DVD (off)
-  SCECdESRDVD_1 = 13,-- ESR DVD (on)
-  SCECdCDDA = 14,--Audio CD
-  SCECdDVDV = 15,--Video DVD
-  SCECdIllegalMedia = 16,-- Unsupported
-}
+---@type disctypes
+SCECdGDTFUNCFAIL =  -1; -- FAIL
+---@type disctypes
+SCECdNODISC = 1; -- NO DISC
+---@type disctypes
+SCECdDETCT = 2; -- disc detected, Reading...
+---@type disctypes
+SCECdDETCTCD = 3; --CD detected, reading...
+---@type disctypes
+SCECdDETCTDVDS = 4; -- DVD5 detected, reading...
+---@type disctypes
+SCECdDETCTDVDD = 5; -- DVD9 detected, reading...
+---@type disctypes
+SCECdUNKNOWN = 6; -- Unknown disc?
+---@type disctypes
+SCECdPSCD = 7; -- PS1 CD
+---@type disctypes
+SCECdPSCDDA = 8; -- PS1 CDDA
+---@type disctypes
+SCECdPS2CD = 9; -- PS2 CD
+---@type disctypes
+SCECdPS2CDDA = 10; -- PS2 CDDA
+---@type disctypes
+SCECdPS2DVD = 11; -- PS2 DVD
+---@type disctypes
+SCECdESRDVD_0 = 12; -- ESR DVD (off)
+---@type disctypes
+SCECdESRDVD_1 = 13; -- ESR DVD (on)
+---@type disctypes
+SCECdCDDA = 14; --Audio CD
+---@type disctypes
+SCECdDVDV = 15; --Video DVD
+---@type disctypes
+SCECdIllegalMedia = 16; -- Unsupported
 
 ---Checks if a valid disc is inserted on tray
 ---@return integer 0: Valid disc | 1: Invalid disc
@@ -255,10 +274,11 @@ function System.checkDiscTray() end
 
 --#endregion System
 
-
+--#region IOP
 
 ---This is an example of how an IRX argumment list must be sent from enceladus
-IOP.IRXArgummentExampleString = "argv[1]\0argv[2]\0argv[3]"
+---it's a null separated list
+IRXArgummentExampleString = "argv[1]\0argv[2]\0argv[3]"
 
 --- Uploads and executes an IRX driver from a file into the I/O Processor
 --- @param path string path to the IRX file
@@ -266,7 +286,7 @@ IOP.IRXArgummentExampleString = "argv[1]\0argv[2]\0argv[3]"
 --- @param argv string null terminator delimited list of arguments
 --- @return integer ID The assigned ID number to this IRX driver. if an error ocurred, modload will return a negative number: https://github.com/ps2dev/ps2sdk/blob/master/iop/kernel/include/kerr.h
 --- @return integer RET The return value of the IRX driver, usually: 0 means driver remains resident on the IOP, and 1 means the driver requested to be unloaded  **NOTE:** if (ID<0) then RET will not have a return value, because the IRX did not run
---- @see IOP.IRXArgummentExampleString
+--- @see IRXArgummentExampleString
 --- @overload fun(path:string): ID:integer, RET:integer
 function IOP.loadModule(path, argc, argv) end
 
@@ -277,6 +297,8 @@ function IOP.loadModule(path, argc, argv) end
 --- @param argv string null terminator delimited list of arguments
 --- @return integer ID The assigned ID number to this IRX driver. if an error ocurred, modload will return a negative number: https://github.com/ps2dev/ps2sdk/blob/master/iop/kernel/include/kerr.h
 --- @return integer RET The return value of the IRX driver, usually: 0 means driver remains resident on the IOP, and 1 means the driver requested to be unloaded  **NOTE:** if (ID<0) then RET will not have a return value, because the IRX did not run
---- @see IOP.IRXArgummentExampleString
+--- @see IRXArgummentExampleString
 --- @overload fun(ptr: string, ptrsize: integer): ID: integer, RET: integer
 function IOP.loadModuleBuffer(ptr, ptrsize, argc, argv) end
+
+--#endregion IOP

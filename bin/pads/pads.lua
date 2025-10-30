@@ -2,7 +2,7 @@ Font.fmLoad()
 
 function LoadImageHelper(path)
   --- Intellisense will warn us if we use images without checking if the load failed
-  local I = LoadImageHelper(path)
+  local I = Graphics.loadImage(path)
   if I == nil then error("failed to load image\n\nPath:"..path) end
   return I
 end

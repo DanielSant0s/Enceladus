@@ -22,6 +22,7 @@ function Render.init(aspect) end
 --- @return Model model 
 --- @see Graphics.loadImage
 --- @overload fun(model:string): model:Model
+--- @nodiscard
 function Render.loadOBJ(model, texture) end
 
 --- Draws the 3d model
@@ -68,13 +69,13 @@ AMBIENT = 0;
 DIRECTIONAL = 1;
 
 --- @param id integer
----@param dir_x number
----@param dir_y number
----@param dir_z number
----@param r number
----@param g number
----@param b number
----@param type lightmode
+--- @param dir_x number
+--- @param dir_y number
+--- @param dir_z number
+--- @param r number
+--- @param g number
+--- @param b number
+--- @param type lightmode
 function Lights.set(id, dir_x, dir_y, dir_z, r, g, b, type) end
 
 --- @param count integer the ammount of lights
