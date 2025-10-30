@@ -443,7 +443,9 @@ static int lua_openfile(lua_State *L){
 	const char *file_tbo = luaL_checkstring(L, 1);
 	int type = luaL_checkinteger(L, 2);
 	int fileHandle = open(file_tbo, type, 0777);
+#ifdef OPENFILE_FAIL_RAISE_LUAERR
 	if (fileHandle < 0) return luaL_error(L, "cannot open requested file.");
+#endif
 	lua_pushinteger(L,fileHandle);
 	return 1;
 }
