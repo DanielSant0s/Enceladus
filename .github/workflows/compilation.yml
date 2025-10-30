@@ -43,8 +43,9 @@ jobs:
     - name: Compress & Rename bin folder
       run: |
         mv bin/ Enceladus/
+        cp -r lua_intellisense/ Enceladus/
         tar -zcvf Enceladus.tar.gz Enceladus
- 
+
     - name: Create pre-release
       if: github.ref == 'refs/heads/main'
       uses: mathieucarbou/marvinpinto-action-automatic-releases@latest
