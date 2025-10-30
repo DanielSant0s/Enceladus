@@ -492,8 +492,9 @@ static int lua_seekfile(lua_State *L){
 	int fileHandle = luaL_checkinteger(L, 1);
 	int pos = luaL_checkinteger(L, 2);
 	uint32_t type = luaL_checkinteger(L, 3);
-	lseek(fileHandle, pos, type);	
-	return 0;
+	off_t newpos = lseek(fileHandle, pos, type);
+	lua_pushinteger(L, newpos);
+	return 1;
 }
 
 
