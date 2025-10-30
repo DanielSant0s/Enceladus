@@ -472,8 +472,9 @@ static int lua_writefile(lua_State *L){
 	int fileHandle = luaL_checkinteger(L, 1);
 	const char *text = luaL_checkstring(L, 2);
 	int size = luaL_checknumber(L, 3);
-	write(fileHandle, text, size);
-	return 0;
+	int len = write(fileHandle, text, size);
+	lua_pushinteger(L, len);
+	return 1;
 }
 
 static int lua_closefile(lua_State *L){
