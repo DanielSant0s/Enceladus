@@ -98,15 +98,6 @@ static FT_Vector delta;
 
 #define GLYPH_PAGE_OK(font, page) ((pageid <= font->cacheMaxPageID) && (font->glyphCache[page]))
 
-#define ALIGN_TOP     (0 << 0)
-#define ALIGN_BOTTOM  (1 << 0)
-#define ALIGN_VCENTER (2 << 0)
-#define ALIGN_LEFT    (0 << 2)
-#define ALIGN_RIGHT   (1 << 2)
-#define ALIGN_HCENTER (2 << 2)
-#define ALIGN_NONE    (ALIGN_TOP | ALIGN_LEFT)
-#define ALIGN_CENTER  (ALIGN_VCENTER | ALIGN_HCENTER)
-
 // a simple maximum of two
 int max(int a, int b)
 {
