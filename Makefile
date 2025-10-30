@@ -116,9 +116,9 @@ all: $(EXT_LIBS) $(EE_BIN)
 $(EE_ASM_DIR)boot.c: etc/boot.lua | $(EE_ASM_DIR)
 	$(BIN2S) $< $@ bootString
 
-# Images
-EMBED/%.s: EMBED/%.png
-	$(BIN2S) $< $@ $(shell basename $< .png)
+# automatict embedding
+embed/%.c: embed/%
+	$(BIN2S) $< $@ $(notdir $(basename $<)$(subst .,_,$(suffix $<)))
 #------------------------------------------------------------------#
 
 
