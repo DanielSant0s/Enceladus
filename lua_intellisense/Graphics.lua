@@ -23,7 +23,7 @@ function Graphics.drawPixel(X, Y, color) end
 --- @param X integer X coordinate for top left corner of the rectangle
 --- @param Y integer Y coordinate for top left corner of the rectangle
 --- @param width integer rectangle width
---- @param width integer rectangle height
+--- @param height integer rectangle height
 --- @param color color the color of the rectangle
 function Graphics.drawRect(X, Y, width, height, color) end
 
