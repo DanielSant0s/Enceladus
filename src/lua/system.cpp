@@ -430,6 +430,10 @@ static int lua_getmcinfo(lua_State *L){
 	lua_pushinteger(L, format);
 	lua_settable(L, -3);
 
+	lua_pushstring(L, "result");
+	lua_pushinteger(L, result);
+	lua_settable(L, -3);
+
 	return 1;
 }
 
