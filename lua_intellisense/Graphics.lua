@@ -95,10 +95,10 @@ function Graphics.threadLoadImage(path, delayed) end
 
 --- @return integer stat status of the threaded image load
 --- return values can be:  
---- - `-2`: no thread running, no texture avaiable for pickup
---- - `-1`: error creating thread
---- - ` 0`: thread running
---- - ` 1`: thread finished, texture avaiable for pickup with `getLoadData`
+--- - `-2`: no thread running, no texture avaiable for pickup  
+--- - `-1`: error creating thread  
+--- - ` 0`: thread running  
+--- - ` 1`: thread finished, texture avaiable for pickup with `getLoadData`  
 --- - ` 2`: thread finished, failed to load texture  
 --- @see Graphics.threadLoadImage
 --- @see Graphics.getLoadData
@@ -161,13 +161,11 @@ function Graphics.drawPartialImage(image, X, Y, start_x, start_y, width, height,
 --- @param color color A color created by Color.new. [Optional Parameter]
 function Graphics.drawImageExtended(image, X, Y, start_x, start_y, width, height, scale_x, scale_y, angle, color) end
 
----@class Filter
+---@enum Filter
 --- Filtering macros `NEAREST` or `LINEAR`
 
----@enum Filter
 ---@field NEAREST Filter
 NEAREST = 0;
----@enum Filter
 ---@field LINEAR Filter
 LINEAR = 1;
 
