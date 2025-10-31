@@ -28,7 +28,7 @@ jobs:
         run: cargo install emmylua_doc_cli
 
       - name: Generate Docs
-        run: emmylua_doc_cli ./lua_intellisense -o ./docs --site-name "Enceladus"
+        run: emmylua_doc_cli ./lua_intellisense -o . --site-name "Enceladus"
 
       - uses: actions/setup-python@v5
         with:
