@@ -161,10 +161,14 @@ function Graphics.drawPartialImage(image, X, Y, start_x, start_y, width, height,
 --- @param color color A color created by Color.new. [Optional Parameter]
 function Graphics.drawImageExtended(image, X, Y, start_x, start_y, width, height, scale_x, scale_y, angle, color) end
 
+---@class Filter
+--- Filtering macros `NEAREST` or `LINEAR`
+
 ---@enum Filter
----@type Filter
+---@field NEAREST Filter
 NEAREST = 0;
----@type Filter
+---@enum Filter
+---@field LINEAR Filter
 LINEAR = 1;
 
 --- Changes the filtering mode of the specified texture
@@ -194,11 +198,20 @@ function Graphics.freeImage(image) end
 --- Initializes the TTF Fonts system
 function Font.ftInit() end
 
+---A numeric ID for a TTF font loaded by [Font.ftLoad](lua://Font.ftLoad)
 ---@alias ttf integer
+---@see Font.ftLoad
+---@see Font.ftEnd
+---@see Font.ftSetPixelSize
+---@see Font.ftSetCharSize
+---@see
+---@see
+---@see Font.ftUnload
+---@see Font.ftPrint
 
 --- Loads a TTF font from a file
 --- @param path string path to file
---- @return ttf fonthandle
+--- @return ttf fonthandle ttf font internal ID. see [ttf](lua://ttf)
 --- @nodiscard
 function Font.ftLoad(path) end
 
@@ -232,6 +245,7 @@ ALIGN_NONE = (ALIGN_TOP | ALIGN_LEFT);
 ALIGN_CENTER = (ALIGN_VCENTER | ALIGN_HCENTER);
 ---@type fontalign
 
+
 --- Prints text with a font
 --- @param font ttf font handle
 --- @param x integer X coordinate
@@ -252,7 +266,11 @@ function Font.ftUnload(font) end
 --- DeInitializes the TTF Fonts system
 function Font.ftEnd() end
 
+---Image font loaded by [Font.load](lua://Font.load)
 ---@alias gsfont integer
+---@see Font.load
+---@see Font.unload
+---@see Font.print
 
 --- Loads a GSFONT from FNT, PNG or BMP files
 --- @param path string path to font
