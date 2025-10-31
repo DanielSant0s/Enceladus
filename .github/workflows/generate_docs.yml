@@ -8,6 +8,9 @@ on:
       - mkdocs*
     paths:
       - 'lua_intellisense/*'
+      - '.github/workflows/generate_docs.yml'
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -28,7 +31,7 @@ jobs:
         run: cargo install emmylua_doc_cli
 
       - name: Generate Docs
-        run: emmylua_doc_cli ./lua_intellisense -o . --site-name "Enceladus"
+        run: emmylua_doc_cli "./lua_intellisense" -o "." --site-name "Enceladus" --override-template "./lua_intellisense/"
 
       - uses: actions/setup-python@v5
         with:
