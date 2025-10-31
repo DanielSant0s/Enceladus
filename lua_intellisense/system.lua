@@ -10,9 +10,9 @@ IOP = {}
 
 --#region System
 
+---Checks for file existence
 ---@return boolean
 ---@param F string
---- Checks for file existence
 function doesFileExist(F) end
 
 --- Opens file for further operations
@@ -47,15 +47,15 @@ function System.writeFile(fd, buf, lenght) end
 ---@see System.openFile
 function System.closeFile(fd) end
 
----@enum seektypes
----@field SET integer the pos parameter acts as an absolute offset (counting from the begining of file)
----@field CUR integer the pos parameter acts as a relative offset (counting from the current file position)
----@field END integer counts from the end of the file
-seektypes = {
-  SET = 0,
-  CUR = 1,
-  END = 2,
-};
+---@type seektypes
+--- SET integer the pos parameter acts as an absolute offset (counting from the begining of file)
+  SET = 0
+---@type seektypes
+--- CUR integer the pos parameter acts as a relative offset (counting from the current file position)
+  CUR = 1
+---@type seektypes
+--- END integer counts from the end of the file
+  END = 2
 
 --- reads data from an already opened file
 ---@param fd integer the file descriptor
@@ -276,17 +276,13 @@ function System.checkDiscTray() end
 
 --#region IOP
 
----This is an example of how an IRX argumment list must be sent from enceladus
----it's a null separated list
-IRXArgummentExampleString = "argv[1]\0argv[2]\0argv[3]"
 
 --- Uploads and executes an IRX driver from a file into the I/O Processor
 --- @param path string path to the IRX file
 --- @param argc integer lenght to the argv variable (use `string.len(argv)` ideally)
---- @param argv string null terminator delimited list of arguments
+--- @param argv string null delimited list of arguments `argv[1]\0argv[2]\0argv[3]`
 --- @return integer ID The assigned ID number to this IRX driver. if an error ocurred, modload will return a negative number: https://github.com/ps2dev/ps2sdk/blob/master/iop/kernel/include/kerr.h
 --- @return integer RET The return value of the IRX driver, usually: 0 means driver remains resident on the IOP, and 1 means the driver requested to be unloaded  **NOTE:** if (ID<0) then RET will not have a return value, because the IRX did not run
---- @see IRXArgummentExampleString
 --- @overload fun(path:string): ID:integer, RET:integer
 function IOP.loadModule(path, argc, argv) end
 
@@ -294,10 +290,9 @@ function IOP.loadModule(path, argc, argv) end
 --- @param ptr string buffer containing the IRX driver
 --- @param ptrsize integer size of the buffer containing the IRX driver
 --- @param argc integer length to the argv variable (use `string.len(argv)` ideally)
---- @param argv string null terminator delimited list of arguments
+--- @param argv string null delimited list of arguments `argv[1]\0argv[2]\0argv[3]`
 --- @return integer ID The assigned ID number to this IRX driver. if an error ocurred, modload will return a negative number: https://github.com/ps2dev/ps2sdk/blob/master/iop/kernel/include/kerr.h
 --- @return integer RET The return value of the IRX driver, usually: 0 means driver remains resident on the IOP, and 1 means the driver requested to be unloaded  **NOTE:** if (ID<0) then RET will not have a return value, because the IRX did not run
---- @see IRXArgummentExampleString
 --- @overload fun(ptr: string, ptrsize: integer): ID: integer, RET: integer
 function IOP.loadModuleBuffer(ptr, ptrsize, argc, argv) end
 
