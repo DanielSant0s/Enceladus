@@ -36,3 +36,5 @@ bin/System/noindex.lua
 
 obj/
 asm/
+/docs
+mkdocs.yml

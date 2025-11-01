@@ -95,10 +95,10 @@ function Graphics.threadLoadImage(path, delayed) end
 
 --- @return integer stat status of the threaded image load
 --- return values can be:  
---- - `-2`: no thread running, no texture avaiable for pickup
---- - `-1`: error creating thread
---- - ` 0`: thread running
---- - ` 1`: thread finished, texture avaiable for pickup with `getLoadData`
+--- - `-2`: no thread running, no texture avaiable for pickup  
+--- - `-1`: error creating thread  
+--- - ` 0`: thread running  
+--- - ` 1`: thread finished, texture avaiable for pickup with `getLoadData`  
 --- - ` 2`: thread finished, failed to load texture  
 --- @see Graphics.threadLoadImage
 --- @see Graphics.getLoadData
@@ -162,9 +162,11 @@ function Graphics.drawPartialImage(image, X, Y, start_x, start_y, width, height,
 function Graphics.drawImageExtended(image, X, Y, start_x, start_y, width, height, scale_x, scale_y, angle, color) end
 
 ---@enum Filter
----@type Filter
+--- Filtering macros `NEAREST` or `LINEAR`
+
+---@field NEAREST Filter
 NEAREST = 0;
----@type Filter
+---@field LINEAR Filter
 LINEAR = 1;
 
 --- Changes the filtering mode of the specified texture
@@ -194,11 +196,20 @@ function Graphics.freeImage(image) end
 --- Initializes the TTF Fonts system
 function Font.ftInit() end
 
+---A numeric ID for a TTF font loaded by [Font.ftLoad](lua://Font.ftLoad)
 ---@alias ttf integer
+---@see Font.ftLoad
+---@see Font.ftEnd
+---@see Font.ftSetPixelSize
+---@see Font.ftSetCharSize
+---@see
+---@see
+---@see Font.ftUnload
+---@see Font.ftPrint
 
 --- Loads a TTF font from a file
 --- @param path string path to file
---- @return ttf fonthandle
+--- @return ttf fonthandle ttf font internal ID. see [ttf](lua://ttf)
 --- @nodiscard
 function Font.ftLoad(path) end
 
@@ -232,6 +243,7 @@ ALIGN_NONE = (ALIGN_TOP | ALIGN_LEFT);
 ALIGN_CENTER = (ALIGN_VCENTER | ALIGN_HCENTER);
 ---@type fontalign
 
+
 --- Prints text with a font
 --- @param font ttf font handle
 --- @param x integer X coordinate
@@ -252,7 +264,11 @@ function Font.ftUnload(font) end
 --- DeInitializes the TTF Fonts system
 function Font.ftEnd() end
 
+---Image font loaded by [Font.load](lua://Font.load)
 ---@alias gsfont integer
+---@see Font.load
+---@see Font.unload
+---@see Font.print
 
 --- Loads a GSFONT from FNT, PNG or BMP files
 --- @param path string path to font
