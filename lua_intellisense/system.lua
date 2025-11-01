@@ -272,6 +272,31 @@ function System.getDiscType() end
 --- @return integer status 1 if its open, 0 otherwise
 function System.checkDiscTray() end
 
+---@enum mountmode
+---@type mountmode
+FIO_MT_RDWR = 0x00;
+
+---@type mountmode
+--- Read ONLY mount mode
+FIO_MT_RDONLY = 0x01;
+
+--- Mounts a filesystem via the fileXio driver
+--- @see mountmode
+--- @param mountpoint string path to the mountpoint that will be exposed
+--- @param path string path to the block to mount
+--- @param openmode mountmode [mountmode token](lua://mountmode). **[Optional param: deault `FIO_MT_RDWR`]**
+--- @return integer result
+--- **EXAMPLE:** To mount an HDD PFS partition you would need to load the required IRX drivers, then do  
+--- `System.fileXioMount("pfs:", "hdd0:PARTITION")`  
+--- @overload fun(mountpoint:string, path:string): integer:result
+--- @nodiscard
+function System.fileXioMount(mountpoint, path, FIO_MT_RDWR) end
+
+--- Unmounts a filesystem
+--- @return integer result
+--- @param mountpoint string path to the mountpoint that will be unmounted
+function System.fileXioUmount(mountpoint) end
+
 --#endregion System
 
 --#region IOP

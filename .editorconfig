@@ -15,7 +15,7 @@ charset = utf-8
 trim_trailing_whitespace = false
 
 # 4 space indentation
-[*.{c,h,js,css,html}]
+[*.{c,cpp,h,hpp,js,css,html}]
 indent_style = space
 indent_size = 4
 

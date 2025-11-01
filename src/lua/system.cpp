@@ -13,6 +13,10 @@
 #define NEWLIB_PORT_AWARE
 #include <fileXio_rpc.h>
 #include <fileio.h>
+extern int HAVE_FILEXIO;
+#define FILEXIO_DEPENDENCY() if (!HAVE_FILEXIO) luaL_error(L, "System error: fileXio module not avaialable")
+
+
 
 #define MAX_DIR_FILES 512
 
@@ -200,10 +204,10 @@ static int lua_dir(lua_State *L)
 	}
 	return 1;  /* table is already on top */
 }
-extern int HAVE_FILEXIO;
+
 static int lua_dev_table(lua_State *L)
 {
-	if (!HAVE_FILEXIO) luaL_error(L, "System error: cant use fileXio functions if fileXio is not loaded!!!");
+	FILEXIO_DEPENDENCY();
 	int i, devcnt;
 	struct fileXioDevice DEV[FILEXIO_MAX_DEVICES];
 
@@ -669,7 +673,6 @@ static int lua_copyasync(lua_State *L){
 	return 0;
 }
 
-
 static int lua_getfileprogress(lua_State *L) {
 	lua_newtable(L);
 
@@ -683,6 +686,30 @@ static int lua_getfileprogress(lua_State *L) {
 
 	return 1;
 }
+static int lua_fileXioMount(lua_State *L) {
+	FILEXIO_DEPENDENCY();
+	int argc = lua_gettop(L);
+	int flag = FIO_MT_RDWR;
+	if (argc < 2) return luaL_error(L, "wrong number of arguments");
+	const char* mountpoint = luaL_checkstring(L, 1);
+	const char* blockdev = luaL_checkstring(L, 2);
+    if (argc > 2) flag = luaL_checkinteger(L, 3);
+    int r = fileXioMount(mountpoint, blockdev, flag);
+
+    lua_pushinteger(L, r);
+    return 1;
+}
+
+static int lua_fileXioUmount(lua_State *L) {
+	FILEXIO_DEPENDENCY();
+	int argc = lua_gettop(L);
+	if (argc != 1) return luaL_error(L, "wrong number of arguments");
+	const char* mountpoint = NULL;
+    int r = fileXioUmount(mountpoint);
+
+    lua_pushinteger(L, r);
+    return 1;
+}
 
 static const luaL_Reg System_functions[] = {
 	{"openFile",                   lua_openfile},
@@ -694,7 +721,6 @@ static const luaL_Reg System_functions[] = {
 	//{"doesFileExist",            lua_checkexist}, BREAKS ERROR HANDLING IF DECLARED INSIDE TABLE. DONT ASK ME WHY
 	{"currentDirectory",             lua_curdir},
 	{"listDirectory",           	    lua_dir},
-	{"listDevices",               lua_dev_table},
 	{"createDirectory",           lua_createDir},
 	{"removeDirectory",           lua_removeDir},
 	{"moveFile",	               lua_movefile},
@@ -711,6 +737,9 @@ static const luaL_Reg System_functions[] = {
 	{"checkValidDisc",       lua_checkValidDisc},
 	{"getDiscType",             lua_getDiscType},
 	{"checkDiscTray",         lua_checkDiscTray},
+	{"listDevices",               lua_dev_table},
+	{"fileXioMount",           lua_fileXioMount},
+	{"fileXioUmount",         lua_fileXioUmount},
 	{0, 0}
 };
 
@@ -806,8 +835,11 @@ void luaSystem_init(lua_State *L) {
 	lua_pushinteger(L, 2);
 	lua_setglobal(L, "READ_WRITE");
 
+	lua_pushinteger(L, FIO_MT_RDWR);
+	lua_setglobal (L, "FIO_MT_RDWR");
 
-
+	lua_pushinteger(L, FIO_MT_RDONLY);
+	lua_setglobal (L, "FIO_MT_RDONLY");
 
 }
 
