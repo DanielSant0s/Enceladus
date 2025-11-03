@@ -75,7 +75,7 @@ DIRECTIONAL = 1;
 --- @param r number
 --- @param g number
 --- @param b number
---- @param type lightmode
+--- @param type lightmode [`AMBIENT`, `DIRECTIONAL`]
 function Lights.set(id, dir_x, dir_y, dir_z, r, g, b, type) end
 
 --- @param count integer the ammount of lights
