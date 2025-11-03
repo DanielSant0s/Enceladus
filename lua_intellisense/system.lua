@@ -2,7 +2,6 @@
 ---@file intellisense metadata corresponding to the `System` and `IOP` library in `src/lua/system.cpp`
 ---@diagnostic disable
 
-
 ---@class System
 System = {}
 ---@class IOP
@@ -40,7 +39,7 @@ function System.readFile(fd, lenght) end
 ---@see System.openFile
 function System.writeFile(fd, buf, lenght) end
 
---- reads data from an already opened file
+--- closes a file descriptor
 ---@param fd integer the file descriptor to be closed
 ---@return integer r 0 on success
 ---
@@ -59,7 +58,7 @@ function System.closeFile(fd) end
 
 --- reads data from an already opened file
 ---@param fd integer the file descriptor
----@param pos seektypes the position to be used
+---@param pos seektypes position mode to be used: [`SET`, `CUR`, `END`]
 ---@return integer newpos the new position on the file, counting in bytes from file begining
 ---
 ---@see System.openFile
@@ -167,45 +166,32 @@ function System.getFreeMemory() end
 --- Executes the system OSDSYS abruptly
 function System.exitToBrowser() end
 
----@type mctypes
---- No memory card or unknown device
+---@enum mctypes
 sceMcTypeNoCard=0;
-
 ---@type mctypes
---- PS1 memory card
 sceMcTypePS1=1;
-
 ---@type mctypes
---- PS2 memorycard
 sceMcTypePS2=2;
-
 ---@type mctypes
---- PocketStation
 sceMcTypePDA=3;
 
+---@enum mcformat
 ---@type mcformat
 MC_UNFORMATTED=0;
 ---@type mcformat
 MC_FORMATTED=1;
 
-
----@type mcinfores
---- the memory card on this port has not been changed since the last call to `System.getMCInfo`
-SAME_CARD = 0;
-
----@type mcinfores
---- a new formatted card has been plugged to the port since the last call to `System.getMCInfo`
-NEW_FORMATTED_CARD = -1;
-
----@type mcinfores
---- a new **un**formatted card has been plugged to the port since the last call to `System.getMCInfo`
-NEW_UNFORMATTED_CARD = -2;
-
 ---@class mcinfo
 ---@field type mctypes what kind of memory card is plugged into that port
----@field freemem integer ammount of free memory on card, not always available
----@field format mcformat if the memory card is formatted
----@field result integer the result of the C mcSync() function. for more information read here
+---@field freemem integer ammount of free space on card,not always available
+---@field format mcformat 0: Unformatted card. 1:formatted card
+---@field result integer card swap state
+--- - `0`: memory card was not changed since last call.
+--- - `-1`: new formatted card inserted,
+--- - `-2`: new unformatted card inserted,
+--- - less than `-2`: error
+---@see mctypes
+---@see mcformat
 mcinfo = {}
 
 
@@ -272,6 +258,33 @@ function System.getDiscType() end
 --- @return integer status 1 if its open, 0 otherwise
 function System.checkDiscTray() end
 
+---@enum mountmode
+---@field FIO_MT_RDWR 0 Default option for [System.fileXioMount](System.fileXioMount): mounts filesystem without restrictions
+---@field FIO_MT_RDONLY 1 mounts filesystem in read only mode
+
+---@type mountmode
+FIO_MT_RDWR = 0x00;
+
+---@type mountmode 
+FIO_MT_RDONLY = 0x01;
+
+--- Mounts a filesystem via the fileXio driver
+--- @see mountmode
+--- @param mountpoint string path to the mountpoint that will be exposed
+--- @param path string path to the block to mount
+--- @param openmode mountmode mountmode token. **[Optional param: deault `FIO_MT_RDWR`]**
+--- @return integer result
+--- **EXAMPLE:** To mount an HDD PFS partition you would need to load the required IRX drivers, then do  
+--- `System.fileXioMount("pfs:", "hdd0:PARTITION")`  
+--- @overload fun(mountpoint:string, path:string): integer:result
+--- @nodiscard
+function System.fileXioMount(mountpoint, path, FIO_MT_RDWR) end
+
+--- Unmounts a filesystem
+--- @return integer result
+--- @param mountpoint string path to the mountpoint that will be unmounted
+function System.fileXioUmount(mountpoint) end
+
 --#endregion System
 
 --#region IOP
@@ -280,8 +293,8 @@ function System.checkDiscTray() end
 --- Uploads and executes an IRX driver from a file into the I/O Processor
 --- @param path string path to the IRX file
 --- @param argc integer lenght to the argv variable (use `string.len(argv)` ideally)
---- @param argv string null delimited list of arguments `argv[1]\0argv[2]\0argv[3]`
---- @return integer ID The assigned ID number to this IRX driver. if an error ocurred, modload will return a negative number: https://github.com/ps2dev/ps2sdk/blob/master/iop/kernel/include/kerr.h
+--- @param argv string null delimited list of arguments (eg: `argv[1]\0argv[2]\0argv[3]`)
+--- @return integer ID The assigned ID number to this IRX driver. if an error ocurred, modload will return a negative number from this list: https://github.com/ps2dev/ps2sdk/blob/master/iop/kernel/include/kerr.h
 --- @return integer RET The return value of the IRX driver, usually: 0 means driver remains resident on the IOP, and 1 means the driver requested to be unloaded  **NOTE:** if (ID<0) then RET will not have a return value, because the IRX did not run
 --- @overload fun(path:string): ID:integer, RET:integer
 function IOP.loadModule(path, argc, argv) end
@@ -290,8 +303,8 @@ function IOP.loadModule(path, argc, argv) end
 --- @param ptr string buffer containing the IRX driver
 --- @param ptrsize integer size of the buffer containing the IRX driver
 --- @param argc integer length to the argv variable (use `string.len(argv)` ideally)
---- @param argv string null delimited list of arguments `argv[1]\0argv[2]\0argv[3]`
---- @return integer ID The assigned ID number to this IRX driver. if an error ocurred, modload will return a negative number: https://github.com/ps2dev/ps2sdk/blob/master/iop/kernel/include/kerr.h
+--- @param argv string null delimited list of arguments (eg: `argv[1]\0argv[2]\0argv[3]`)
+--- @return integer ID The assigned ID number to this IRX driver. if an error ocurred, modload will return a negative number from this list: https://github.com/ps2dev/ps2sdk/blob/master/iop/kernel/include/kerr.h
 --- @return integer RET The return value of the IRX driver, usually: 0 means driver remains resident on the IOP, and 1 means the driver requested to be unloaded  **NOTE:** if (ID<0) then RET will not have a return value, because the IRX did not run
 --- @overload fun(ptr: string, ptrsize: integer): ID: integer, RET: integer
 function IOP.loadModuleBuffer(ptr, ptrsize, argc, argv) end

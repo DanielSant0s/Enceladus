@@ -5,6 +5,7 @@
 ---@class Pads
 Pads = {}
 
+---@enum padbuttons
 ---@type padbuttons
 PAD_LEFT = 0x0080;
 ---@type padbuttons
@@ -38,6 +39,7 @@ PAD_R2 = 0x0200;
 ---@type padbuttons
 PAD_L2 = 0x0100;
 
+---@enum padtypes
 ---@type padtypes
 PAD_TYPE_NEJICON = 0x2;
 ---@type padtypes
@@ -56,6 +58,7 @@ PAD_TYPE_JOGCON = 0xE;
 PAD_TYPE_EX_TSURICON = 0x100;
 ---@type padtypes
 PAD_TYPE_EX_JOGCON = 0x300;
+
 
 --- Gets the currently pressed buttons for a specific port
 ---@param port integer which port to check

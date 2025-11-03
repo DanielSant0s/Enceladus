@@ -1,0 +1,98 @@
+--- @meta
+--- intellisense metadata that should only be used for the github pages documentation generator
+--- this file is a workaround to the inability of emmylua_doc_cli of grouping global constants without defining them as an enum... sad
+--- @diagnostic disable
+
+---@enum Filter
+Filter = {
+    NEAREST = 0,
+    LINEAR = 1,
+}
+
+
+---@enum padbuttons
+padbuttons = {
+    PAD_LEFT = 0x0080,
+    PAD_DOWN = 0x0040,
+    PAD_RIGHT = 0x0020,
+    PAD_UP = 0x0010,
+    PAD_START = 0x0008,
+    PAD_R3 = 0x0004,
+    PAD_L3 = 0x0002,
+    PAD_SELECT = 0x0001,
+    PAD_SQUARE = 0x8000,
+    PAD_CROSS = 0x4000,
+    PAD_CIRCLE = 0x2000,
+    PAD_TRIANGLE = 0x1000,
+    PAD_R1 = 0x0800,
+    PAD_L1 = 0x0400,
+    PAD_R2 = 0x0200,
+    PAD_L2 = 0x0100,
+};
+
+---@enum padtypes
+padtypes = {
+    PAD_TYPE_NEJICON = 0x2,
+    PAD_TYPE_KONAMIGUN = 0x3,
+    PAD_TYPE_DIGITAL = 0x4,
+    PAD_TYPE_ANALOG = 0x5,
+    PAD_TYPE_NAMCOGUN = 0x6,
+    PAD_TYPE_DUALSHOCK = 0x7,
+    PAD_TYPE_JOGCON = 0xE,
+    PAD_TYPE_EX_TSURICON = 0x100,
+    PAD_TYPE_EX_JOGCON = 0x300,
+};
+
+---@enum fontalign
+---@type fontalign
+fontalign = {
+  ALIGN_TOP = (0 << 0),
+  ALIGN_BOTTOM = (1 << 0),
+  ALIGN_VCENTER = (2 << 0),
+  ALIGN_LEFT = (0 << 2),
+  ALIGN_RIGHT = (1 << 2),
+  ALIGN_HCENTER = (2 << 2),
+  ALIGN_NONE = (ALIGN_TOP | ALIGN_LEFT),
+  ALIGN_CENTER = (ALIGN_VCENTER | ALIGN_HCENTER),
+};
+
+
+---@enum disctypes
+---@type disctypes
+disctypes = {
+  SCECdGDTFUNCFAIL =  -1,
+  SCECdNODISC = 1,
+  SCECdDETCT = 2,
+  SCECdDETCTCD = 3,
+  SCECdDETCTDVDS = 4,
+  SCECdDETCTDVDD = 5,
+  SCECdUNKNOWN = 6,
+  SCECdPSCD = 7,
+  SCECdPSCDDA = 8,
+  SCECdPS2CD = 9,
+  SCECdPS2CDDA = 10,
+  SCECdPS2DVD = 11,
+  SCECdESRDVD_0 = 12,
+  SCECdESRDVD_1 = 13,
+  SCECdCDDA = 14,
+  SCECdDVDV = 15,
+  SCECdIllegalMedia = 16,
+};
+
+
+---@enum mctypes
+---@type mctypes
+mctypes = {
+  sceMcTypeNoCard=0;
+  sceMcTypePS1=1;
+  sceMcTypePS2=2;
+  sceMcTypePDA=3;
+};
+
+
+---@enum mcformat
+---@type mcformat
+mcformat = {
+  MC_UNFORMATTED=0;
+  MC_FORMATTED=1;
+};

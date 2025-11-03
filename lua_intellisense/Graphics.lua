@@ -162,16 +162,15 @@ function Graphics.drawPartialImage(image, X, Y, start_x, start_y, width, height,
 function Graphics.drawImageExtended(image, X, Y, start_x, start_y, width, height, scale_x, scale_y, angle, color) end
 
 ---@enum Filter
---- Filtering macros `NEAREST` or `LINEAR`
 
----@field NEAREST Filter
+---@type Filter
 NEAREST = 0;
----@field LINEAR Filter
+---@type Filter
 LINEAR = 1;
 
 --- Changes the filtering mode of the specified texture
 --- @param image Texture The image texture
---- @param filter Filter wich filter mode to use. `NEAREST` is the default value upon loading a texture
+--- @param filter Filter texture filtering mode: [`NEAREST`, `LINEAR`]
 --- @see Filter
 function Graphics.setImageFilters(image, filter) end
 
@@ -225,6 +224,8 @@ function Font.ftSetPixelSize(font, width, height) end
 --- @param height integer
 function Font.ftSetCharSize(font, width, height) end
 
+---@enum fontalign
+
 ---@type fontalign
 ALIGN_TOP = (0 << 0);
 ---@type fontalign
@@ -248,7 +249,7 @@ ALIGN_CENTER = (ALIGN_VCENTER | ALIGN_HCENTER);
 --- @param font ttf font handle
 --- @param x integer X coordinate
 --- @param y integer Y coordinate
---- @param fontalign fontalign alignment commands for text
+--- @param fontalign fontalign alignment tokens for text: [`ALIGN_HCENTER`, `ALIGN_NONE`, `ALIGN_CENTER`, `ALIGN_RIGHT`, `ALIGN_BOTTOM`]
 --- @param width  integer defines width  of draw area, text that goes beyond this area is not drawn
 --- @param height integer defines height of draw area, text that goes beyond this area is not drawn
 --- @param text string the text to be written
