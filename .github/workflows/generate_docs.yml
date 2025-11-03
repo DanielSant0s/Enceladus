@@ -31,7 +31,7 @@ jobs:
         run: cargo install emmylua_doc_cli
 
       - name: Generate Docs
-        run: make docs
+        run: emmylua_doc_cli "./lua_intellisense" -o "." --site-name "Enceladus" --override-template "./lua_intellisense/" --include  "**/*.lua,**/*.emmy"
 
       - uses: actions/setup-python@v5
         with:
